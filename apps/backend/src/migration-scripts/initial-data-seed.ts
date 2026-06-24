@@ -17,6 +17,7 @@ import {
   createShippingProfilesWorkflow,
   createStockLocationsWorkflow,
   createStoresWorkflow,
+  createTaxRatesWorkflow,
   createTaxRegionsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
@@ -111,13 +112,43 @@ export default async function initial_data_seed({
   logger.info("Finished seeding regions.");
 
   logger.info("Seeding tax regions...");
-  await createTaxRegionsWorkflow(container).run({
+  const { result: taxRegions } = await createTaxRegionsWorkflow(container).run({
     input: countries.map((country_code) => ({
       country_code,
       provider_id: "tp_system",
     })),
   });
   logger.info("Finished seeding tax regions.");
+
+  const frTaxRegion = taxRegions.find((r) => r.country_code === "fr");
+  if (frTaxRegion) {
+    logger.info("Seeding TVA 10% tax rate for France...");
+    await createTaxRatesWorkflow(container).run({
+      input: [
+        {
+          tax_region_id: frTaxRegion.id,
+          name: "TVA standard",
+          rate: 10,
+          code: "TVA_FR_10",
+        },
+      ],
+    });
+    logger.info("Finished seeding tax rate.");
+  }
+
+  // Medusa creates EUR/USD PricePreferences automatically when supported currencies
+  // are declared in createStoresWorkflow, defaulting to is_tax_inclusive: false.
+  // Upsert ensures we flip EUR to true whether the record exists or not.
+  logger.info("Seeding price preference (tax inclusive EUR)...");
+  const pricingModuleService = container.resolve(Modules.PRICING);
+  await pricingModuleService.upsertPricePreferences([
+    {
+      attribute: "currency_code",
+      value: "eur",
+      is_tax_inclusive: true,
+    },
+  ]);
+  logger.info("Finished seeding price preference.");
 
   logger.info("Seeding stock location data...");
   const { result: stockLocationResult } = await createStockLocationsWorkflow(
