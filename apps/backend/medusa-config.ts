@@ -15,6 +15,22 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      resolve: "@medusajs/medusa/notification",
+      options: {
+        providers: [
+          {
+            resolve: "./src/modules/resend-notification",
+            id: "resend",
+            options: {
+              channels: ["email"],
+              apiKey: process.env.RESEND_API_KEY,
+              from: process.env.RESEND_FROM,
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [
