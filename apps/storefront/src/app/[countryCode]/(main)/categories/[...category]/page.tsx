@@ -47,13 +47,11 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   try {
     const productCategory = await getCategoryByHandle(params.category)
 
-    const title = productCategory.name + " | Medusa Store"
-
-    const description = productCategory.description ?? `${title} category.`
-
     return {
-      title: `${title} | Medusa Store`,
-      description,
+      title: `${productCategory.name} | Kim-Hi Noodle`,
+      description:
+        productCategory.description ??
+        `Découvrez notre sélection ${productCategory.name.toLowerCase()} chez Kim-Hi Noodle.`,
       alternates: {
         canonical: `${params.category.join("/")}`,
       },
@@ -68,7 +66,10 @@ export default async function CategoryPage(props: Props) {
   const params = await props.params
   const { sortBy, page } = searchParams
 
-  const productCategory = await getCategoryByHandle(params.category)
+  const [productCategory, allCategories] = await Promise.all([
+    getCategoryByHandle(params.category),
+    listCategories(),
+  ])
 
   if (!productCategory) {
     notFound()
@@ -80,6 +81,7 @@ export default async function CategoryPage(props: Props) {
       sortBy={sortBy}
       page={page}
       countryCode={params.countryCode}
+      allCategories={allCategories}
     />
   )
 }
