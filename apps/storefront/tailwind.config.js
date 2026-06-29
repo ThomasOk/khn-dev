@@ -20,6 +20,10 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        khn: {
+          cream: "#FAF7F0",
+          "cream-hover": "#F0EBE0",
+        },
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
@@ -59,6 +63,7 @@ module.exports = {
       },
       fontFamily: {
         sans: [
+          "var(--font-sans)",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
@@ -67,6 +72,17 @@ module.exports = {
           "Helvetica Neue",
           "Ubuntu",
           "sans-serif",
+        ],
+        display: [
+          "var(--font-display)",
+          "Georgia",
+          "Cambria",
+          "Times New Roman",
+          "serif",
+        ],
+        cursive: [
+          "var(--font-cursive)",
+          "cursive",
         ],
       },
       keyframes: {

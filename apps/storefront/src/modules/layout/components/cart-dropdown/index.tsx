@@ -82,20 +82,20 @@ const CartDropdown = ({
       <Popover className="relative h-full">
         <PopoverButton className="h-full">
           <LocalizedClientLink
-            className="hover:text-ui-fg-base"
+            className="hover:text-ui-fg-base tabular-nums"
             href="/cart"
             data-testid="nav-cart-link"
-          >{`Cart (${totalItems})`}</LocalizedClientLink>
+          >{`Panier (${totalItems})`}</LocalizedClientLink>
         </PopoverButton>
         <Transition
           show={cartDropdownOpen}
           as={Fragment}
-          enter="transition ease-out duration-200"
-          enterFrom="opacity-0 translate-y-1"
-          enterTo="opacity-100 translate-y-0"
-          leave="transition ease-in duration-150"
-          leaveFrom="opacity-100 translate-y-0"
-          leaveTo="opacity-0 translate-y-1"
+          enter="motion-safe:transition-[opacity,transform] motion-safe:ease-out motion-safe:duration-200"
+          enterFrom="opacity-0 motion-safe:translate-y-1"
+          enterTo="opacity-100 motion-safe:translate-y-0"
+          leave="motion-safe:transition-[opacity,transform] motion-safe:ease-in motion-safe:duration-150"
+          leaveFrom="opacity-100 motion-safe:translate-y-0"
+          leaveTo="opacity-0 motion-safe:translate-y-1"
         >
           <PopoverPanel
             static
@@ -103,7 +103,7 @@ const CartDropdown = ({
             data-testid="nav-cart-dropdown"
           >
             <div className="p-4 flex items-center justify-center">
-              <h3 className="text-large-semi">Cart</h3>
+              <h3 className="text-large-semi">Panier</h3>
             </div>
             {cartState && cartState.items?.length ? (
               <>
@@ -151,7 +151,7 @@ const CartDropdown = ({
                                   data-testid="cart-item-quantity"
                                   data-value={item.quantity}
                                 >
-                                  Quantity: {item.quantity}
+                                  Qté : {item.quantity}
                                 </span>
                               </div>
                               <div className="flex justify-end">
@@ -168,7 +168,7 @@ const CartDropdown = ({
                             className="mt-1"
                             data-testid="cart-item-remove-button"
                           >
-                            Remove
+                            Supprimer
                           </DeleteButton>
                         </div>
                       </div>
@@ -197,7 +197,7 @@ const CartDropdown = ({
                       size="large"
                       data-testid="go-to-cart-button"
                     >
-                      Go to cart
+                      Voir mon panier
                     </Button>
                   </LocalizedClientLink>
                 </div>
@@ -208,12 +208,12 @@ const CartDropdown = ({
                   <div className="bg-gray-900 text-small-regular flex items-center justify-center w-6 h-6 rounded-full text-white">
                     <span>0</span>
                   </div>
-                  <span>Your shopping bag is empty.</span>
+                  <span>Votre panier est vide.</span>
                   <div>
                     <LocalizedClientLink href="/store">
                       <>
-                        <span className="sr-only">Go to all products page</span>
-                        <Button onClick={close}>Explore products</Button>
+                        <span className="sr-only">Voir tous les produits</span>
+                        <Button onClick={close}>Voir la carte</Button>
                       </>
                     </LocalizedClientLink>
                   </div>

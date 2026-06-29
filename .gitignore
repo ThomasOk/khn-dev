@@ -58,3 +58,6 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 **/.DS_Store
+
+khn_img/
+docs/

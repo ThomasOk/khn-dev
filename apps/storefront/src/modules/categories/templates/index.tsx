@@ -1,9 +1,7 @@
 import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
-import InteractiveLink from "@modules/common/components/interactive-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
-import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -14,11 +12,13 @@ export default function CategoryTemplate({
   sortBy,
   page,
   countryCode,
+  allCategories,
 }: {
   category: HttpTypes.StoreProductCategory
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  allCategories?: HttpTypes.StoreProductCategory[]
 }) {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
@@ -26,72 +26,89 @@ export default function CategoryTemplate({
   if (!category || !countryCode) notFound()
 
   const parents = [] as HttpTypes.StoreProductCategory[]
-
-  const getParents = (category: HttpTypes.StoreProductCategory) => {
-    if (category.parent_category) {
-      parents.push(category.parent_category)
-      getParents(category.parent_category)
+  const getParents = (cat: HttpTypes.StoreProductCategory) => {
+    if (cat.parent_category) {
+      parents.push(cat.parent_category)
+      getParents(cat.parent_category)
     }
   }
-
   getParents(category)
+
+  const rootCategories = allCategories?.filter((c) => !c.parent_category) ?? []
 
   return (
     <div
-      className="flex flex-col small:flex-row small:items-start py-6 content-container"
+      className="flex flex-col py-6 mt-16 content-container"
       data-testid="category-container"
     >
-      <RefinementList sortBy={sort} data-testid="sort-by-container" />
-      <div className="w-full">
-        <div className="flex flex-row mb-8 text-2xl-semi gap-4">
-          {parents &&
-            parents.map((parent) => (
-              <span key={parent.id} className="text-ui-fg-subtle">
-                <LocalizedClientLink
-                  className="mr-4 hover:text-black"
-                  href={`/categories/${parent.handle}`}
-                  data-testid="sort-by-link"
-                >
-                  {parent.name}
-                </LocalizedClientLink>
-                /
-              </span>
-            ))}
-          <h1 data-testid="category-page-title">{category.name}</h1>
+      <h1
+        className="text-2xl font-normal mb-5 text-neutral-900"
+        data-testid="category-page-title"
+      >
+        {category.name}
+      </h1>
+
+      {category.description && (
+        <p className="mb-5 text-neutral-600 text-sm">{category.description}</p>
+      )}
+
+      {rootCategories.length > 0 && (
+        <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
+          <LocalizedClientLink
+            href="/store"
+            className="shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border border-neutral-200 text-neutral-700 transition-colors duration-150 [@media(hover:hover)]:hover:border-orange-300 [@media(hover:hover)]:hover:text-orange-600"
+          >
+            Tous
+          </LocalizedClientLink>
+          {rootCategories.map((cat) => {
+            const isActive =
+              cat.handle === category.handle ||
+              parents.some((p) => p.handle === cat.handle)
+            return (
+              <LocalizedClientLink
+                key={cat.id}
+                href={`/categories/${cat.handle}`}
+                className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
+                  isActive
+                    ? "bg-orange-600 text-white pointer-events-none"
+                    : "border border-neutral-200 text-neutral-700 [@media(hover:hover)]:hover:border-orange-300 [@media(hover:hover)]:hover:text-orange-600"
+                }`}
+              >
+                {cat.name}
+              </LocalizedClientLink>
+            )
+          })}
         </div>
-        {category.description && (
-          <div className="mb-8 text-base-regular">
-            <p>{category.description}</p>
-          </div>
-        )}
-        {category.category_children && (
-          <div className="mb-8 text-base-large">
-            <ul className="grid grid-cols-1 gap-2">
-              {category.category_children?.map((c) => (
-                <li key={c.id}>
-                  <InteractiveLink href={`/categories/${c.handle}`}>
-                    {c.name}
-                  </InteractiveLink>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <Suspense
-          fallback={
-            <SkeletonProductGrid
-              numberOfProducts={category.products?.length ?? 8}
-            />
-          }
-        >
-          <PaginatedProducts
-            sortBy={sort}
-            page={pageNumber}
-            categoryId={category.id}
-            countryCode={countryCode}
+      )}
+
+      {category.category_children && category.category_children.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-8">
+          {category.category_children.map((c) => (
+            <LocalizedClientLink
+              key={c.id}
+              href={`/categories/${c.handle}`}
+              className="text-sm text-neutral-500 transition-colors duration-150 [@media(hover:hover)]:hover:text-orange-600"
+            >
+              {c.name}
+            </LocalizedClientLink>
+          ))}
+        </div>
+      )}
+
+      <Suspense
+        fallback={
+          <SkeletonProductGrid
+            numberOfProducts={category.products?.length ?? 8}
           />
-        </Suspense>
-      </div>
+        }
+      >
+        <PaginatedProducts
+          sortBy={sort}
+          page={pageNumber}
+          categoryId={category.id}
+          countryCode={countryCode}
+        />
+      </Suspense>
     </div>
   )
 }

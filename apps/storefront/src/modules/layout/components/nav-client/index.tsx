@@ -1,0 +1,79 @@
+"use client"
+
+import { useEffect, useState } from "react"
+import Image from "next/image"
+import { HttpTypes } from "@medusajs/types"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import NavLinks from "@modules/layout/components/nav-links"
+import SideMenu from "@modules/layout/components/side-menu"
+
+type NavClientProps = {
+  categories: HttpTypes.StoreProductCategory[]
+  children: React.ReactNode
+}
+
+export default function NavClient({ categories, children }: NavClientProps) {
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  const textClass = "text-white"
+
+  return (
+    <div
+      className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${
+        scrolled ? "bg-[#121212]" : "bg-transparent"
+      }`}
+    >
+      <header className="relative h-16 mx-auto">
+        <nav className={`content-container flex items-center justify-between w-full h-full transition-colors duration-300 ${textClass}`}>
+          <div className="flex-1 flex items-center gap-x-4">
+            <div className="small:hidden">
+              <SideMenu categories={categories} />
+            </div>
+            <LocalizedClientLink
+              href="/"
+              className="hidden small:block"
+              data-testid="nav-store-link"
+            >
+              <Image
+                src="/images/khn_logo.png"
+                alt="Kim-Hi Noodle"
+                width={120}
+                height={40}
+                className="h-10 w-auto object-contain"
+                priority
+              />
+            </LocalizedClientLink>
+          </div>
+
+          <div className="flex items-center">
+            <LocalizedClientLink
+              href="/"
+              className="small:hidden"
+              data-testid="nav-store-link-mobile"
+            >
+              <Image
+                src="/images/khn_logo.png"
+                alt="Kim-Hi Noodle"
+                width={100}
+                height={34}
+                className="h-8 w-auto object-contain"
+                priority
+              />
+            </LocalizedClientLink>
+            <NavLinks categories={categories} scrolled={scrolled} />
+          </div>
+
+          <div className={`flex-1 flex items-center justify-end h-full transition-colors duration-300 ${textClass}`}>
+            {children}
+          </div>
+        </nav>
+      </header>
+    </div>
+  )
+}
