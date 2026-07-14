@@ -38,6 +38,13 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root, shared across b
 - Notifications go through the existing `resend-notification` module (`apps/backend/src/modules/resend-notification/`) rather than a new provider, unless a decision to change providers is recorded in an ADR.
 - The `medusa-dev` plugin's skills (`building-with-medusa`, `building-admin-dashboard-customizations`) encode these patterns in more detail and should be consulted for backend/admin work.
 
+## Tests (`apps/backend`)
+
+- `pnpm test` at the root runs the unit tests then the HTTP integration tests. The backend's `test` script chains `test:unit` and `test:integration:http`.
+- **Unit tests live under `src/**/__tests__/*.unit.spec.ts` — never under `src/modules/*/__tests__/`**, which is already claimed by the `integration:modules` matcher and would pick them up a second time.
+- HTTP integration tests live in `integration-tests/http/*.spec.ts` and run on `medusaIntegrationTestRunner`, which creates and drops a **real, disposable Postgres database per test file**. It ignores `DATABASE_URL` and rebuilds its connection URL from `DB_HOST` / `DB_USERNAME` / `DB_PASSWORD` / `DB_PORT` — hence `apps/backend/.env.test` (git-ignored, see `.env.test.template`).
+- Test observable behavior: hit the routes and check what got persisted. Never assert on a module's internal methods, on the order of a workflow's steps, or on the shape of React state.
+
 ## Next.js conventions (`apps/storefront`)
 
 - Stack: Next.js **15.5**, React **19**, TypeScript, App Router at `apps/storefront/src/app/[countryCode]/`.
