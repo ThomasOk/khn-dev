@@ -1,0 +1,19 @@
+# The Créneau de retrait lives in `order.metadata`
+
+Medusa models the *place* of a pickup — Stock Location → Fulfillment Set (`type: "pickup"`) → Service Zone → Shipping Option — but nothing in its Fulfillment module carries a date or an hour. The *when* is ours to store. We store it as **two flat, top-level keys on the cart's metadata** — `creneau_debut` and `creneau_fin`, ISO 8601 with offset — written from the storefront via `POST /store/carts/:id`. `completeCartWorkflow` copies `cart.metadata` onto the order verbatim (`core-flows/dist/cart/workflows/complete-cart.js:404`), so the créneau lands on the Commande with no module, no link, and no custom Store route. The keys are flat because Medusa's metadata merge is shallow and clobbers nested objects wholesale (`utils/dist/common/merge-metadata.js:15-33`).
+
+This is the storage model that matches the domain model. ADR 0003 says a Créneau is a label on the order, not a resource; `order.metadata` *is* a label holder. A custom module with its own table would encode in the schema the very ambition — capacity — that ADR 0003 deliberately refused. It is also the only option the restaurateur can **read and correct without us building him a form**: the admin dashboard already ships a native `orders/:id/metadata/edit` route. Given that CONTEXT.md makes the Medusa admin the source of truth, that is not a small convenience — it is the decision.
+
+## What this rejects
+
+The tempting option is `shipping_methods[].data`: it works end to end with zero backend, which is exactly why someone will reinvent it. It is rejected because it **silently erases the créneau**. `addShippingMethodToCartWorkflow` deletes and recreates colliding shipping methods (`core-flows/dist/cart/workflows/add-shipping-method-to-cart.js:133-137`), and the storefront never re-sends `data` when a shipping option is picked — so a customer who steps back to the delivery step and clicks the pickup option again pays for an order that carries no créneau, with no error and no log. `data` is also the fulfillment provider's field, empty here only because the `manual` provider validates nothing. Squatting it is borrowing against a future provider.
+
+The "give me every order for the 12h15 slot" query does *not* justify a custom module either. Orders are same-day (CONTEXT.md, *Commandes fermées*), `GET /admin/orders` filters on `created_at` natively, and it already returns `metadata` for every order — so the kitchen view is a client-side group-by over a service's few dozen rows. There is no query here to optimise.
+
+## Consequences
+
+Two things become non-optional. First, a **server-side validator in the `validate` hook of `completeCartWorkflow`** — the only publicly typed hook that workflow exposes. `cart.metadata` is written by the client through a public route, so an unvalidated créneau is a field the customer controls: it must be re-checked against the Horaires de retrait, the Fermetures exceptionnelles and the Délai de préparation at completion time, not merely at pick time (a customer can sit on the payment page while his slot expires). Second, a small **admin widget** on `order.details.before`, since the metadata card shows only a key count — without it the créneau exists but nobody sees it, and it would go wrong unnoticed.
+
+The exit cost is known and small. The day capacity arrives — ADR 0003 says it will — the créneau becomes a resource and migrates to a custom module linked to the order. That migration is a script reading `order.metadata.creneau_debut` off existing orders: today's two keys are tomorrow's two columns. Name the trigger now, so the move happens on purpose: **the day we want to refuse an order because a créneau is full.**
+
+Full source-level reasoning, alternatives and citations: `docs/research/2026-07-14-medusa-pickup-et-creneaux.md`.
