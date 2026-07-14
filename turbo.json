@@ -16,6 +16,7 @@
       "outputs": []
     },
     "test": {
+      "cache": false,
       "outputs": []
     },
     "seed": {

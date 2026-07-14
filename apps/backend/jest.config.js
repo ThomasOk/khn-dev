@@ -11,9 +11,23 @@ module.exports = {
         },
       },
     ],
+    // Les templates React Email (`src/modules/resend-notification/templates`) sont
+    // en .tsx : sans cette règle, le module notification ne se charge pas et l'app
+    // ne démarre pas sous Jest. `tsx: true` est isolé ici — l'activer sur les .ts
+    // ferait lire les génériques (`<T>() => …`) comme du JSX. Runtime `automatic`
+    // pour coller au `"jsx": "react-jsx"` du tsconfig.
+    "^.+\\.[jt]sx$": [
+      "@swc/jest",
+      {
+        jsc: {
+          parser: { syntax: "typescript", tsx: true, decorators: true },
+          transform: { react: { runtime: "automatic" } },
+        },
+      },
+    ],
   },
   testEnvironment: "node",
-  moduleFileExtensions: ["js", "ts", "json"],
+  moduleFileExtensions: ["js", "jsx", "ts", "tsx", "json"],
   modulePathIgnorePatterns: ["dist/", "<rootDir>/.medusa/"],
   setupFiles: ["./integration-tests/setup.js"],
 };
