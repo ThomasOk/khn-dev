@@ -88,7 +88,7 @@ rules: [
 Le seed actuel du repo crée un set **de livraison** (starter par défaut) :
 
 ```ts
-// apps/backend/src/migration-scripts/initial-data-seed.ts:189-227
+// apps/backend/src/scripts/seed.ts (anciennement migration-scripts/initial-data-seed.ts:189-227)
 const fulfillmentSet = await fulfillmentModuleService.createFulfillmentSets({
   name: "European Warehouse delivery",
   type: "shipping",                      // ← à remplacer par "pickup"
@@ -193,7 +193,7 @@ async validateFulfillmentData(optionData, data, context) {
 ManualFulfillmentService.identifier = "manual";
 ```
 
-L'identifiant à passer en `provider_id` est `"manual_manual"` (`<identifier>_<id du provider dans medusa-config>`), comme dans le seed existant (`initial-data-seed.ts:177, 243`). Ce `validateFulfillmentData` qui retourne son entrée sans la toucher a une conséquence importante — voir §3.3.
+L'identifiant à passer en `provider_id` est `"manual_manual"` (`<identifier>_<id du provider dans medusa-config>`), comme dans le seed existant (`src/scripts/seed.ts`, anciennement `initial-data-seed.ts:177, 243`). Ce `validateFulfillmentData` qui retourne son entrée sans la toucher a une conséquence importante — voir §3.3.
 
 ### 1.6 Ce que la Store API renvoie réellement
 

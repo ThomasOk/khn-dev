@@ -16,14 +16,14 @@ import {
   createShippingOptionsWorkflow,
   createShippingProfilesWorkflow,
   createStockLocationsWorkflow,
-  createStoresWorkflow,
   createTaxRatesWorkflow,
   createTaxRegionsWorkflow,
   linkSalesChannelsToApiKeyWorkflow,
   linkSalesChannelsToStockLocationWorkflow,
+  updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
 
-export default async function initial_data_seed({
+export default async function seed({
   container,
 }: {
   container: MedusaContainer;
@@ -38,60 +38,80 @@ export default async function initial_data_seed({
   const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
 
   logger.info("Seeding store data...");
-  const {
-    result: [defaultSalesChannel],
-  } = await createSalesChannelsWorkflow(container).run({
-    input: {
-      salesChannelsData: [
-        {
-          name: "Default Sales Channel",
-          description: "Created by Medusa",
-        },
-      ],
-    },
+  // Booting the app already creates a default store, sales channel and publishable
+  // API key when the database is empty. Reuse them: creating our own would leave two
+  // identically-titled keys behind, and the one copied into the storefront would be
+  // a coin flip.
+  const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
+  const storeModuleService = container.resolve(Modules.STORE);
+  const apiKeyModuleService = container.resolve(Modules.API_KEY);
+
+  let [defaultSalesChannel] = await salesChannelModuleService.listSalesChannels({
+    name: "Default Sales Channel",
   });
 
-  const {
-    result: [publishableApiKey],
-  } = await createApiKeysWorkflow(container).run({
-    input: {
-      api_keys: [
-        {
-          title: "Default Publishable API Key",
-          type: "publishable",
-          created_by: "",
-        },
-      ],
-    },
+  if (!defaultSalesChannel) {
+    const {
+      result: [createdSalesChannel],
+    } = await createSalesChannelsWorkflow(container).run({
+      input: {
+        salesChannelsData: [
+          {
+            name: "Default Sales Channel",
+            description: "Created by Medusa",
+          },
+        ],
+      },
+    });
+    defaultSalesChannel = createdSalesChannel;
+  }
+
+  let [publishableApiKey] = await apiKeyModuleService.listApiKeys({
+    type: "publishable",
   });
 
-  await linkSalesChannelsToApiKeyWorkflow(container).run({
-    input: {
-      id: publishableApiKey.id,
-      add: [defaultSalesChannel.id],
-    },
-  });
+  if (!publishableApiKey) {
+    const {
+      result: [createdApiKey],
+    } = await createApiKeysWorkflow(container).run({
+      input: {
+        api_keys: [
+          {
+            title: "Default Publishable API Key",
+            type: "publishable",
+            created_by: "",
+          },
+        ],
+      },
+    });
+    publishableApiKey = createdApiKey;
 
-  const {
-    result: [store],
-  } = await createStoresWorkflow(container).run({
+    await linkSalesChannelsToApiKeyWorkflow(container).run({
+      input: {
+        id: publishableApiKey.id,
+        add: [defaultSalesChannel.id],
+      },
+    });
+  }
+
+  const [existingStore] = await storeModuleService.listStores();
+
+  await updateStoresWorkflow(container).run({
     input: {
-      stores: [
-        {
-          name: "Default Store",
-          supported_currencies: [
-            {
-              currency_code: "eur",
-              is_default: true,
-            },
-            {
-              currency_code: "usd",
-              is_default: false,
-            },
-          ],
-          default_sales_channel_id: defaultSalesChannel.id,
-        },
-      ],
+      selector: { id: existingStore.id },
+      update: {
+        supported_currencies: [
+          {
+            currency_code: "eur",
+            is_default: true,
+          },
+          {
+            currency_code: "usd",
+            is_default: false,
+          },
+        ],
+        default_sales_channel_id: defaultSalesChannel.id,
+      },
     },
   });
 
@@ -136,13 +156,22 @@ export default async function initial_data_seed({
     logger.info("Finished seeding tax rate.");
   }
 
-  // Medusa creates EUR/USD PricePreferences automatically when supported currencies
-  // are declared in createStoresWorkflow, defaulting to is_tax_inclusive: false.
-  // Upsert ensures we flip EUR to true whether the record exists or not.
+  // Medusa creates EUR/USD PricePreferences automatically when the store's supported
+  // currencies are set above, defaulting to is_tax_inclusive: false.
+  // upsertPricePreferences only updates when handed an `id` — without one it always
+  // creates, and trips the unique constraint on (attribute, value). So look the
+  // existing preference up first and flip it by id.
   logger.info("Seeding price preference (tax inclusive EUR)...");
   const pricingModuleService = container.resolve(Modules.PRICING);
+  const [existingEurPreference] =
+    await pricingModuleService.listPricePreferences({
+      attribute: "currency_code",
+      value: "eur",
+    });
+
   await pricingModuleService.upsertPricePreferences([
     {
+      id: existingEurPreference?.id,
       attribute: "currency_code",
       value: "eur",
       is_tax_inclusive: true,
@@ -235,8 +264,75 @@ export default async function initial_data_seed({
     },
   });
 
+  // `type` must be exactly "pickup": the admin and the storefront both key off
+  // this string. Medusa's own docs show "pick-up", which silently matches nothing.
+  // The `fr` geo zone is what makes the option reachable at all — service zones
+  // are filtered on the country_code of the cart's address, even though nothing
+  // is ever shipped.
+  const pickupFulfillmentSet =
+    await fulfillmentModuleService.createFulfillmentSets({
+      name: "Retrait au restaurant",
+      type: "pickup",
+      service_zones: [
+        {
+          name: "France",
+          geo_zones: [
+            {
+              country_code: "fr",
+              type: "country",
+            },
+          ],
+        },
+      ],
+    });
+
+  // Without this link the pickup option never surfaces: shipping options are
+  // resolved through sales channel -> stock locations -> fulfillment sets.
+  await link.create({
+    [Modules.STOCK_LOCATION]: {
+      stock_location_id: stockLocation.id,
+    },
+    [Modules.FULFILLMENT]: {
+      fulfillment_set_id: pickupFulfillmentSet.id,
+    },
+  });
+
   await createShippingOptionsWorkflow(container).run({
     input: [
+      {
+        name: "Retrait au restaurant",
+        price_type: "flat",
+        provider_id: "manual_manual",
+        service_zone_id: pickupFulfillmentSet.service_zones[0].id,
+        shipping_profile_id: shippingProfile.id,
+        type: {
+          label: "Retrait",
+          description: "Retrait au restaurant.",
+          code: "pickup",
+        },
+        prices: [
+          {
+            currency_code: "eur",
+            amount: 0,
+          },
+          {
+            currency_code: "usd",
+            amount: 0,
+          },
+        ],
+        rules: [
+          {
+            attribute: "enabled_in_store",
+            value: "true",
+            operator: "eq",
+          },
+          {
+            attribute: "is_return",
+            value: "false",
+            operator: "eq",
+          },
+        ],
+      },
       {
         name: "Standard Shipping",
         price_type: "flat",
