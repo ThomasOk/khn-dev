@@ -60,4 +60,6 @@ Thumbs.db
 **/.DS_Store
 
 khn_img/
-docs/
+
+# Claude Code — machine-local permissions (settings.json is shared)
+.claude/settings.local.json
