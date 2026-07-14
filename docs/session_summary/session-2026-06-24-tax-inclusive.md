@@ -60,7 +60,7 @@ POST /admin/price-preferences/prpref_01KVAYWECWVF300DDJC7N908HD
 
 ### 2. Mise à jour du seed (`initial-data-seed.ts`)
 
-**Fichier :** `apps/backend/src/migration-scripts/initial-data-seed.ts`
+**Fichier :** `apps/backend/src/scripts/seed.ts` (anciennement `migration-scripts/initial-data-seed.ts`)
 
 Deux ajouts après la création des tax regions (L.113-120) :
 
