@@ -44,11 +44,11 @@ Each Formule composant lists the Variantes allowed in it, explicitly ticked one 
 ### Le retrait
 
 **Retrait**:
-The customer collecting their paid order at the restaurant counter. The only way an order ever reaches a customer — there is no delivery and no shipping, and no address is ever shipped to.
+The customer collecting their paid order at the restaurant counter. The only way an order ever reaches a customer — there is no delivery and no shipping, and no address is ever shipped to. Maps to Medusa's pickup Shipping Option — the *where*, and the only part of Retrait Medusa natively models.
 _Avoid_: Livraison, expédition, shipping (Medusa's `shipping_*` fields exist but never mean delivery here), click & collect (the name of the service, not of the act)
 
 **Créneau de retrait**:
-The interval the customer commits to collecting in — "12h15–12h30". Chosen at checkout and written on the order. A créneau is a **label**, not a resource: it cannot be full and cannot be sold out, so any number of orders may fall in the same one. Capacity is a property créneaux deliberately do not have yet — the kitchen's real throughput is unknown until orders start arriving, and a guessed limit would throttle a business that isn't busy.
+The interval the customer commits to collecting in — "12h15–12h30". Chosen at checkout and written on the order. A créneau is a **label**, not a resource: it cannot be full and cannot be sold out, so any number of orders may fall in the same one. Capacity is a property créneaux deliberately do not have yet — the kitchen's real throughput is unknown until orders start arriving, and a guessed limit would throttle a business that isn't busy. Unlike Retrait, which maps to a Medusa pickup Shipping Option, a Créneau has no native Medusa concept of its own — it rides on the order's metadata instead (ADR 0004). Do not assume it lives anywhere near the shipping method.
 _Avoid_: Slot, horaire (means the schedule — see below), réservation (that's a table, a different thing entirely)
 
 **Horaires de retrait**:
