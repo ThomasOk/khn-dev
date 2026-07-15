@@ -32,5 +32,9 @@
     ".medusa/admin",
     ".cache",
     "eslint.config.*",
+    // The admin extension is a Vite/ESM bundle (DOM libs, import.meta.env) that
+    // this Node16/CommonJS server config cannot compile. It is typechecked by its
+    // own config instead: `tsc --noEmit -p src/admin/tsconfig.json`.
+    "src/admin",
   ]
 }
