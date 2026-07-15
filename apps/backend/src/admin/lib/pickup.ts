@@ -11,7 +11,8 @@ export type PickupSchedule = {
 
 export type Closure = {
   id: string
-  date: string
+  start_date: string
+  end_date: string
   reason: string | null
 }
 

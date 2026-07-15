@@ -115,12 +115,53 @@ describe("deriveSlots", () => {
 
     const slots = deriveSlots({
       schedules: [schedule(2, "12:00", "13:00")],
-      closures: [{ date: "2026-07-14" }],
+      closures: [{ start_date: "2026-07-14", end_date: "2026-07-14" }],
       config: config(30, 15),
       now,
     })
 
     expect(slots).toEqual([])
+  })
+
+  describe("multi-day closure", () => {
+    // A closure period 2026-07-13 (Mon) .. 2026-07-15 (Wed). Schedule active every
+    // day of that stretch plus its neighbours, so the closure boundary itself is
+    // what's under test, not a schedule gap.
+    const base = {
+      schedules: [
+        schedule(0, "12:00", "13:00"), // Sunday 07-12, day before the period
+        schedule(1, "12:00", "13:00"), // Monday 07-13, start_date
+        schedule(2, "12:00", "13:00"), // Tuesday 07-14, inside the period
+        schedule(3, "12:00", "13:00"), // Wednesday 07-15, end_date
+        schedule(4, "12:00", "13:00"), // Thursday 07-16, day after the period
+      ],
+      config: config(30, 15),
+    }
+    const closures = [{ start_date: "2026-07-13", end_date: "2026-07-15" }]
+
+    it("returns nothing on a day inside the closure period", () => {
+      const now = new Date("2026-07-14T08:00:00Z") // Tuesday, inside the period
+
+      const slots = deriveSlots({ ...base, closures, now })
+
+      expect(slots).toEqual([])
+    })
+
+    it("still offers slots the day just before the period starts", () => {
+      const now = new Date("2026-07-12T08:00:00Z") // Sunday — day before start_date
+
+      const slots = deriveSlots({ ...base, closures, now })
+
+      expect(slots).not.toEqual([])
+    })
+
+    it("offers slots again the day just after the period ends", () => {
+      const now = new Date("2026-07-16T08:00:00Z") // Thursday — day after end_date
+
+      const slots = deriveSlots({ ...base, closures, now })
+
+      expect(slots).not.toEqual([])
+    })
   })
 
   it("returns nothing on a day with no schedule", () => {

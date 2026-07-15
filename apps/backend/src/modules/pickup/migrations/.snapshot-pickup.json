@@ -22,8 +22,24 @@
           "enumItems": [],
           "mappedType": "text"
         },
-        "date": {
-          "name": "date",
+        "start_date": {
+          "name": "start_date",
+          "type": "text",
+          "unsigned": false,
+          "autoincrement": false,
+          "primary": false,
+          "nullable": false,
+          "unique": false,
+          "length": null,
+          "precision": null,
+          "scale": null,
+          "default": null,
+          "comment": null,
+          "enumItems": [],
+          "mappedType": "text"
+        },
+        "end_date": {
+          "name": "end_date",
           "type": "text",
           "unsigned": false,
           "autoincrement": false,
@@ -106,15 +122,6 @@
       "name": "pickup_closure",
       "schema": "public",
       "indexes": [
-        {
-          "keyName": "IDX_pickup_closure_date_unique",
-          "columnNames": [],
-          "composite": false,
-          "constraint": false,
-          "primary": false,
-          "unique": false,
-          "expression": "CREATE UNIQUE INDEX IF NOT EXISTS \"IDX_pickup_closure_date_unique\" ON \"pickup_closure\" (\"date\") WHERE deleted_at IS NULL"
-        },
         {
           "keyName": "IDX_pickup_closure_deleted_at",
           "columnNames": [],

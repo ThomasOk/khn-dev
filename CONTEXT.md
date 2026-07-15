@@ -56,7 +56,7 @@ The weekly pattern of windows during which retraits are possible, editable from 
 _Avoid_: Opening hours, heures d'ouverture
 
 **Fermeture exceptionnelle**:
-A specific date on which no retrait is possible, overriding the weekly Horaires de retrait — a public holiday, the August closure, a funeral. Recorded from the admin, never in code.
+A period (start date, end date, both inclusive) on which no retrait is possible, overriding the weekly Horaires de retrait — a public holiday (the degenerate case of a one-day period), the August closure, a funeral. Recorded from the admin, never in code.
 
 **Délai de préparation**:
 The minimum time between an order being placed and the earliest créneau offered to that customer — the kitchen needs to cook. Configuration, not a constant in the code: the first value will be wrong and must be fixable without a deploy.
