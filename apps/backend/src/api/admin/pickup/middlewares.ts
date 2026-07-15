@@ -39,10 +39,16 @@ export const UpdateScheduleSchema = z
   )
 export type UpdateScheduleSchema = z.infer<typeof UpdateScheduleSchema>
 
-export const CreateClosureSchema = z.object({
-  date: z.string().regex(YMD),
-  reason: z.string().trim().min(1).nullish(),
-})
+export const CreateClosureSchema = z
+  .object({
+    start_date: z.string().regex(YMD),
+    end_date: z.string().regex(YMD),
+    reason: z.string().trim().min(1).nullish(),
+  })
+  .refine((d) => d.end_date >= d.start_date, {
+    message: "end_date must be on or after start_date",
+    path: ["end_date"],
+  })
 export type CreateClosureSchema = z.infer<typeof CreateClosureSchema>
 
 export const UpsertConfigSchema = z.object({

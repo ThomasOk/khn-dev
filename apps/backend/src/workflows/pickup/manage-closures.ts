@@ -8,13 +8,14 @@ import { MedusaError } from "@medusajs/framework/utils"
 import { PICKUP_MODULE } from "../../modules/pickup"
 import PickupModuleService from "../../modules/pickup/service"
 
-// Fermetures exceptionnelles (exceptional closures) — a civil day on which pickup
-// is closed, with an optional reason. Declared and removed from the admin. As with
-// the schedule workflows, each mutation is a single step with nothing to
+// Fermetures exceptionnelles (exceptional closures) — a civil-day period on which
+// pickup is closed, with an optional reason. Declared and removed from the admin.
+// As with the schedule workflows, each mutation is a single step with nothing to
 // compensate.
 
 export type CreateClosureInput = {
-  date: string
+  start_date: string
+  end_date: string
   reason?: string | null
 }
 
@@ -22,13 +23,17 @@ const createClosureStep = createStep(
   "create-closure",
   async (input: CreateClosureInput, { container }) => {
     const service: PickupModuleService = container.resolve(PICKUP_MODULE)
-    // `date` is unique in the model; catch the clash here so the admin gets a
-    // clear message instead of a raw Postgres constraint error in a toast.
-    const [existing] = await service.listClosures({ date: input.date })
-    if (existing) {
+    // Check-then-insert, not a database constraint: the admin is single-operator,
+    // so the race window is not a real risk here. Two periods [a, b] and [c, d]
+    // overlap iff a <= d && c <= b.
+    const existingClosures = await service.listClosures({})
+    const overlapping = existingClosures.find(
+      (c) => input.start_date <= c.end_date && c.start_date <= input.end_date
+    )
+    if (overlapping) {
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
-        `A closure is already declared on ${input.date}.`
+        `A closure already covers that period (${overlapping.start_date} – ${overlapping.end_date}).`
       )
     }
     const closure = await service.createClosures(input)

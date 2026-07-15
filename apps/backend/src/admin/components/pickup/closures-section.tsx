@@ -17,9 +17,22 @@ import {
 import { sdk } from "../../lib/sdk"
 import type { Closure } from "../../lib/pickup"
 
-// Fermetures exceptionnelles: a civil day on which no slot is offered — a bank
-// holiday, the August break — with an optional reason. A closure wipes that day's
-// pickup hours entirely.
+// "YYYY-MM-DD" -> "DD/MM/YYYY", for display only (never parsed back).
+const formatCivilDay = (day: string) => {
+  const [year, month, dayOfMonth] = day.split("-")
+  return `${dayOfMonth}/${month}/${year}`
+}
+
+// A single closed day (start_date === end_date, the bank-holiday case) shows as
+// one date; a genuine period shows as a range.
+const formatClosurePeriod = (closure: Pick<Closure, "start_date" | "end_date">) =>
+  closure.start_date === closure.end_date
+    ? formatCivilDay(closure.start_date)
+    : `${formatCivilDay(closure.start_date)} – ${formatCivilDay(closure.end_date)}`
+
+// Fermetures exceptionnelles: a civil-day period on which no slot is offered — a
+// bank holiday (a single day), the August break (a range) — with an optional
+// reason. A closure wipes that period's pickup hours entirely.
 export const ClosuresSection = () => {
   const queryClient = useQueryClient()
   const prompt = usePrompt()
@@ -49,7 +62,7 @@ export const ClosuresSection = () => {
   const handleDelete = async (closure: Closure) => {
     const confirmed = await prompt({
       title: "Remove closure",
-      description: `Reopen pickup on ${closure.date}?`,
+      description: `Reopen pickup on ${formatClosurePeriod(closure)}?`,
       confirmText: "Remove",
       cancelText: "Cancel",
     })
@@ -94,7 +107,7 @@ export const ClosuresSection = () => {
             >
               <div className="flex flex-col">
                 <Text size="small" leading="compact" weight="plus">
-                  {closure.date}
+                  {formatClosurePeriod(closure)}
                 </Text>
                 {closure.reason && (
                   <Text
@@ -136,21 +149,26 @@ const CreateClosureModal = ({
   onOpenChange: (open: boolean) => void
   onSaved: () => void
 }) => {
-  const [date, setDate] = useState("")
+  const [startDate, setStartDate] = useState("")
+  const [endDate, setEndDate] = useState("")
   const [reason, setReason] = useState("")
   const [error, setError] = useState<string | undefined>()
 
   useEffect(() => {
     if (open) {
-      setDate("")
+      setStartDate("")
+      setEndDate("")
       setReason("")
       setError(undefined)
     }
   }, [open])
 
   const create = useMutation({
-    mutationFn: (body: { date: string; reason?: string }) =>
-      sdk.client.fetch("/admin/pickup/closures", { method: "POST", body }),
+    mutationFn: (body: {
+      start_date: string
+      end_date: string
+      reason?: string
+    }) => sdk.client.fetch("/admin/pickup/closures", { method: "POST", body }),
     onSuccess: () => {
       onSaved()
       toast.success("Closure declared")
@@ -160,13 +178,23 @@ const CreateClosureModal = ({
       toast.error(err.message || "Failed to declare closure"),
   })
 
+  const YMD = /^\d{4}-\d{2}-\d{2}$/
+
   const handleSubmit = () => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
-      setError("Pick a date")
+    if (!YMD.test(startDate) || !YMD.test(endDate)) {
+      setError("Pick a start and end date")
+      return
+    }
+    if (endDate < startDate) {
+      setError("End date must be on or after the start date")
       return
     }
     const trimmed = reason.trim()
-    create.mutate({ date, reason: trimmed ? trimmed : undefined })
+    create.mutate({
+      start_date: startDate,
+      end_date: endDate,
+      reason: trimmed ? trimmed : undefined,
+    })
   }
 
   return (
@@ -195,24 +223,42 @@ const CreateClosureModal = ({
         <FocusModal.Body className="flex flex-1 flex-col items-center overflow-auto py-8">
           <div className="flex w-full max-w-md flex-col gap-y-4">
             <Heading level="h2">Declare a closure</Heading>
-            <div className="flex flex-col gap-y-2">
-              <Label size="small" weight="plus">
-                Date
-              </Label>
-              <Input
-                type="date"
-                value={date}
-                onChange={(e) => {
-                  setDate(e.target.value)
-                  setError(undefined)
-                }}
-              />
-              {error && (
-                <Text size="small" className="text-ui-fg-error">
-                  {error}
-                </Text>
-              )}
+            <div className="flex gap-x-4">
+              <div className="flex flex-1 flex-col gap-y-2">
+                <Label size="small" weight="plus">
+                  Start date
+                </Label>
+                <Input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => {
+                    setStartDate(e.target.value)
+                    setError(undefined)
+                  }}
+                />
+              </div>
+              <div className="flex flex-1 flex-col gap-y-2">
+                <Label size="small" weight="plus">
+                  End date
+                </Label>
+                <Input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => {
+                    setEndDate(e.target.value)
+                    setError(undefined)
+                  }}
+                />
+              </div>
             </div>
+            {error && (
+              <Text size="small" className="text-ui-fg-error">
+                {error}
+              </Text>
+            )}
+            <Text size="small" className="text-ui-fg-subtle">
+              A single day is a start and end date that are the same.
+            </Text>
             <div className="flex flex-col gap-y-2">
               <Label size="small" weight="plus">
                 Reason (optional)

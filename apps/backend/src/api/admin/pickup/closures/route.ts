@@ -10,14 +10,15 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
 
   const closures = await service.listClosures(
     {},
-    { order: { date: "ASC" } }
+    { order: { start_date: "ASC" } }
   )
 
   res.json({ closures })
 }
 
-// POST /admin/pickup/closures — declare a closure on a civil day, with an optional
-// reason (a bank holiday, the August break). It wipes that day's schedule entirely.
+// POST /admin/pickup/closures — declare a closure over a civil-day period, with an
+// optional reason (a bank holiday, the August break). A single closed day is the
+// degenerate case start_date === end_date. It wipes that period's schedule entirely.
 export async function POST(
   req: MedusaRequest<CreateClosureSchema>,
   res: MedusaResponse

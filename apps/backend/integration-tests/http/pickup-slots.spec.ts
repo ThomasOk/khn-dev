@@ -153,7 +153,10 @@ medusaIntegrationTestRunner({
           active: true,
         })
         // A closure on today's civil day wipes the day entirely.
-        await pickup().createClosures({ date: parisDateKey(now) })
+        await pickup().createClosures({
+          start_date: parisDateKey(now),
+          end_date: parisDateKey(now),
+        })
 
         const response = await api.get("/store/pickup-slots", withKey())
 

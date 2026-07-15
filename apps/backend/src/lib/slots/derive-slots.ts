@@ -24,7 +24,8 @@ export type PickupScheduleInput = {
 }
 
 export type ClosureInput = {
-  date: string // civil day "YYYY-MM-DD" in RESTAURANT_TIMEZONE
+  start_date: string // civil day "YYYY-MM-DD" in RESTAURANT_TIMEZONE, inclusive
+  end_date: string // civil day "YYYY-MM-DD" in RESTAURANT_TIMEZONE, inclusive
 }
 
 export type PickupConfigInput = {
@@ -127,9 +128,11 @@ export function deriveSlots(input: DeriveSlotsInput): Slot[] {
     day: nowParts.day,
   }
 
-  // A closure on the current day wipes the day's schedule entirely.
+  // A closure whose period covers the current day wipes the day's schedule
+  // entirely. Civil-day keys are lexicographically ordered, so this stays a
+  // string comparison — no Date is built to check the interval.
   const todayKey = civilDayKey(today)
-  if (closures.some((c) => c.date === todayKey)) {
+  if (closures.some((c) => todayKey >= c.start_date && todayKey <= c.end_date)) {
     return []
   }
 
