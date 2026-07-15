@@ -55,12 +55,12 @@ Le vocabulaire métier reste français ; le code est en anglais. Ce qui a été 
 | — date / motif | `date` (`YYYY-MM-DD`) / `reason` | |
 | `ConfigurationRetrait` | `PickupConfig` (table `pickup_config`) | `models/pickup-config.ts` |
 | — Délai de préparation / durée d'un créneau | `prep_delay_minutes` / `slot_duration_minutes` | |
-| `deriverCreneaux` | `deriveSlots` (fonction pure, hors module) | `apps/backend/src/slots/derive-slots.ts` |
+| `deriverCreneaux` | `deriveSlots` (fonction pure, hors module) | `apps/backend/src/lib/slots/derive-slots.ts` |
 | `Créneau { debut, fin }` | `Slot { start, end }` | |
 | `maintenant` | `now` | |
-| fuseau `Europe/Paris` | `RESTAURANT_TIMEZONE` | `apps/backend/src/slots/timezone.ts` |
+| fuseau `Europe/Paris` | `RESTAURANT_TIMEZONE` | `apps/backend/src/lib/slots/timezone.ts` |
 
-Tests unitaires : `apps/backend/src/slots/__tests__/derive-slots.unit.spec.ts` (hors
+Tests unitaires : `apps/backend/src/lib/slots/__tests__/derive-slots.unit.spec.ts` (hors
 `src/modules/*/__tests__/`, réservé au runner `integration:modules`).
 
 ## Acceptance criteria
