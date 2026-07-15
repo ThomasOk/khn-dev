@@ -1,6 +1,12 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { Modules } from "@medusajs/framework/utils"
 import { PICKUP_MODULE } from "../../src/modules/pickup"
+import {
+  parisMinutesOfDay,
+  parisDayOfWeek,
+  parisDateKey,
+  hhmm,
+} from "./paris-time"
 
 // Seam 1 of the spec: the highest seam, exercised over real HTTP against a real
 // disposable Postgres. It proves the wiring — config in the DB flows through
@@ -11,47 +17,6 @@ import { PICKUP_MODULE } from "../../src/modules/pickup"
 // check properties that hold at any (daytime) instant.
 
 jest.setTimeout(60 * 1000)
-
-// Paris wall-clock components of an instant.
-const parisParts = (d: Date) => {
-  const f = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Paris",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  })
-  const o: Record<string, string> = {}
-  for (const p of f.formatToParts(d)) {
-    if (p.type !== "literal") o[p.type] = p.value
-  }
-  return o
-}
-
-const parisMinutesOfDay = (d: Date) => {
-  const p = parisParts(d)
-  return Number(p.hour) * 60 + Number(p.minute)
-}
-
-// JavaScript weekday (0 = Sunday) of an instant's Paris civil day.
-const parisDayOfWeek = (d: Date) => {
-  const p = parisParts(d)
-  return new Date(
-    Date.UTC(Number(p.year), Number(p.month) - 1, Number(p.day))
-  ).getUTCDay()
-}
-
-const parisDateKey = (d: Date) => {
-  const p = parisParts(d)
-  return `${p.year}-${p.month}-${p.day}`
-}
-
-const hhmm = (minutes: number) =>
-  `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(
-    minutes % 60
-  ).padStart(2, "0")}`
 
 const PREP_DELAY = 30
 const SLOT_DURATION = 15
