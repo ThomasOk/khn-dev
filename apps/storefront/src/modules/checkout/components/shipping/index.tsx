@@ -2,10 +2,14 @@
 import { Radio, RadioGroup } from "@headlessui/react"
 import { setShippingMethod } from "@lib/data/cart"
 import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
+import { PickupSlot } from "@lib/data/pickup"
 import { convertToLocale } from "@lib/util/money"
+import { pickupSlotFromCartMetadata } from "@lib/util/pickup-slot"
+import { formatSlotRange } from "@lib/util/timezone"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import PickupSlotPicker from "@modules/checkout/components/pickup-slot-picker"
 import Divider from "@modules/common/components/divider"
 import MedusaRadio from "@modules/common/components/radio"
 import { Button, clx, Heading, Text } from "@modules/common/components/ui"
@@ -61,6 +65,9 @@ const Shipping: React.FC<ShippingProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [shippingMethodId, setShippingMethodId] = useState<string | null>(
     cart.shipping_methods?.at(-1)?.shipping_option_id || null
+  )
+  const [pickupSlot, setPickupSlot] = useState<PickupSlot | null>(() =>
+    pickupSlotFromCartMetadata(cart.metadata)
   )
 
   const searchParams = useSearchParams()
@@ -366,6 +373,24 @@ const Shipping: React.FC<ShippingProps> = ({
             </div>
           )}
 
+          {showPickupOptions === PICKUP_OPTION_ON && (
+            <div className="grid">
+              <div className="flex flex-col">
+                <span className="font-medium txt-medium text-ui-fg-base">
+                  Time
+                </span>
+                <span className="mb-4 text-ui-fg-muted txt-medium">
+                  Choose when you&apos;ll pick up your order
+                </span>
+              </div>
+              <PickupSlotPicker
+                cartId={cart.id}
+                initialSlot={pickupSlot}
+                onSelect={setPickupSlot}
+              />
+            </div>
+          )}
+
           <div>
             <ErrorMessage
               error={error}
@@ -376,7 +401,10 @@ const Shipping: React.FC<ShippingProps> = ({
               className="mt"
               onClick={handleSubmit}
               isLoading={isLoading}
-              disabled={!cart.shipping_methods?.[0]}
+              disabled={
+                !cart.shipping_methods?.[0] ||
+                (showPickupOptions === PICKUP_OPTION_ON && !pickupSlot)
+              }
               data-testid="submit-delivery-option-button"
             >
               Continue to payment
@@ -398,6 +426,14 @@ const Shipping: React.FC<ShippingProps> = ({
                     currency_code: cart?.currency_code,
                   })}
                 </Text>
+                {pickupSlot && (
+                  <Text
+                    className="txt-medium text-ui-fg-subtle"
+                    data-testid="pickup-slot-summary"
+                  >
+                    {formatSlotRange(pickupSlot.start, pickupSlot.end)}
+                  </Text>
+                )}
               </div>
             )}
           </div>

@@ -15,6 +15,8 @@ import {
 } from "./cookies"
 import { getRegion } from "./regions"
 import { getLocale } from "./locale-actions"
+import { PickupSlot } from "./pickup"
+import { CRENEAU_DEBUT_KEY, CRENEAU_FIN_KEY } from "@lib/util/pickup-slot"
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
@@ -23,8 +25,11 @@ import { getLocale } from "./locale-actions"
  */
 export async function retrieveCart(cartId?: string, fields?: string) {
   const id = cartId || (await getCartId())
+  // +metadata is explicit (it's already a default store-cart field) because the
+  // checkout reads creneau_debut/creneau_fin off it (ADR 0004) — an edit here
+  // that drops it would silently make the chosen créneau vanish from the UI.
   fields ??=
-    "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name"
+    "*items, *region, *items.product, *items.variant, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, +metadata"
 
   if (!id) {
     return null
@@ -233,6 +238,42 @@ export async function setShippingMethod({
     .then(async () => {
       const cartCacheTag = await getCacheTag("carts")
       revalidateTag(cartCacheTag)
+    })
+    .catch(medusaError)
+}
+
+// Writes the chosen pickup slot on the cart as two flat, top-level metadata
+// keys (ADR 0004). Medusa's metadata merge is shallow: a nested
+// `metadata.creneau = { debut, fin }` would be clobbered wholesale on the next
+// write instead of merged, so the two keys must stay flat and top-level.
+export async function setPickupSlot({
+  cartId,
+  slot,
+}: {
+  cartId: string
+  slot: PickupSlot
+}) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return sdk.store.cart
+    .update(
+      cartId,
+      {
+        metadata: {
+          [CRENEAU_DEBUT_KEY]: slot.start,
+          [CRENEAU_FIN_KEY]: slot.end,
+        },
+      },
+      {},
+      headers
+    )
+    .then(async ({ cart }: { cart: HttpTypes.StoreCart }) => {
+      const cartCacheTag = await getCacheTag("carts")
+      revalidateTag(cartCacheTag)
+
+      return cart
     })
     .catch(medusaError)
 }
