@@ -15,6 +15,9 @@ module.exports = defineConfig({
   },
   modules: [
     {
+      resolve: "./src/modules/pickup",
+    },
+    {
       resolve: "@medusajs/medusa/notification",
       options: {
         providers: [

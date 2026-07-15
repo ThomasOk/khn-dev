@@ -23,15 +23,17 @@ Trois modèles :
 
 ## La contrainte de conception la plus importante du spec
 
-La dérivation est une **fonction pure, isolée du module, à horloge injectée** :
+La dérivation est une **fonction pure, isolée du module, à horloge injectée**. Le
+code est en anglais (`deriveSlots`), le vocabulaire métier reste français — voir
+la correspondance des noms plus bas.
 
 ```ts
-deriverCreneaux(input: {
-  horaires: HoraireRetrait[]
-  fermetures: FermetureExceptionnelle[]
-  configuration: ConfigurationRetrait
-  maintenant: Date            // TOUJOURS injecté — jamais un `new Date()` à l'intérieur
-}): Array<{ debut: Date; fin: Date }>
+deriveSlots(input: {
+  schedules: PickupScheduleInput[]      // Horaires de retrait
+  closures: ClosureInput[]              // Fermetures exceptionnelles
+  config: PickupConfigInput             // Configuration du retrait
+  now: Date                             // « maintenant » — TOUJOURS injecté, jamais un `new Date()` à l'intérieur
+}): Array<{ start: Date; end: Date }>   // les créneaux
 ```
 
 **Aucun `new Date()`, aucune lecture d'horloge système, nulle part sous cette fonction.** C'est ce qui rend le changement d'heure testable — sans quoi il faudrait attendre le mois d'octobre pour vérifier le bug le plus probable de la fonctionnalité.
@@ -40,10 +42,31 @@ deriverCreneaux(input: {
 
 Un créneau est offrable si, et seulement si : il tombe dans une plage d'Horaires **active** ; son jour n'est pas une **Fermeture exceptionnelle** ; et son début est postérieur à `maintenant + Délai de préparation`. Les commandes sont **same-day** : la dérivation ne regarde que la journée en cours, jamais demain.
 
+## Correspondance des noms (code en anglais)
+
+Le vocabulaire métier reste français ; le code est en anglais. Ce qui a été construit :
+
+| Domaine (FR) | Code (EN) | Emplacement |
+| --- | --- | --- |
+| module `creneaux` (config seule) | module `pickup` | `apps/backend/src/modules/pickup/` |
+| `HoraireRetrait` | `PickupSchedule` (table `pickup_schedule`) | `models/pickup-schedule.ts` |
+| — jour de la semaine / début / fin / actif | `day_of_week` (0=dim..6=sam) / `start_time` / `end_time` / `active` | |
+| `FermetureExceptionnelle` | `Closure` (table `pickup_closure`) | `models/closure.ts` |
+| — date / motif | `date` (`YYYY-MM-DD`) / `reason` | |
+| `ConfigurationRetrait` | `PickupConfig` (table `pickup_config`) | `models/pickup-config.ts` |
+| — Délai de préparation / durée d'un créneau | `prep_delay_minutes` / `slot_duration_minutes` | |
+| `deriverCreneaux` | `deriveSlots` (fonction pure, hors module) | `apps/backend/src/slots/derive-slots.ts` |
+| `Créneau { debut, fin }` | `Slot { start, end }` | |
+| `maintenant` | `now` | |
+| fuseau `Europe/Paris` | `RESTAURANT_TIMEZONE` | `apps/backend/src/slots/timezone.ts` |
+
+Tests unitaires : `apps/backend/src/slots/__tests__/derive-slots.unit.spec.ts` (hors
+`src/modules/*/__tests__/`, réservé au runner `integration:modules`).
+
 ## Acceptance criteria
 
-- [ ] Les trois modèles existent avec leur migration, et le module ne stocke **aucun créneau** — seulement de la configuration
-- [ ] `deriverCreneaux` est une fonction pure, isolée du module, dont `maintenant` est un paramètre ; aucun `new Date()` ni lecture d'horloge système n'existe sous elle
-- [ ] Le fuseau `Europe/Paris` est exposé comme une constante unique et partagée, pas répété en dur
-- [ ] Tests unitaires (`TEST_TYPE=unit`), avec `maintenant` injecté, couvrant : un créneau en heure d'**été** et le même en heure d'**hiver** ; **le dimanche du changement d'heure dans les deux sens** (fin mars et fin octobre) ; un créneau **à cheval sur le Délai de préparation** (juste avant / juste après la limite) ; une **Fermeture exceptionnelle** sur le jour courant ; un jour **sans aucun Horaire** ; **deux services** dans la même journée (midi et soir) ; **la fin de service** — le dernier créneau offrable, puis plus rien
-- [ ] Les tests assertent sur le **comportement observable** (les créneaux rendus), jamais sur les méthodes internes du module
+- [x] Les trois modèles existent avec leur migration, et le module ne stocke **aucun créneau** — seulement de la configuration
+- [x] `deriveSlots` est une fonction pure, isolée du module, dont `now` est un paramètre ; aucun `new Date()` ni lecture d'horloge système n'existe sous elle
+- [x] Le fuseau `Europe/Paris` est exposé comme une constante unique et partagée (`RESTAURANT_TIMEZONE`), pas répété en dur
+- [x] Tests unitaires (`TEST_TYPE=unit`), avec `now` injecté, couvrant : un créneau en heure d'**été** et le même en heure d'**hiver** ; **le dimanche du changement d'heure dans les deux sens** (fin mars et fin octobre) ; un créneau **à cheval sur le Délai de préparation** (juste avant / juste après la limite) ; une **Fermeture exceptionnelle** sur le jour courant ; un jour **sans aucun Horaire** ; **deux services** dans la même journée (midi et soir) ; **la fin de service** — le dernier créneau offrable, puis plus rien
+- [x] Les tests assertent sur le **comportement observable** (les créneaux rendus), jamais sur les méthodes internes du module
