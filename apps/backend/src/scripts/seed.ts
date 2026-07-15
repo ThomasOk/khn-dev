@@ -22,6 +22,8 @@ import {
   linkSalesChannelsToStockLocationWorkflow,
   updateStoresWorkflow,
 } from "@medusajs/medusa/core-flows";
+import { PICKUP_MODULE } from "../modules/pickup";
+import PickupModuleService from "../modules/pickup/service";
 
 export default async function seed({
   container,
@@ -964,4 +966,40 @@ export default async function seed({
   });
 
   logger.info("Finished seeding inventory levels data.");
+
+  logger.info("Seeding pickup schedule and configuration...");
+  // Default Horaires de retrait and Configuration, so the route has something to
+  // serve on a fresh database and the feature is demonstrable. These values ARE
+  // wrong on purpose — ticket 05 gives the restaurateur an admin page to fix them
+  // without a deploy (CONTEXT.md: "Configuration, not a constant in the code").
+  const pickupModuleService: PickupModuleService =
+    container.resolve(PICKUP_MODULE);
+
+  const [existingSchedule] = await pickupModuleService.listPickupSchedules();
+  if (!existingSchedule) {
+    // Lunch and dinner every day (0 = Sunday .. 6 = Saturday). Times are local
+    // wall-clock in the restaurant timezone, not instants.
+    const schedules: {
+      day_of_week: number;
+      start_time: string;
+      end_time: string;
+      active: boolean;
+    }[] = [];
+    for (let day_of_week = 0; day_of_week <= 6; day_of_week++) {
+      schedules.push(
+        { day_of_week, start_time: "11:30", end_time: "14:00", active: true },
+        { day_of_week, start_time: "18:30", end_time: "21:30", active: true }
+      );
+    }
+    await pickupModuleService.createPickupSchedules(schedules);
+  }
+
+  const [existingConfig] = await pickupModuleService.listPickupConfigs();
+  if (!existingConfig) {
+    await pickupModuleService.createPickupConfigs({
+      prep_delay_minutes: 30,
+      slot_duration_minutes: 15,
+    });
+  }
+  logger.info("Finished seeding pickup schedule and configuration.");
 }

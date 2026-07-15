@@ -52,6 +52,11 @@ Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root, shared across b
 - Talk to the backend through the **Medusa JS SDK** (`src/lib/data/`), not raw `fetch` calls to admin/store routes.
 - The `ecommerce-storefront` plugin's `storefront-best-practices` skill encodes data-fetching and checkout/cart patterns and should be consulted for storefront work.
 
+## Language
+
+- **All code is in English** — identifiers, function/type names, folder names, file names, and the fields of API/wire contracts (e.g. `GET /store/pickup-slots` returns `{ slots, orders_open }`, not `{ creneaux, commandes_ouvertes }`). French is reserved for **documentation prose**: `docs/specs/`, `docs/adr/`, `CONTEXT.md`, and work tickets under `.scratch/`.
+- The domain glossary is French (Créneau, Horaires de retrait, Fermeture exceptionnelle, Délai de préparation, …). Translate it to English identifiers in code: `Créneau → Slot`, `HoraireRetrait → PickupSchedule`, `deriverCreneaux → deriveSlots`, `Fermeture → Closure`. Specs may read French while the code they describe reads English — that divergence is expected. When you rename code, update the code references (paths, contract snippets, identifier names) in the docs to match; leave the surrounding French prose alone.
+
 ## Project (restaurant) conventions
 
 - Domain is a restaurant menu + click & collect ordering flow — no shipping/delivery in the traditional e-commerce sense; pickup slots and store-only fulfillment replace shipping where Medusa's model assumes delivery.
