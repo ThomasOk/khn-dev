@@ -99,16 +99,16 @@ Un créneau est offrable si, et seulement si : il tombe dans une plage d'Horaire
 
 ### Le contrat de la route Store
 
-`GET /store/creneaux` renvoie :
+`GET /store/pickup-slots` renvoie :
 
 ```ts
 {
-  creneaux: Array<{ debut: string; fin: string }>   // ISO 8601 avec offset, ordre chronologique
-  commandes_ouvertes: boolean
+  slots: Array<{ start: string; end: string }>   // ISO 8601 avec offset, ordre chronologique
+  orders_open: boolean
 }
 ```
 
-`commandes_ouvertes` n'est pas redondant avec `creneaux.length > 0` **pour le client de l'API** : c'est ce qui lui permet de distinguer *« il ne reste plus de créneau aujourd'hui »* (état Commandes fermées, message franc) d'une *erreur réseau* (liste vide par accident). Une liste vide sans ce drapeau est ambiguë ; c'est une information, pas une absence.
+`orders_open` n'est pas redondant avec `slots.length > 0` **pour le client de l'API** : c'est ce qui lui permet de distinguer *« il ne reste plus de créneau aujourd'hui »* (état Commandes fermées, message franc) d'une *erreur réseau* (liste vide par accident). Une liste vide sans ce drapeau est ambiguë ; c'est une information, pas une absence.
 
 Le middleware de clé publiable et le CORS store s'appliquent automatiquement à tout le préfixe `/store`, routes custom comprises — le SDK JS envoie la clé, un `fetch()` nu échouerait. Le storefront passe donc par la couche SDK existante (`src/lib/data/`), conformément à `AGENTS.md`.
 
@@ -182,7 +182,7 @@ Le seam le plus haut, et celui qui porte le risque du projet. Le runner crée **
 
 Deux points d'entrée couvrent l'essentiel :
 
-- **`GET /store/creneaux`** — les créneaux tombent dans les Horaires ; ceux qui sont sous le Délai de préparation sont absents ; une Fermeture exceptionnelle vide la journée ; `commandes_ouvertes` vaut `false` quand il ne reste rien.
+- **`GET /store/pickup-slots`** — les créneaux tombent dans les Horaires ; ceux qui sont sous le Délai de préparation sont absents ; une Fermeture exceptionnelle vide la journée ; `orders_open` vaut `false` quand il ne reste rien.
 - **`POST /store/carts/:id/complete`** — rejette un panier **sans créneau** ; rejette un créneau **qui n'est plus offrable** ; et, sur un créneau valide, la commande créée porte `creneau_debut` et `creneau_fin` **verbatim dans son `metadata`**.
 
 Ce dernier assert est **le test le plus précieux de la feature** : c'est lui, et lui seul, qui vérifie la thèse centrale de l'ADR 0004 — que le créneau survit réellement au passage panier → commande — sur une vraie base plutôt que sur une lecture de code.
