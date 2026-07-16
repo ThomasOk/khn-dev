@@ -76,8 +76,11 @@ const Item = ({
         >
           {item.product_title}
         </Text>
-        <LineItemOptions variant={item.variant} data-testid="product-variant" />
-        {formuleSelection && formuleSelection.length > 0 && (
+        {formuleSelection && formuleSelection.length > 0 ? (
+          // A Formule is a Produit à Variante unique (ADR 0001) — its
+          // "Variant: ..." label names no real customer choice, unlike the
+          // Sélection below it, so it's noise here and gets replaced rather
+          // than shown alongside.
           <div className="flex flex-col" data-testid="formule-selection">
             {formuleSelection.map((entry) => (
               <Text
@@ -88,6 +91,8 @@ const Item = ({
               </Text>
             ))}
           </div>
+        ) : (
+          <LineItemOptions variant={item.variant} data-testid="product-variant" />
         )}
       </Table.Cell>
 
