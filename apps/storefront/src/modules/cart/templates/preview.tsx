@@ -1,6 +1,7 @@
 "use client"
 
 import repeat from "@lib/util/repeat"
+import { getCartFormuleSelections } from "@lib/data/formules"
 import { HttpTypes } from "@medusajs/types"
 import { Table, clx } from "@modules/common/components/ui"
 
@@ -11,8 +12,9 @@ type ItemsTemplateProps = {
   cart: HttpTypes.StoreCart
 }
 
-const ItemsPreviewTemplate = ({ cart }: ItemsTemplateProps) => {
+const ItemsPreviewTemplate = async ({ cart }: ItemsTemplateProps) => {
   const items = cart.items
+  const formuleSelections = await getCartFormuleSelections(cart)
   const hasOverflow = items && items.length > 4
 
   return (
@@ -36,6 +38,7 @@ const ItemsPreviewTemplate = ({ cart }: ItemsTemplateProps) => {
                       item={item}
                       type="preview"
                       currencyCode={cart.currency_code}
+                      formuleSelection={formuleSelections[item.id]}
                     />
                   )
                 })
