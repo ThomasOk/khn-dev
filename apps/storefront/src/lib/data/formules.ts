@@ -1,6 +1,12 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { HttpTypes } from "@medusajs/types"
+import {
+  formatFormuleSelection,
+  hasFormuleSelection,
+  FormuleSelectionEntry,
+} from "@lib/util/formule-selection"
 
 import { getAuthHeaders, getCacheOptions } from "./cookies"
 
@@ -58,4 +64,56 @@ export const getFormule = async (
     )
     .then(({ formule }) => formule)
     .catch(() => null)
+}
+
+// Resolves every cart line's Sélection to something readable — Composant
+// `label` → chosen Variante `title` (User Story 13), never the raw
+// `formule_<key>_variant_id` keys the client wrote. One Curation lookup per
+// distinct Formule product in the cart, not per line, so two identical
+// Formules with different Sélections cost the same single request as one.
+export const getCartFormuleSelections = async (
+  cart: HttpTypes.StoreCart
+): Promise<Record<string, FormuleSelectionEntry[]>> => {
+  const regionId = cart.region_id
+  const items = cart.items ?? []
+
+  if (!regionId) {
+    return {}
+  }
+
+  const formuleProductIds = Array.from(
+    new Set(
+      items
+        .filter((item) => hasFormuleSelection(item.metadata))
+        .map((item) => item.product_id)
+        .filter((productId): productId is string => !!productId)
+    )
+  )
+
+  const curations = await Promise.all(
+    formuleProductIds.map((productId) => getFormule(productId, regionId))
+  )
+  const curationByProductId = new Map(
+    formuleProductIds.map((productId, index) => [productId, curations[index]])
+  )
+
+  const selections: Record<string, FormuleSelectionEntry[]> = {}
+
+  for (const item of items) {
+    const curation = item.product_id
+      ? curationByProductId.get(item.product_id)
+      : undefined
+
+    if (!curation) {
+      continue
+    }
+
+    const entries = formatFormuleSelection(item.metadata, curation.composants)
+
+    if (entries.length > 0) {
+      selections[item.id] = entries
+    }
+  }
+
+  return selections
 }

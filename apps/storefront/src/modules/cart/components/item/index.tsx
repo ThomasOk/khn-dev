@@ -2,6 +2,7 @@
 
 import { Table, Text, clx } from "@modules/common/components/ui"
 import { updateLineItem } from "@lib/data/cart"
+import { FormuleSelectionEntry } from "@lib/util/formule-selection"
 import { HttpTypes } from "@medusajs/types"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -18,9 +19,15 @@ type ItemProps = {
   item: HttpTypes.StoreCartLineItem
   type?: "full" | "preview"
   currencyCode: string
+  formuleSelection?: FormuleSelectionEntry[]
 }
 
-const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
+const Item = ({
+  item,
+  type = "full",
+  currencyCode,
+  formuleSelection,
+}: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -69,7 +76,24 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         >
           {item.product_title}
         </Text>
-        <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        {formuleSelection && formuleSelection.length > 0 ? (
+          // A Formule is a Produit à Variante unique (ADR 0001) — its
+          // "Variant: ..." label names no real customer choice, unlike the
+          // Sélection below it, so it's noise here and gets replaced rather
+          // than shown alongside.
+          <div className="flex flex-col" data-testid="formule-selection">
+            {formuleSelection.map((entry) => (
+              <Text
+                key={entry.label}
+                className="txt-compact-small text-ui-fg-subtle"
+              >
+                {entry.label}: {entry.variantTitle}
+              </Text>
+            ))}
+          </div>
+        ) : (
+          <LineItemOptions variant={item.variant} data-testid="product-variant" />
+        )}
       </Table.Cell>
 
       {type === "full" && (

@@ -2,6 +2,7 @@
 
 import { addToCart } from "@lib/data/cart"
 import { FormuleComposant } from "@lib/data/formules"
+import { formuleSelectionKey } from "@lib/util/formule-selection"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
@@ -53,7 +54,7 @@ export default function FormuleActions({
 
     const metadata = Object.fromEntries(
       composants.map((composant) => [
-        `formule_${composant.key}_variant_id`,
+        formuleSelectionKey(composant.key),
         selections[composant.key],
       ])
     )
