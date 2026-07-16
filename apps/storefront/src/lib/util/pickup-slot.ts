@@ -14,7 +14,10 @@ export const CRENEAU_FIN_KEY = "creneau_fin"
 // sync under a rename.
 export const PICKUP_SLOT_ERROR_PARAM = "pickup_slot_error"
 
-export function pickupSlotFromCartMetadata(
+// Reads the two keys above out of either cart.metadata or order.metadata —
+// completeCartWorkflow recopies cart.metadata onto order.metadata verbatim
+// (ADR 0004), so the same two flat keys land in both places.
+export function pickupSlotFromMetadata(
   metadata: Record<string, unknown> | null | undefined
 ): PickupSlot | null {
   const start = metadata?.[CRENEAU_DEBUT_KEY]
@@ -48,7 +51,7 @@ export function isPickupSlotValidationError(
 export function buildPickupSlotExpiredMessage(
   metadata: Record<string, unknown> | null | undefined
 ): string {
-  const slot = pickupSlotFromCartMetadata(metadata)
+  const slot = pickupSlotFromMetadata(metadata)
 
   if (!slot) {
     return "Choose a pickup slot before paying."

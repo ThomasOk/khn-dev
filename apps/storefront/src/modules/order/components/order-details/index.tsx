@@ -1,5 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { Text } from "@modules/common/components/ui"
+import { pickupSlotFromMetadata } from "@lib/util/pickup-slot"
+import { formatSlotLabel } from "@lib/util/timezone"
 
 type OrderDetailsProps = {
   order: HttpTypes.StoreOrder
@@ -7,6 +9,8 @@ type OrderDetailsProps = {
 }
 
 const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
+  const pickupSlot = pickupSlotFromMetadata(order.metadata)
+
   const formatStatus = (str: string) => {
     const formatted = str.split("_").join(" ")
 
@@ -34,6 +38,14 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
       <Text className="mt-2 text-ui-fg-interactive">
         Order number: <span data-testid="order-id">{order.display_id}</span>
       </Text>
+      {pickupSlot && (
+        <Text className="mt-2">
+          Pickup slot:{" "}
+          <span data-testid="order-pickup-slot">
+            {formatSlotLabel(pickupSlot.start, pickupSlot.end)}
+          </span>
+        </Text>
+      )}
 
       <div className="flex items-center text-compact-small gap-x-4 mt-4">
         {showStatus && (
