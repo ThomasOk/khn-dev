@@ -2,11 +2,64 @@
 
 import { isManual, isStripeLike } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
+import {
+  buildPickupSlotExpiredMessage,
+  isPickupSlotValidationError,
+  PICKUP_SLOT_ERROR_PARAM,
+} from "@lib/util/pickup-slot"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
+import { usePathname } from "next/navigation"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
+
+// The 13h55 case: the créneau on this cart expired while the customer sat on
+// the payment page and completeCartWorkflow's validate hook rejected it. The
+// cart itself is untouched (the hook only throws, it never mutates), so
+// recovery is just routing the customer back to the delivery step — with a
+// message naming the lost slot — instead of surfacing a generic payment
+// error. Any other completion failure (inventory, a missing address, …)
+// falls through to the normal inline error message.
+//
+// This is a hard navigation (window.location), not router.push: verified by
+// hand that calling router.push from inside a rejected Server Action's
+// .catch() leaves Next's action-dispatch queue wedged — every Server Action
+// on the destination page (e.g. picking a new créneau) then hangs forever
+// with no error, which is exactly the infinite-loop the spec forbids. A hard
+// navigation re-fetches the page from scratch and sidesteps that entirely;
+// the cart itself lives server-side, so nothing is lost by not doing a soft
+// navigation here.
+function recoverFromPickupSlotError(
+  err: Error,
+  cart: HttpTypes.StoreCart,
+  pathname: string
+): boolean {
+  if (!isPickupSlotValidationError(err.message)) {
+    return false
+  }
+
+  const params = new URLSearchParams({
+    step: "delivery",
+    [PICKUP_SLOT_ERROR_PARAM]: buildPickupSlotExpiredMessage(cart.metadata),
+  })
+  window.location.href = `${pathname}?${params.toString()}`
+  return true
+}
+
+// Shared by both payment-button variants below: on a completion failure,
+// either recover from the créneau rejection or fall back to the normal
+// inline error message.
+function handlePlaceOrderError(
+  err: Error,
+  cart: HttpTypes.StoreCart,
+  pathname: string,
+  setErrorMessage: (message: string | null) => void
+) {
+  if (!recoverFromPickupSlotError(err, cart, pathname)) {
+    setErrorMessage(err.message)
+  }
+}
 
 type PaymentButtonProps = {
   cart: HttpTypes.StoreCart
@@ -37,7 +90,11 @@ const PaymentButton: React.FC<PaymentButtonProps> = ({
       )
     case isManual(paymentSession?.provider_id):
       return (
-        <ManualTestPaymentButton notReady={notReady} data-testid={dataTestId} />
+        <ManualTestPaymentButton
+          cart={cart}
+          notReady={notReady}
+          data-testid={dataTestId}
+        />
       )
     default:
       return <Button disabled>Select a payment method</Button>
@@ -55,12 +112,11 @@ const StripePaymentButton = ({
 }) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const pathname = usePathname()
 
   const onPaymentCompleted = async () => {
     await placeOrder()
-      .catch((err) => {
-        setErrorMessage(err.message)
-      })
+      .catch((err) => handlePlaceOrderError(err, cart, pathname, setErrorMessage))
       .finally(() => {
         setSubmitting(false)
       })
@@ -151,15 +207,20 @@ const StripePaymentButton = ({
   )
 }
 
-const ManualTestPaymentButton = ({ notReady }: { notReady: boolean }) => {
+const ManualTestPaymentButton = ({
+  cart,
+  notReady,
+}: {
+  cart: HttpTypes.StoreCart
+  notReady: boolean
+}) => {
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const pathname = usePathname()
 
   const onPaymentCompleted = async () => {
     await placeOrder()
-      .catch((err) => {
-        setErrorMessage(err.message)
-      })
+      .catch((err) => handlePlaceOrderError(err, cart, pathname, setErrorMessage))
       .finally(() => {
         setSubmitting(false)
       })

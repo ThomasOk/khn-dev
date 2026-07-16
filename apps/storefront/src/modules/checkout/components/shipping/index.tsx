@@ -4,7 +4,10 @@ import { setShippingMethod } from "@lib/data/cart"
 import { calculatePriceForShippingOption } from "@lib/data/fulfillment"
 import { PickupSlot } from "@lib/data/pickup"
 import { convertToLocale } from "@lib/util/money"
-import { pickupSlotFromCartMetadata } from "@lib/util/pickup-slot"
+import {
+  PICKUP_SLOT_ERROR_PARAM,
+  pickupSlotFromCartMetadata,
+} from "@lib/util/pickup-slot"
 import { formatSlotRange } from "@lib/util/timezone"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
@@ -69,12 +72,41 @@ const Shipping: React.FC<ShippingProps> = ({
   const [pickupSlot, setPickupSlot] = useState<PickupSlot | null>(() =>
     pickupSlotFromCartMetadata(cart.metadata)
   )
+  const [pickupSlotError, setPickupSlotError] = useState<string | null>(null)
 
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
 
   const isOpen = searchParams.get("step") === "delivery"
+
+  // The 13h55 case: the payment step redirected here after the créneau on
+  // this cart got rejected by the validate hook. The cart itself was never
+  // touched, so recovery is purely local — show the message naming the lost
+  // slot and force an explicit re-selection (no auto-reassignment: the
+  // customer decides, not the system).
+  //
+  // The URL param is deliberately NOT stripped here. PickupSlotPicker mounts
+  // fresh on this same render and kicks off its own fetch (a Next.js Server
+  // Action call) to refresh the list; any navigation landing this soon after
+  // — even router.replace, even a raw history.replaceState, which Next's
+  // router still intercepts to keep its own state in sync — races that
+  // in-flight call and orphans its promise, leaving the picker stuck on
+  // "Loading pickup slots…" forever (verified by hand: exactly the
+  // infinite-loop the spec forbids). The param is cleaned up later instead,
+  // once the customer re-selects a slot (see PickupSlotPicker's onSelect
+  // below) — by then the initial fetch has long settled, so there's nothing
+  // left to race.
+  useEffect(() => {
+    const message = searchParams.get(PICKUP_SLOT_ERROR_PARAM)
+
+    if (!message) {
+      return
+    }
+
+    setPickupSlotError(message)
+    setPickupSlot(null)
+  }, [searchParams])
 
   const _shippingMethods = availableShippingMethods?.filter(
     (sm) => (sm as unknown as { service_zone?: { fulfillment_set?: { type?: string; location?: { address: HttpTypes.StoreCartAddress } } } }).service_zone?.fulfillment_set?.type !== "pickup"
@@ -193,6 +225,12 @@ const Shipping: React.FC<ShippingProps> = ({
       </div>
       {isOpen ? (
         <>
+          {pickupSlotError && (
+            <ErrorMessage
+              error={pickupSlotError}
+              data-testid="pickup-slot-expired-message"
+            />
+          )}
           <div className="grid">
             <div className="flex flex-col">
               <span className="font-medium txt-medium text-ui-fg-base">
@@ -386,7 +424,25 @@ const Shipping: React.FC<ShippingProps> = ({
               <PickupSlotPicker
                 cartId={cart.id}
                 initialSlot={pickupSlot}
-                onSelect={setPickupSlot}
+                onSelect={(slot) => {
+                  setPickupSlotError(null)
+                  setPickupSlot(slot)
+
+                  // Safe to clean the URL here: the picker has already
+                  // rendered a real slot to click, so its initial fetch is
+                  // long settled — no in-flight Server Action call left to
+                  // race (see the effect above for why this can't happen
+                  // any earlier).
+                  if (searchParams.get(PICKUP_SLOT_ERROR_PARAM)) {
+                    const params = new URLSearchParams(searchParams)
+                    params.delete(PICKUP_SLOT_ERROR_PARAM)
+                    window.history.replaceState(
+                      null,
+                      "",
+                      `${pathname}?${params.toString()}`
+                    )
+                  }
+                }}
               />
             </div>
           )}
