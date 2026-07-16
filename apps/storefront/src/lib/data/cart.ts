@@ -123,10 +123,15 @@ export async function addToCart({
   variantId,
   quantity,
   countryCode,
+  metadata,
 }: {
   variantId: string
   quantity: number
   countryCode: string
+  // Flat, primitive-valued keys only — a Formule's Sélection, written as
+  // `formule_<key>_variant_id: "<variant_id>"` (ADR 0005). Never an object or
+  // array: line_item.metadata has no nested structure to give one back.
+  metadata?: Record<string, string>
 }) {
   if (!variantId) {
     throw new Error("Missing variant ID when adding to cart")
@@ -148,6 +153,7 @@ export async function addToCart({
       {
         variant_id: variantId,
         quantity,
+        ...(metadata ? { metadata } : {}),
       },
       {},
       headers
