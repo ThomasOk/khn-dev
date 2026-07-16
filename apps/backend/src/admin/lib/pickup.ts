@@ -32,3 +32,26 @@ export const WEEKDAYS = [
   "Friday",
   "Saturday",
 ] as const
+
+// The two flat, top-level metadata keys the créneau is written under (ADR
+// 0004) — mirrors apps/storefront/src/lib/util/pickup-slot.ts. Order metadata
+// is recopied verbatim from cart.metadata by completeCartWorkflow, so these
+// are the same keys the checkout step writes; this widget reads them off
+// order.metadata specifically, but the reader below is generic over either.
+export const CRENEAU_DEBUT_KEY = "creneau_debut"
+export const CRENEAU_FIN_KEY = "creneau_fin"
+
+export type PickupSlot = { start: string; end: string }
+
+export function pickupSlotFromMetadata(
+  metadata: Record<string, unknown> | null | undefined
+): PickupSlot | null {
+  const start = metadata?.[CRENEAU_DEBUT_KEY]
+  const end = metadata?.[CRENEAU_FIN_KEY]
+
+  if (typeof start === "string" && typeof end === "string") {
+    return { start, end }
+  }
+
+  return null
+}

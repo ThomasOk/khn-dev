@@ -18,8 +18,11 @@ export const retrieveOrder = async (id: string) => {
     .fetch<HttpTypes.StoreOrderResponse>(`/store/orders/${id}`, {
       method: "GET",
       query: {
+        // +metadata: the default store retrieve-order fields omit top-level
+        // metadata (unlike the list endpoint's defaults), so without this the
+        // confirmation page's pickup slot silently reads undefined.
         fields:
-          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product",
+          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,+metadata",
       },
       headers,
       next,

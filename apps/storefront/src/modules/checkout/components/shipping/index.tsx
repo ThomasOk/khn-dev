@@ -6,7 +6,7 @@ import { PickupSlot } from "@lib/data/pickup"
 import { convertToLocale } from "@lib/util/money"
 import {
   PICKUP_SLOT_ERROR_PARAM,
-  pickupSlotFromCartMetadata,
+  pickupSlotFromMetadata,
 } from "@lib/util/pickup-slot"
 import { formatSlotRange } from "@lib/util/timezone"
 import { CheckCircleSolid, Loader } from "@medusajs/icons"
@@ -70,7 +70,7 @@ const Shipping: React.FC<ShippingProps> = ({
     cart.shipping_methods?.at(-1)?.shipping_option_id || null
   )
   const [pickupSlot, setPickupSlot] = useState<PickupSlot | null>(() =>
-    pickupSlotFromCartMetadata(cart.metadata)
+    pickupSlotFromMetadata(cart.metadata)
   )
   const [pickupSlotError, setPickupSlotError] = useState<string | null>(null)
 

@@ -12,10 +12,27 @@ const timeFormatter = new Intl.DateTimeFormat("fr-FR", {
   minute: "2-digit",
 })
 
+const dayFormatter = new Intl.DateTimeFormat("en-GB", {
+  timeZone: RESTAURANT_TIMEZONE,
+  weekday: "short",
+  day: "2-digit",
+  month: "2-digit",
+})
+
 export function formatSlotTime(iso: string): string {
   return timeFormatter.format(new Date(iso))
 }
 
 export function formatSlotRange(start: string, end: string): string {
   return `${formatSlotTime(start)}–${formatSlotTime(end)}`
+}
+
+// e.g. "Wed, 15/07 · 12:15–12:30" — the confirmation page's trace of the slot
+// the customer just committed to, always read in restaurant (Paris) wall-clock
+// time regardless of the customer's own browser timezone.
+export function formatSlotLabel(start: string, end: string): string {
+  return `${dayFormatter.format(new Date(start))} · ${formatSlotRange(
+    start,
+    end
+  )}`
 }
