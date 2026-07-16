@@ -1,5 +1,3 @@
-"use client"
-
 import repeat from "@lib/util/repeat"
 import { getCartFormuleSelections } from "@lib/data/formules"
 import { HttpTypes } from "@medusajs/types"
