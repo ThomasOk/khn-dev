@@ -1,4 +1,6 @@
 import { RESTAURANT_TIMEZONE } from "../slots/timezone"
+import { ResolvedFormuleCuration } from "../formule/get-curation-for-variant"
+import { resolveFormuleSelectionEntries } from "../formule/resolve-selection-entries"
 import { PdfMakeDocDefinition } from "./render"
 
 // 80mm in points (72pt/inch, 25.4mm/inch) — the printer roll's width, not a
@@ -11,6 +13,16 @@ export interface KitchenTicketLineItem {
   title: string
   variant_title?: string | null
   quantity: number
+  // Raw line item metadata (ADR 0005's flat `formule_<key>_variant_id`
+  // keys) and the Curation it resolves against, fetched server-side via
+  // getFormuleCurationForVariant (ticket 02) — never present for an
+  // ordinary, non-Formule line. resolveFormuleSelectionEntries turns the
+  // two into the Sélection this template renders; kept as separate fields
+  // rather than pre-resolved entries so this stays the one call site (spec
+  // §"La Sélection de Formule sur le ticket": "pas de duplication de cette
+  // résolution").
+  metadata?: Record<string, unknown> | null
+  curation?: ResolvedFormuleCuration | null
 }
 
 export interface KitchenTicketOrder {
@@ -56,6 +68,20 @@ function lineItemLabel(item: KitchenTicketLineItem): string {
   return `${item.quantity}× ${item.title}${detail}`
 }
 
+// "label — variant name", the same phrasing as the admin order widget
+// (admin/widgets/order-formule-selection.tsx) so a Sélection reads the same
+// wherever a restaurateur sees it. resolveFormuleSelectionEntries already
+// carries the id-based fallback (User Story 17, ticket 02) when a Composant
+// or Variante no longer resolves in the current Curation.
+function selectionLines(item: KitchenTicketLineItem) {
+  return resolveFormuleSelectionEntries(item.metadata, item.curation).map(
+    (entry) => ({
+      text: `${entry.label} — ${entry.variantLabel}`,
+      margin: [12, 2, 0, 0] as [number, number, number, number],
+    })
+  )
+}
+
 // Pure: no database, no network, no container — an order-shaped object in,
 // a pdfmake docDefinition out (spec's Seam 1, User Story 19). Content order
 // is fixed by the spec, not incidental: the Créneau leads, bold and
@@ -78,7 +104,12 @@ export function buildKitchenTicketDocDefinition(
       { text: order.customer_name, margin: [0, 8, 0, 0] },
       { text: order.customer_phone },
       ...order.items.map((item, index) => ({
-        text: lineItemLabel(item),
+        // A Formule's Sélection is grouped in the same stack as its line,
+        // indented, in Composant rank order (spec §"La Sélection de Formule
+        // sur le ticket") — never the ordre technique of metadata's own
+        // keys. Empty for an ordinary line: selectionLines then contributes
+        // nothing beyond the line itself.
+        stack: [{ text: lineItemLabel(item) }, ...selectionLines(item)],
         margin: [0, index === 0 ? 8 : 4, 0, 0] as [number, number, number, number],
       })),
     ],

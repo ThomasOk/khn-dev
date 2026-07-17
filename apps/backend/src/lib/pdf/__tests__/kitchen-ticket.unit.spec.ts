@@ -1,4 +1,6 @@
 import { PDFParse } from "pdf-parse"
+import { ResolvedFormuleCuration } from "../../formule/get-curation-for-variant"
+import { formuleSelectionMetadataKey } from "../../formule/validate-selection"
 import { renderPdfDocDefinitionToBase64 } from "../render"
 import { buildKitchenTicketDocDefinition, KitchenTicketOrder } from "../kitchen-ticket"
 
@@ -115,5 +117,89 @@ describe("buildKitchenTicketDocDefinition", () => {
 
     expect(text).toContain("Bœuf")
     expect(text).not.toContain("�")
+  })
+})
+
+// Ticket 05: a Formule line's Sélection, resolved server-side via
+// getFormuleCurationForVariant + resolveFormuleSelectionEntries rather than
+// duplicated here. Fixture built like
+// src/lib/formule/__tests__/validate-selection.unit.spec.ts and
+// resolve-selection-entries.unit.spec.ts (a Curation, a Sélection on it) —
+// ranks deliberately out of key order, per the spec's own instruction to
+// prove rank order rather than metadata's own key order.
+const plat = {
+  key: "plat",
+  label: "Plat",
+  rank: 0,
+  curatedVariantIds: ["variant_riz"],
+  curatedVariants: [{ id: "variant_riz", name: "Riz Cantonais" }],
+}
+const entree = {
+  key: "entree",
+  label: "Entrée",
+  rank: 1,
+  curatedVariantIds: ["variant_samoussas_boeuf"],
+  curatedVariants: [{ id: "variant_samoussas_boeuf", name: "Samoussas — Bœuf" }],
+}
+const menuMidiCuration: ResolvedFormuleCuration = {
+  productId: "prod_menu_midi",
+  productTitle: "Menu Midi",
+  composants: [entree, plat],
+}
+
+describe("buildKitchenTicketDocDefinition — Formule Sélection", () => {
+  it("shows a Formule line's Sélection, indented under its name, in Composant rank order", async () => {
+    const order: KitchenTicketOrder = {
+      ...baseOrder,
+      items: [
+        {
+          title: "Menu Midi",
+          quantity: 1,
+          curation: menuMidiCuration,
+          // Keys deliberately in the opposite order from rank, so a pass
+          // that used metadata's own key order instead of rank would show
+          // Entrée before Plat.
+          metadata: {
+            [formuleSelectionMetadataKey("entree")]: "variant_samoussas_boeuf",
+            [formuleSelectionMetadataKey("plat")]: "variant_riz",
+          },
+        },
+      ],
+    }
+    const text = await extractText(await renderToBuffer(order))
+
+    const nameIndex = text.indexOf("Menu Midi")
+    const platIndex = text.indexOf("Plat — Riz Cantonais")
+    const entreeIndex = text.indexOf("Entrée — Samoussas — Bœuf")
+
+    expect(nameIndex).toBeGreaterThanOrEqual(0)
+    expect(platIndex).toBeGreaterThan(nameIndex)
+    expect(entreeIndex).toBeGreaterThan(platIndex)
+  })
+
+  it("falls back to the raw Variante id when the Curation no longer resolves a Sélection", async () => {
+    const order: KitchenTicketOrder = {
+      ...baseOrder,
+      items: [
+        {
+          title: "Menu Midi",
+          quantity: 1,
+          curation: menuMidiCuration,
+          metadata: {
+            [formuleSelectionMetadataKey("plat")]: "variant_discontinued",
+          },
+        },
+      ],
+    }
+    const text = await extractText(await renderToBuffer(order))
+
+    expect(text).toContain("Plat — variant_discontinued")
+  })
+
+  it("renders an ordinary, non-Formule line exactly as before — no Sélection block, no regression", async () => {
+    const text = await extractText(await renderToBuffer(baseOrder))
+
+    expect(text).toContain("Nouilles sautées — Bœuf, Saté (contient arachide)")
+    expect(text).not.toContain("undefined")
   })
 })
