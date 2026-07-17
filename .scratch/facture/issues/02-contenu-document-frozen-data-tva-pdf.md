@@ -14,9 +14,9 @@ Contours :
 
 **Status:** ready-for-agent
 
-- [ ] Une Commande fixture avec plusieurs lignes et plusieurs taux de TVA produit un `frozen_data` dont la ventilation par taux et les totaux HT/TVA/TTC sont corrects (test unitaire)
-- [ ] Le taux et le montant de TVA par ligne proviennent des `tax_lines` de la commande, pas d'un recalcul
-- [ ] Le total TTC du `frozen_data` égale le montant censé être encaissé
-- [ ] La config émetteur (SIREN, TVA intracom, capital, RCS…) est résolue depuis une source modifiable sans redéploiement, et ses valeurs apparaissent dans `frozen_data`
-- [ ] `buildInvoiceDocDefinition` produit un docDefinition portant numéro, mentions émetteur, adresse de facturation client, ventilation TVA et totaux (test unitaire, `src/**/__tests__/*.unit.spec.ts`)
-- [ ] Le docDefinition se rend en PDF via `render.ts` sans erreur
+- [x] Une Commande fixture avec plusieurs lignes et plusieurs taux de TVA produit un `frozen_data` dont la ventilation par taux et les totaux HT/TVA/TTC sont corrects (test unitaire)
+- [x] Le taux et le montant de TVA par ligne proviennent des `tax_lines` de la commande, pas d'un recalcul
+- [x] Le total TTC du `frozen_data` égale le montant censé être encaissé
+- [x] La config émetteur (SIREN, TVA intracom, capital, RCS…) est résolue depuis une source modifiable sans redéploiement, et ses valeurs apparaissent dans `frozen_data`
+- [x] `buildInvoiceDocDefinition` produit un docDefinition portant numéro, mentions émetteur, adresse de facturation client, ventilation TVA et totaux (test unitaire, `src/**/__tests__/*.unit.spec.ts`)
+- [x] Le docDefinition se rend en PDF via `render.ts` sans erreur

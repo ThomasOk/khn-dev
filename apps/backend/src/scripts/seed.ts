@@ -24,6 +24,8 @@ import {
 } from "@medusajs/medusa/core-flows";
 import { PICKUP_MODULE } from "../modules/pickup";
 import PickupModuleService from "../modules/pickup/service";
+import { INVOICE_MODULE } from "../modules/invoice";
+import InvoiceModuleService from "../modules/invoice/service";
 
 export default async function seed({
   container,
@@ -1002,4 +1004,28 @@ export default async function seed({
     });
   }
   logger.info("Finished seeding pickup schedule and configuration.");
+
+  logger.info("Seeding Facture issuer configuration...");
+  // The Facture's legal mentions (ticket 02), resolved from this row rather
+  // than an env var so a change never needs a deploy. These values ARE
+  // placeholders on purpose — same "Configuration, not a constant" spirit as
+  // pickup's defaults above; a comptable must confirm the real SIREN/RCS/
+  // capital before production.
+  const invoiceModuleService: InvoiceModuleService =
+    container.resolve(INVOICE_MODULE);
+
+  const [existingIssuerConfig] = await invoiceModuleService.listIssuerConfigs();
+  if (!existingIssuerConfig) {
+    await invoiceModuleService.createIssuerConfigs({
+      legal_name: "Kim-Hi Noodle SASU",
+      address: "12 rue de la Paix, 75002 Paris",
+      siren: "123456789",
+      siret: "12345678900012",
+      vat_number: "FR12123456789",
+      legal_form: "SASU",
+      share_capital: "10 000 €",
+      rcs_city: "Paris",
+    });
+  }
+  logger.info("Finished seeding Facture issuer configuration.");
 }

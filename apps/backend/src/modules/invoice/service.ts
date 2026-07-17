@@ -8,6 +8,7 @@ import { Context } from "@medusajs/framework/types"
 import { EntityManager } from "@medusajs/framework/mikro-orm/knex"
 import Invoice from "./models/invoice"
 import InvoiceCounter from "./models/invoice-counter"
+import IssuerConfig from "./models/issuer-config"
 import { formatInvoiceNumber } from "../../lib/invoice/format-invoice-number"
 
 type IssueInvoiceInput = {
@@ -18,10 +19,12 @@ type IssueInvoiceInput = {
 
 // The gapless numbering guarantee (ADR 0002, spec §"Attribution atomique du
 // numéro") lives entirely in issueInvoice. It is the module's one
-// transactional method; everything else stays plain CRUD.
+// transactional method; everything else stays plain CRUD — including
+// IssuerConfig, a single-row settings table (spec §"frozen_data").
 class InvoiceModuleService extends MedusaService({
   Invoice,
   InvoiceCounter,
+  IssuerConfig,
 }) {
   @InjectManager()
   async issueInvoice(
