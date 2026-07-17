@@ -9,6 +9,10 @@ const PickupConfig = model.define("pickup_config", {
   prep_delay_minutes: model.number(),
   // Slicing step of a Horaire's window.
   slot_duration_minutes: model.number(),
+  // Recipient of the Notification de commande — a restaurant property, not a
+  // technical env var, so it can change without a deploy (ticket 03). Nullable:
+  // an existing Configuration row predates this field, and nothing reads it yet.
+  restaurant_notification_email: model.text().nullable(),
 })
 
 export default PickupConfig

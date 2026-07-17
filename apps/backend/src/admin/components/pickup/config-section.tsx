@@ -21,7 +21,7 @@ import type { PickupConfig } from "../../lib/pickup"
 export const ConfigSection = () => {
   const queryClient = useQueryClient()
   const [open, setOpen] = useState(false)
-  const [form, setForm] = useState({ prep: "", slot: "" })
+  const [form, setForm] = useState({ prep: "", slot: "", email: "" })
   const [errors, setErrors] = useState<{ prep?: string; slot?: string }>({})
 
   const { data, isLoading } = useQuery({
@@ -38,6 +38,7 @@ export const ConfigSection = () => {
       setForm({
         prep: config ? String(config.prep_delay_minutes) : "",
         slot: config ? String(config.slot_duration_minutes) : "",
+        email: config?.restaurant_notification_email ?? "",
       })
       setErrors({})
     }
@@ -47,6 +48,7 @@ export const ConfigSection = () => {
     mutationFn: (body: {
       prep_delay_minutes: number
       slot_duration_minutes: number
+      restaurant_notification_email: string | null
     }) =>
       sdk.client.fetch("/admin/pickup/config", { method: "POST", body }),
     onSuccess: () => {
@@ -62,6 +64,7 @@ export const ConfigSection = () => {
   const handleSubmit = () => {
     const prep = Number(form.prep)
     const slot = Number(form.slot)
+    const email = form.email.trim()
     const nextErrors: { prep?: string; slot?: string } = {}
     if (!Number.isInteger(prep) || prep < 0) {
       nextErrors.prep = "Enter a whole number of minutes (0 or more)"
@@ -73,7 +76,11 @@ export const ConfigSection = () => {
       setErrors(nextErrors)
       return
     }
-    save.mutate({ prep_delay_minutes: prep, slot_duration_minutes: slot })
+    save.mutate({
+      prep_delay_minutes: prep,
+      slot_duration_minutes: slot,
+      restaurant_notification_email: email || null,
+    })
   }
 
   return (
@@ -107,6 +114,11 @@ export const ConfigSection = () => {
               }
               hint="The step a pickup window is sliced into."
             />
+            <Row
+              label="Notification email"
+              value={config?.restaurant_notification_email ?? "Not set yet"}
+              hint="Where order notifications for the restaurant are sent."
+            />
           </>
         )}
       </div>
@@ -137,6 +149,19 @@ export const ConfigSection = () => {
               error={errors.slot}
               min={1}
             />
+            <div className="flex flex-col gap-y-2">
+              <Label size="small" weight="plus">
+                Notification email
+              </Label>
+              <Input
+                type="email"
+                placeholder="restaurant@example.com"
+                value={form.email}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, email: e.target.value }))
+                }
+              />
+            </div>
           </Drawer.Body>
           <Drawer.Footer>
             <Drawer.Close asChild>
