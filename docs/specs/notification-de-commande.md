@@ -6,7 +6,8 @@ Décisions amont, à lire avant d'implémenter — ce spec ne les rejoue pas :
 [la recherche Medusa](../research/2026-07-16-medusa-notification-commande-ticket-cuisine.md) (toutes les citations de source, §6 fait autorité sur §2/§4),
 [ADR 0002](../adr/0002-factures-issued-frozen.md) (pdfmake déjà choisi pour la Facture, et le piège d'API 0.2→0.3),
 [ADR 0004](../adr/0004-creneau-in-order-metadata.md) (le créneau vit dans `order.metadata`),
-et le glossaire dans [CONTEXT.md](../../CONTEXT.md) (Ticket cuisine, Notification de commande, Facture).
+[ADR 0005](../adr/0005-formule-curation-via-module-selection-via-metadata.md) et [le spec Formules](formules.md) (la Sélection vit en clés plates sur `line_item.metadata`, une par Composant — la forme de données que ce spec lit désormais),
+et le glossaire dans [CONTEXT.md](../../CONTEXT.md) (Ticket cuisine, Notification de commande, Facture, Formule, Composant, Sélection).
 
 ## Problem Statement
 
@@ -16,7 +17,7 @@ Et même informé, le restaurateur n'a rien à donner à la cuisine. Le seul doc
 
 ## Solution
 
-**Pour le restaurateur.** À chaque commande payée, un second email arrive — distinct de la confirmation client — avec en pièce jointe un PDF au format 80mm prêt à imprimer sur l'imprimante à ticket du comptoir. Le corps de l'email donne, sans ouvrir la pièce jointe, le nom du client, le numéro de commande et le Créneau de retrait — de quoi juger en un coup d'œil s'il faut se presser. Le ticket lui-même ne porte ni prix ni total : seulement ce que la cuisine doit préparer, dans l'ordre où elle doit le lire, sans jamais séparer un plat de son assaisonnement ou d'un allergène par une coupure de page.
+**Pour le restaurateur.** À chaque commande payée, un second email arrive — distinct de la confirmation client — avec en pièce jointe un PDF au format 80mm prêt à imprimer sur l'imprimante à ticket du comptoir. Le corps de l'email donne, sans ouvrir la pièce jointe, le nom du client, le numéro de commande et le Créneau de retrait — de quoi juger en un coup d'œil s'il faut se presser. Le ticket lui-même ne porte ni prix ni total : seulement ce que la cuisine doit préparer, dans l'ordre où elle doit le lire, sans jamais séparer un plat de son assaisonnement ou d'un allergène par une coupure de page. Pour une ligne Formule, le ticket affiche son nom puis, groupée juste en dessous, la Sélection retenue pour chaque Composant — quelle entrée, quel plat — exactement ce que CONTEXT.md exige du Ticket cuisine (« chaque Variante par son nom, et chaque Sélection à l'intérieur d'une Formule »).
 
 **Pour le client.** Rien ne change. La confirmation de commande part exactement comme avant ; si la génération du ticket cuisine échoue, l'email du client part quand même.
 
@@ -46,15 +47,16 @@ Et même informé, le restaurateur n'a rien à donner à la cuisine. Le seul doc
 
 13. En tant que cuisinier, je veux lire le ticket de haut en bas sans tourner de page pour connaître un ingrédient ou un allergène, afin de ne jamais servir un plat sans avoir vu ce qui l'accompagne.
 14. En tant que cuisinier, je veux que le Créneau soit la première chose que je lise sur le ticket, afin de savoir immédiatement pour quand cuisiner.
+15. En tant que cuisinier, je veux voir, sous le nom de chaque Formule commandée, la Sélection retenue pour chaque Composant — quelle entrée, quel plat —, afin de savoir exactement quoi assembler sans deviner depuis le seul nom générique de la Formule.
 
 **Le développeur / celui qui reprendra le code**
 
-15. En tant que développeur, je veux que l'échec de génération du PDF ou d'envoi de l'email soit journalisé mais jamais remonté au client, afin de diagnostiquer un problème sans jamais faire échouer une commande déjà payée.
-16. En tant que développeur, je veux une clé d'idempotence sur chaque notification envoyée depuis `order.placed`, afin qu'un rejeu de l'événement n'envoie jamais deux fois le même ticket au restaurateur ni la même confirmation au client.
-17. En tant que développeur, je veux que le mapping entre l'`Attachment` de Medusa et celui du SDK Resend soit une fonction explicite et testée, afin qu'un renommage de champ dans l'un des deux SDKs casse un test plutôt qu'un email en production.
-18. En tant que développeur, je veux que la génération du PDF soit une fonction pure testable sans base de données, afin de vérifier la largeur, la hauteur automatique et le contenu textuel du ticket sans monter toute l'infrastructure d'intégration.
-19. En tant que développeur, je veux que ce spec explicite pourquoi le ticket n'affiche pas encore les Sélections de Formule, afin que la feature qui les introduit sache exactement quoi étendre plutôt que de redécouvrir la question elle-même.
-20. En tant que développeur, je veux que la version de `pdfmake` soit épinglée explicitement dans `package.json`, afin qu'un `pnpm add` ultérieur ne bascule pas silencieusement entre l'API 0.2 (`PdfPrinter`) et l'API singleton 0.3.
+16. En tant que développeur, je veux que l'échec de génération du PDF ou d'envoi de l'email soit journalisé mais jamais remonté au client, afin de diagnostiquer un problème sans jamais faire échouer une commande déjà payée.
+17. En tant que développeur, je veux une clé d'idempotence sur chaque notification envoyée depuis `order.placed`, afin qu'un rejeu de l'événement n'envoie jamais deux fois le même ticket au restaurateur ni la même confirmation au client.
+18. En tant que développeur, je veux que le mapping entre l'`Attachment` de Medusa et celui du SDK Resend soit une fonction explicite et testée, afin qu'un renommage de champ dans l'un des deux SDKs casse un test plutôt qu'un email en production.
+19. En tant que développeur, je veux que la génération du PDF soit une fonction pure testable sans base de données, afin de vérifier la largeur, la hauteur automatique et le contenu textuel du ticket sans monter toute l'infrastructure d'intégration.
+20. En tant que développeur, je veux que le ticket lise la Sélection directement sur `order.items[].metadata` (clés `formule_<key>_variant_id`, ADR 0005) et résolve le `label` du Composant et le nom de la Variante via la Curation, avec un repli sur l'id brut si la Curation ne répond plus pour un Composant ou une Variante — le même principe que le widget admin de la commande (spec Formules, User Story 17) — afin qu'un changement de Curation entre le paiement et l'impression n'efface jamais une ligne que la cuisine doit préparer.
+21. En tant que développeur, je veux que la version de `pdfmake` soit épinglée explicitement dans `package.json`, afin qu'un `pnpm add` ultérieur ne bascule pas silencieusement entre l'API 0.2 (`PdfPrinter`) et l'API singleton 0.3.
 
 ## Implementation Decisions
 
@@ -78,9 +80,15 @@ Le template `kitchen-ticket` (`apps/backend/src/lib/pdf/kitchen-ticket.ts`, une 
 
 1. **Le Créneau de retrait**, en tête, en gras, plus grand que le reste — c'est l'information qui ordonne le travail. `orecap.pdf` le noyait en 4ᵉ ligne dans la même graisse qu'`Email:`.
 2. **Le nom du client** et son **téléphone**.
-3. **Chaque ligne de commande** : nom de la Variante, quantité, et tout texte d'assaisonnement/allergène **dans le même bloc**, jamais dans une ligne séparée qui pourrait finir sur une autre page.
+3. **Chaque ligne de commande** : nom de la Variante, quantité, et tout texte d'assaisonnement/allergène **dans le même bloc**, jamais dans une ligne séparée qui pourrait finir sur une autre page. Pour une ligne Formule, le bloc est : le nom de la Formule (ex. « Menu Midi »), puis, indentée juste en dessous, la Sélection de chaque Composant — `label` → nom de la Variante — dans l'ordre de rang des Composants, jamais dans l'ordre technique des clés de `metadata`.
 
 **Explicitement absent** : email, prix unitaire, total, tout ce qui appartient à la Facture. Texte **ferré à gauche**, pas centré — `orecap.pdf` centre son texte dans une colonne étroite, ce qui rend le bord gauche en dents de scie et illisible en diagonale pendant un coup de feu.
+
+### La Sélection de Formule sur le ticket
+
+`order.items[].metadata` porte la Sélection en clés plates, une par Composant — `formule_<key>_variant_id: "variant_…"` (ADR 0005) — jamais le `label` du Composant ni le nom de la Variante choisie : ceux-ci vivent dans la Curation, pas dans la Sélection. Contrairement au widget admin de la commande (spec Formules, ticket 05), qui tourne dans le navigateur et doit repasser par une route HTTP pour lire la Curation, ce subscriber tourne côté serveur avec un accès direct au `container` : il résout le Composant et la Variante avec `getFormuleCurationForVariant` (`src/lib/formule/get-curation-for-variant.ts`), déjà écrit pour les hooks de validation — pas de nouvel appel réseau, pas de duplication de cette résolution.
+
+Le même repli que le widget admin s'applique ici, pour la même raison : la Curation peut changer entre le paiement (où la Sélection a été validée pour la dernière fois, `completeCartWorkflow.hooks.validate`) et la génération du ticket — une fenêtre étroite mais réelle. Si un Composant ou une Variante ne se résout plus dans la Curation actuelle, le ticket affiche l'id brut plutôt que de faire disparaître la ligne : une Sélection illisible que la cuisine peut encore déchiffrer vaut mieux qu'une Sélection invisible qu'elle ne peut pas deviner.
 
 ### L'adresse email du restaurant : configuration `pickup`, pas variable d'environnement
 
@@ -96,7 +104,6 @@ Le provider `resend-notification` (`service.ts`) ne connaît pas `attachments` a
 
 ### Ce qui est explicitement rejeté
 
-- **Les Sélections de Formule sur le ticket, pour l'instant.** Vérifié par recherche dans le code (`apps/backend/src`, `apps/storefront/src`) : aucune Formule ni Composant ni Sélection n'est implémenté aujourd'hui, seulement l'ADR 0001 qui décide sans construire. Le ticket affiche donc les mêmes champs que `order-confirmation.ts` lit déjà (`items.title`, `items.variant_title`, `items.quantity`) — rien de plus, parce qu'il n'y a rien de plus à afficher. **Le prochain slice, les Sélections de Formule, devra revisiter `kitchen-ticket.ts`** pour y ajouter chaque Sélection sous sa Formule, exactement comme CONTEXT.md le décrit (« chaque Variante par son nom, et chaque Sélection à l'intérieur d'une Formule »). Ce spec ne fait volontairement rien pour anticiper cette forme de données pas encore modélisée.
 - **Un provider Resend factice enregistré en test.** Nouvelle infra non nécessaire — voir Testing Decisions pour le seam retenu à la place.
 - **Une route admin pour réimprimer le ticket.** L'attachment n'est jamais archivé (recherche §1.2, le modèle `notification` n'a pas de colonne `attachments`) ; une route `GET /admin/orders/:id/kitchen-ticket` réutilisant le même template fermerait cette boucle, mais c'est un prolongement, pas ce spec.
 
@@ -114,6 +121,8 @@ Assertions sur le buffer produit, par lecture directe du PDF (comme dans la rech
 - **le contenu textuel attendu est présent** — nom du client, Créneau, chaque plat et son allergène, dans cet ordre. Extraction de texte via `pdf-parse` (nouvelle devDependency, pure JS, aucun binaire système) plutôt qu'une lecture visuelle — c'est ce qui rend l'assertion reproductible en CI.
 - **aucun prix, aucun total** n'apparaît dans le texte extrait.
 - **les accents survivent** — un plat nommé « Bœuf » dans le texte extrait, pas « Buf » ni un caractère de remplacement.
+- **une ligne Formule affiche sa Sélection** — le nom de la Formule suivi du `label` de chaque Composant et du nom de la Variante choisie, dans l'ordre de rang des Composants (pas l'ordre des clés de `metadata`) ; fixture construite comme dans `src/lib/formule/__tests__/validate-selection.unit.spec.ts` (une Curation, une Sélection valide dessus), pas une base réelle.
+- **une Sélection dont la Curation ne répond plus affiche l'id brut de la Variante** plutôt que de faire disparaître la ligne — mirroir de `resolveFormuleSelectionEntries` (`apps/backend/src/admin/lib/formule.ts`), même repli, même raison.
 
 ### Seam 2 — le mapping Resend, en test unitaire pur
 
@@ -133,7 +142,6 @@ Le rendu de l'email HTML (`kitchen-ticket-notification.tsx`) — react-email, co
 
 ## Out of Scope
 
-- **Les Sélections de Formule sur le ticket.** Traité en détail ci-dessus — hors périmètre parce que rien ne les produit encore dans le code. Slice suivant, par décision explicite de l'utilisateur.
 - **La Facture.** ADR 0002 en résout déjà les questions dures ; ce spec ne fait qu'aligner son choix de moteur PDF sur cette future implémentation, pas l'implémenter.
 - **La réimpression du ticket depuis l'admin.** Prolongement naturel une fois ce spec en place, pas ce spec.
 - **Tout pilotage direct d'imprimante.** Le ticket est un PDF que le restaurateur imprime lui-même depuis l'email — jamais un flux qui parle à l'imprimante.
@@ -141,6 +149,6 @@ Le rendu de l'email HTML (`kitchen-ticket-notification.tsx`) — react-email, co
 
 ## Further Notes
 
-Ce spec dépend d'une décision que la feature suivante devra prendre au sérieux : **où vit une Sélection de Formule sur la ligne de commande**, une fois les Formules construites. Le choix de cette forme de données déterminera comment `kitchen-ticket.ts` doit être étendu — mieux vaut que la future spec des Sélections de Formule le pose comme exigence dès le départ (« doit pouvoir alimenter un ticket cuisine ») plutôt que de le découvrir après coup.
+La question que ce spec posait à la feature Formules — où vit une Sélection sur la ligne de commande, sous une forme qui puisse alimenter un ticket cuisine — est tranchée par ADR 0005 : `line_item.metadata`, une clé plate par Composant. Ce spec en est le premier lecteur réel.
 
 Le point signalé en Testing Decisions (accès réseau sortant vers Resend en test) mérite d'être vérifié tôt dans l'implémentation — avant d'écrire les autres tests du Seam 3, pas après.
