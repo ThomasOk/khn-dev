@@ -5,6 +5,23 @@ export type FormuleSelectionEntry = {
   variantTitle: string
 }
 
+// The query-param key the payment step's redirect and the cart page's
+// recovery banner must agree on. Named once for the same reason as
+// PICKUP_SLOT_ERROR_PARAM (lib/util/pickup-slot.ts).
+export const FORMULE_SELECTION_ERROR_PARAM = "formule_selection_error"
+
+// completeCartWorkflow's validate hook (apps/backend/src/workflows/hooks/
+// complete-cart.ts, extended by src/lib/formule/assert-valid-selection.ts)
+// is the only place in the app that raises an error naming a "Sélection" —
+// matching on it is how the storefront tells a rejected Sélection apart from
+// any other completion failure, without the two apps sharing an error code
+// (same pattern as isPickupSlotValidationError in lib/util/pickup-slot.ts).
+export function isFormuleSelectionValidationError(
+  message: string | null | undefined
+): boolean {
+  return typeof message === "string" && message.includes("Sélection")
+}
+
 // The metadata key a line item's Sélection is written under, one per
 // Composant (ADR 0005): `formule_<key>_variant_id`. Named once so the write
 // (formule-actions) and the read (below) can't drift apart under a rename.

@@ -213,6 +213,14 @@ medusaIntegrationTestRunner({
           [FORMULE_MODULE]: { formule_composant_id: plat.id },
           [Modules.PRODUCT]: { product_variant_id: rizCantonais.id },
         },
+        // Curated for "plat" too, not just "entree" — ticket 04's server
+        // validation checks a Variante against the Curation of the
+        // Composant it was submitted for, so the "same Variante in two
+        // Composants" test below needs it genuinely curated in both.
+        {
+          [FORMULE_MODULE]: { formule_composant_id: plat.id },
+          [Modules.PRODUCT]: { product_variant_id: samoussasBoeuf.id },
+        },
       ])
 
       return {
