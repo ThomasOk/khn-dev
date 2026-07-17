@@ -42,7 +42,10 @@ export type SelectionValidation =
   | { valid: true }
   | { valid: false; rejection: SelectionRejection }
 
-const SELECTION_KEY_PATTERN = /^formule_(.+)_variant_id$/
+// Exported so resolve-selection-entries.ts (same module, no admin/storefront
+// boundary to respect here) can parse the same metadata shape without a
+// second copy of this pattern.
+export const SELECTION_KEY_PATTERN = /^formule_(.+)_variant_id$/
 
 // The flat metadata key a Composant's choice is written under (ADR 0005).
 // Named once so this control and the two hooks that call it can't drift
