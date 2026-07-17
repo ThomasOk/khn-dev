@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import { Heading, Table } from "@modules/common/components/ui"
 
 import Item from "@modules/cart/components/item"
+import FormuleSelectionError from "@modules/cart/components/formule-selection-error"
 import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
 
 type ItemsTemplateProps = {
@@ -18,6 +19,7 @@ const ItemsTemplate = async ({ cart }: ItemsTemplateProps) => {
       <div className="pb-3 flex items-center">
         <Heading className="text-[2rem] leading-[2.75rem]">Cart</Heading>
       </div>
+      <FormuleSelectionError />
       <Table>
         <Table.Header className="border-t-0">
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">

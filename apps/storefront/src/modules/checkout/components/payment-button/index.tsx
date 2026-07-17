@@ -7,10 +7,15 @@ import {
   isPickupSlotValidationError,
   PICKUP_SLOT_ERROR_PARAM,
 } from "@lib/util/pickup-slot"
+import {
+  FORMULE_SELECTION_ERROR_PARAM,
+  isFormuleSelectionValidationError,
+} from "@lib/util/formule-selection"
+import { ClientError } from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
-import { usePathname } from "next/navigation"
+import { useParams, usePathname } from "next/navigation"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
 
@@ -47,18 +52,48 @@ function recoverFromPickupSlotError(
   return true
 }
 
+// The Formule counterpart of the créneau case above: completeCartWorkflow's
+// validate hook (extended by src/lib/formule/assert-valid-selection.ts on
+// the backend) rejected a Sélection whose Curation changed between
+// add-to-cart and payment. Unlike the créneau, there is no single "pick a
+// new one" step to route back to — the fix is on the offending line item
+// itself, in the cart. The rejected line still has its stale Sélection, so
+// recovery is a hard navigation back to the cart with the backend's own
+// message (it already names the Composant and the Formule), where the
+// customer can delete that one line and re-add a corrected Formule without
+// touching the rest of the cart.
+function recoverFromFormuleSelectionError(
+  err: ClientError,
+  countryCode: string
+): boolean {
+  if (!isFormuleSelectionValidationError(err.code)) {
+    return false
+  }
+
+  const params = new URLSearchParams({
+    [FORMULE_SELECTION_ERROR_PARAM]: err.message,
+  })
+  window.location.href = `/${countryCode}/cart?${params.toString()}`
+  return true
+}
+
 // Shared by both payment-button variants below: on a completion failure,
-// either recover from the créneau rejection or fall back to the normal
-// inline error message.
+// recover from the créneau rejection, then the Sélection rejection, or fall
+// back to the normal inline error message.
 function handlePlaceOrderError(
-  err: Error,
+  err: ClientError,
   cart: HttpTypes.StoreCart,
   pathname: string,
+  countryCode: string,
   setErrorMessage: (message: string | null) => void
 ) {
-  if (!recoverFromPickupSlotError(err, cart, pathname)) {
-    setErrorMessage(err.message)
+  if (recoverFromPickupSlotError(err, cart, pathname)) {
+    return
   }
+  if (recoverFromFormuleSelectionError(err, countryCode)) {
+    return
+  }
+  setErrorMessage(err.message)
 }
 
 type PaymentButtonProps = {
@@ -113,10 +148,13 @@ const StripePaymentButton = ({
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const pathname = usePathname()
+  const countryCode = useParams().countryCode as string
 
   const onPaymentCompleted = async () => {
     await placeOrder()
-      .catch((err) => handlePlaceOrderError(err, cart, pathname, setErrorMessage))
+      .catch((err) =>
+        handlePlaceOrderError(err, cart, pathname, countryCode, setErrorMessage)
+      )
       .finally(() => {
         setSubmitting(false)
       })
@@ -217,10 +255,13 @@ const ManualTestPaymentButton = ({
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const pathname = usePathname()
+  const countryCode = useParams().countryCode as string
 
   const onPaymentCompleted = async () => {
     await placeOrder()
-      .catch((err) => handlePlaceOrderError(err, cart, pathname, setErrorMessage))
+      .catch((err) =>
+        handlePlaceOrderError(err, cart, pathname, countryCode, setErrorMessage)
+      )
       .finally(() => {
         setSubmitting(false)
       })
