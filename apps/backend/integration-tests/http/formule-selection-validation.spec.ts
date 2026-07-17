@@ -416,7 +416,10 @@ medusaIntegrationTestRunner({
         ).rejects.toMatchObject({
           response: {
             status: 400,
-            data: { message: expect.stringContaining("Sélection") },
+            data: {
+              code: "formule_selection_invalid",
+              message: expect.stringContaining("Sélection"),
+            },
           },
         })
       })
@@ -442,7 +445,10 @@ medusaIntegrationTestRunner({
         ).rejects.toMatchObject({
           response: {
             status: 400,
-            data: { message: expect.stringContaining("Sélection") },
+            data: {
+              code: "formule_selection_invalid",
+              message: expect.stringContaining("Sélection"),
+            },
           },
         })
       })
@@ -465,7 +471,10 @@ medusaIntegrationTestRunner({
             headersFor(commerce)
           )
         ).rejects.toMatchObject({
-          response: { status: 400 },
+          response: {
+            status: 400,
+            data: { code: "formule_selection_invalid" },
+          },
         })
       })
     })
@@ -506,7 +515,10 @@ medusaIntegrationTestRunner({
         ).rejects.toMatchObject({
           response: {
             status: 400,
-            data: { message: expect.stringContaining("Sélection") },
+            data: {
+              code: "formule_selection_invalid",
+              message: expect.stringContaining("Sélection"),
+            },
           },
         })
       })
@@ -532,7 +544,10 @@ medusaIntegrationTestRunner({
         ).rejects.toMatchObject({
           response: {
             status: 400,
-            data: { message: expect.stringContaining("Sélection") },
+            data: {
+              code: "formule_selection_invalid",
+              message: expect.stringContaining("Sélection"),
+            },
           },
         })
 

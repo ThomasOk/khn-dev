@@ -10,16 +10,18 @@ export type FormuleSelectionEntry = {
 // PICKUP_SLOT_ERROR_PARAM (lib/util/pickup-slot.ts).
 export const FORMULE_SELECTION_ERROR_PARAM = "formule_selection_error"
 
-// completeCartWorkflow's validate hook (apps/backend/src/workflows/hooks/
-// complete-cart.ts, extended by src/lib/formule/assert-valid-selection.ts)
-// is the only place in the app that raises an error naming a "Sélection" —
-// matching on it is how the storefront tells a rejected Sélection apart from
-// any other completion failure, without the two apps sharing an error code
-// (same pattern as isPickupSlotValidationError in lib/util/pickup-slot.ts).
+// Must match FORMULE_SELECTION_INVALID_CODE in apps/backend/src/lib/formule/
+// assert-valid-selection.ts — the `code` MedusaError carries end to end for
+// a rejected Sélection (completeCartWorkflow.hooks.validate, extended
+// there). Matching on this stable code, not on the free-form `message` text,
+// is how the storefront tells a rejected Sélection apart from any other
+// completion failure without the two apps sharing more than one string.
+const FORMULE_SELECTION_INVALID_CODE = "formule_selection_invalid"
+
 export function isFormuleSelectionValidationError(
-  message: string | null | undefined
+  code: string | null | undefined
 ): boolean {
-  return typeof message === "string" && message.includes("Sélection")
+  return code === FORMULE_SELECTION_INVALID_CODE
 }
 
 // The metadata key a line item's Sélection is written under, one per

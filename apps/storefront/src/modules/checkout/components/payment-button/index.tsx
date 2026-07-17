@@ -11,6 +11,7 @@ import {
   FORMULE_SELECTION_ERROR_PARAM,
   isFormuleSelectionValidationError,
 } from "@lib/util/formule-selection"
+import { ClientError } from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
@@ -62,10 +63,10 @@ function recoverFromPickupSlotError(
 // customer can delete that one line and re-add a corrected Formule without
 // touching the rest of the cart.
 function recoverFromFormuleSelectionError(
-  err: Error,
+  err: ClientError,
   countryCode: string
 ): boolean {
-  if (!isFormuleSelectionValidationError(err.message)) {
+  if (!isFormuleSelectionValidationError(err.code)) {
     return false
   }
 
@@ -80,7 +81,7 @@ function recoverFromFormuleSelectionError(
 // recover from the créneau rejection, then the Sélection rejection, or fall
 // back to the normal inline error message.
 function handlePlaceOrderError(
-  err: Error,
+  err: ClientError,
   cart: HttpTypes.StoreCart,
   pathname: string,
   countryCode: string,
