@@ -14,6 +14,7 @@ import {
 import { PICKUP_MODULE } from "../../src/modules/pickup"
 import { FORMULE_MODULE } from "../../src/modules/formule"
 import { parisDayOfWeek } from "./paris-time"
+import { waitForOrderPlacedToSettle } from "./wait-for-order-placed"
 
 // Ticket 03's seam: everything ticket 02 proved on the cart alone now has to
 // survive POST /store/carts/:id/complete against a real disposable Postgres.
@@ -358,6 +359,24 @@ medusaIntegrationTestRunner({
       return { cartId, headers }
     }
 
+    // This suite's Configuration du retrait carries no
+    // restaurant_notification_email, so kitchen-ticket-notification only
+    // performs reads before returning early — no write, no deadlock risk
+    // from it here. order-confirmation still writes a notification row, and
+    // auto-capture-payment still writes the payment capture;
+    // waitForOrderPlacedToSettle waits on both (see its own comment for why
+    // a plain waitWorkflowExecutions() isn't enough).
+    async function waitForOrderPlacedSubscribersToSettle(orderId: string) {
+      const { capturedAt, notifications } = await waitForOrderPlacedToSettle(
+        getContainer(),
+        orderId,
+        { minNotifications: 1 }
+      )
+      expect(capturedAt).not.toBeNull()
+      expect(notifications.length).toBeGreaterThanOrEqual(1)
+      expect(notifications.every((n: any) => n.status !== "pending")).toBe(true)
+    }
+
     describe("POST /store/carts/:id/complete — Formule Sélection", () => {
       it("the most precious test: a valid Sélection survives verbatim onto order.items[].metadata", async () => {
         const commerce = await setUpCommerce()
@@ -383,9 +402,7 @@ medusaIntegrationTestRunner({
         expect(completeData.order.items).toHaveLength(1)
         expect(completeData.order.items[0].metadata).toEqual(selection)
 
-        // order.placed triggers an async auto-capture-payment subscriber; wait
-        // for it so it does not race the runner's between-test DB teardown.
-        await utils.waitWorkflowExecutions()
+        await waitForOrderPlacedSubscribersToSettle(completeData.order.id)
       })
 
       it("two identical Formules with different Sélections remain two distinct lines, never merged", async () => {
@@ -430,7 +447,7 @@ medusaIntegrationTestRunner({
           expect.arrayContaining([selectionA, selectionB])
         )
 
-        await utils.waitWorkflowExecutions()
+        await waitForOrderPlacedSubscribersToSettle(completeData.order.id)
       })
     })
   },

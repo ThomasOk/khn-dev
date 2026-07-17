@@ -1,17 +1,6 @@
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
-
-// Medusa v2 BigNumber objects serialize to {value, numeric} through JSON.
-// This helper extracts a plain number from any representation.
-function toNum(val: unknown): number {
-  if (val == null) return 0
-  if (typeof val === "object" && val !== null) {
-    if ("numeric" in val && typeof (val as any).numeric === "number") return (val as any).numeric
-    if ("value" in val) return Number((val as any).value)
-  }
-  const n = Number(val)
-  return isNaN(n) ? 0 : n
-}
+import { toNum } from "../lib/order/to-num"
 
 export default async function sendOrderConfirmationEmail({
   event: { data },
@@ -86,6 +75,9 @@ export default async function sendOrderConfirmationEmail({
       to: order.email,
       template: "order-confirmation",
       channel: "email",
+      // order.placed can be replayed; the Notification module dedupes
+      // natively on idempotency_key, so a replay never sends a second copy.
+      idempotency_key: `order-confirmation:${order.id}`,
       data: {
         order_id: order.display_id,
         created_at: String(order.created_at),

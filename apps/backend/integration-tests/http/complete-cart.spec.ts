@@ -18,6 +18,7 @@ import {
   hhmm,
   toParisIso,
 } from "./paris-time"
+import { waitForOrderPlacedToSettle } from "./wait-for-order-placed"
 
 // Seam 1 of the spec, on the single point that matters most: POST
 // /store/carts/:id/complete. `cart.metadata` is written by the client through a
@@ -389,9 +390,21 @@ medusaIntegrationTestRunner({
           chosenSlot.end
         )
 
-        // order.placed triggers an async auto-capture-payment subscriber; wait
-        // for it so it does not race the runner's between-test DB teardown.
-        await utils.waitWorkflowExecutions()
+        // This test's Configuration du retrait carries no
+        // restaurant_notification_email, so kitchen-ticket-notification only
+        // performs reads before returning early — no write, no deadlock
+        // risk from it here. order-confirmation still writes a notification
+        // row, and auto-capture-payment still writes the payment capture;
+        // waitForOrderPlacedToSettle waits on both (see its own comment for
+        // why a plain waitWorkflowExecutions() isn't enough).
+        const { capturedAt, notifications } = await waitForOrderPlacedToSettle(
+          getContainer(),
+          completeData.order.id,
+          { minNotifications: 1 }
+        )
+        expect(capturedAt).not.toBeNull()
+        expect(notifications.length).toBeGreaterThanOrEqual(1)
+        expect(notifications.every((n: any) => n.status !== "pending")).toBe(true)
       })
     })
   },
