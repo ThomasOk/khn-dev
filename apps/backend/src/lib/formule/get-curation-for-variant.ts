@@ -1,10 +1,40 @@
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
 import type { MedusaContainer } from "@medusajs/framework/types"
-import { FormuleCuration } from "./validate-selection"
+import { FormuleComposantCuration } from "./validate-selection"
 
-export type ResolvedFormuleCuration = FormuleCuration & {
+// A curated Variante's readable name, for the Ticket cuisine: a cuisinier
+// doesn't prepare a `variant_01H…`. Server-side pendant of admin/lib/
+// formule.ts's variantDisplayName — not an import, per the admin/lib
+// convention of not reaching outside src/admin (admin/lib/pickup.ts mirrors
+// the storefront's key format the same way rather than importing it).
+export type CuratedVariantName = {
+  id: string
+  name: string
+}
+
+// Adds the Composant's rank and each curated Variante's readable name on top
+// of the membership-only shape validateFormuleSelection needs (Seam 1) — the
+// Ticket cuisine (ticket 05) must display the Sélection in rank order with
+// readable names, not just judge it.
+export type ResolvedFormuleComposantCuration = FormuleComposantCuration & {
+  rank: number
+  curatedVariants: CuratedVariantName[]
+}
+
+export type ResolvedFormuleCuration = {
   productId: string
   productTitle: string
+  composants: ResolvedFormuleComposantCuration[]
+}
+
+function curatedVariantName(variant: {
+  title: string
+  product?: { title: string } | null
+}): string {
+  if (variant.product?.title) {
+    return `${variant.product.title} — ${variant.title}`
+  }
+  return variant.title
 }
 
 // Resolves the same projection as GET /store/formules/:product_id
@@ -36,7 +66,10 @@ export async function getFormuleCurationForVariant(
       "product_id",
       "composants.key",
       "composants.label",
+      "composants.rank",
       "composants.product_variants.id",
+      "composants.product_variants.title",
+      "composants.product_variants.product.title",
     ],
     filters: { product_id: productId },
   })
@@ -57,9 +90,14 @@ export async function getFormuleCurationForVariant(
     composants: formule.composants.map((composant) => ({
       key: composant!.key,
       label: composant!.label,
+      rank: composant!.rank,
       curatedVariantIds: (composant!.product_variants ?? []).map(
         (variant) => variant!.id
       ),
+      curatedVariants: (composant!.product_variants ?? []).map((variant) => ({
+        id: variant!.id,
+        name: curatedVariantName(variant!),
+      })),
     })),
   }
 }
