@@ -17,9 +17,9 @@ Contours :
 
 **Status:** ready-for-agent
 
-- [ ] `issueInvoice` appelée en parallèle (`Promise.all`) sur N commandes distinctes produit N numéros formant `1..N`, contigus, sans trou, sans doublon (test module integration, `medusaIntegrationTestRunner`, vrai Postgres)
-- [ ] Un `issueInvoice` dont la transaction échoue après l'`UPDATE` ne laisse aucun trou : le numéro n'est pas consommé
-- [ ] `issueInvoice` appelée deux fois pour le même `order_id` retourne une seule `Invoice`, un seul numéro
-- [ ] Émettre sur deux années distinctes crée deux lignes `InvoiceCounter`, chacune repartant de 1 ; `(year, number)` est unique
-- [ ] Le numéro formaté suit `F-2026-000123` (test unitaire du formateur, sous `src/**/__tests__/*.unit.spec.ts`)
-- [ ] La migration crée les tables + contraintes ; le Module Link `invoice ↔ order` est défini
+- [x] `issueInvoice` appelée en parallèle (`Promise.all`) sur N commandes distinctes produit N numéros formant `1..N`, contigus, sans trou, sans doublon (test module integration, `medusaIntegrationTestRunner`, vrai Postgres)
+- [x] Un `issueInvoice` dont la transaction échoue après l'`UPDATE` ne laisse aucun trou : le numéro n'est pas consommé
+- [x] `issueInvoice` appelée deux fois pour le même `order_id` retourne une seule `Invoice`, un seul numéro
+- [x] Émettre sur deux années distinctes crée deux lignes `InvoiceCounter`, chacune repartant de 1 ; `(year, number)` est unique
+- [x] Le numéro formaté suit `F-2026-000123` (test unitaire du formateur, sous `src/**/__tests__/*.unit.spec.ts`)
+- [x] La migration crée les tables + contraintes ; le Module Link `invoice ↔ order` est défini
