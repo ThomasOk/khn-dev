@@ -104,7 +104,7 @@ Le provider `resend-notification` (`service.ts`) ne connaît pas `attachments` a
 
 ### Ce qui est explicitement rejeté
 
-- **Un provider Resend factice enregistré en test.** Nouvelle infra non nécessaire — voir Testing Decisions pour le seam retenu à la place.
+- **Un provider Resend factice enregistré en test.** Nouvelle infra non nécessaire — et le ticket 01 l'a **vérifié par l'expérience** plutôt que supposé : sans clé, l'app démarre, la ligne `notification` est persistée et aucun appel réseau ne part. Voir Testing Decisions, Seam 3, pour le détail mesuré.
 - **Une route admin pour réimprimer le ticket.** L'attachment n'est jamais archivé (recherche §1.2, le modèle `notification` n'a pas de colonne `attachments`) ; une route `GET /admin/orders/:id/kitchen-ticket` réutilisant le même template fermerait cette boucle, mais c'est un prolongement, pas ce spec.
 
 ## Testing Decisions
@@ -134,7 +134,19 @@ Réutilise la fixture de commerce déjà écrite dans `complete-cart.spec.ts` (c
 
 L'assertion ne porte **pas** sur le contenu réellement envoyé à Resend — la recherche (§1.2) a montré que le modèle `notification` ne persiste jamais `attachments`, et lire le code du module (`notification-module-service.js:82-108`) montre que la ligne `notification` est **insérée puis mise à jour avec son statut, que l'envoi au provider réussisse ou échoue** ; l'erreur n'est levée qu'après cette persistance. Le test résout `Modules.NOTIFICATION` depuis le container et vérifie qu'**exactement deux notifications existent** pour la commande : une `channel: "email"` / `template: "order-confirmation"` vers l'email du client, une `channel: "email"` / `template: "kitchen-ticket-notification"` vers l'adresse du restaurant configurée — sans dépendre de la valeur de `status`.
 
-**Point à trancher avant d'implémenter ce seam, signalé plutôt que décidé ici** : cette approche déclenche un vrai appel réseau vers l'API Resend pendant les tests (avec échouera probablement faute de clé valide dans `.env.test`, ce qui est acceptable pour l'assertion ci-dessus mais dépend que l'environnement de test ait un accès réseau sortant, ce que ni ce spec ni la recherche n'ont vérifié pour l'environnement CI de ce repo). Si l'accès réseau sortant en test s'avère indisponible ou indésirable, la solution de repli est un provider Resend factice sous `NODE_ENV=test` dans `medusa-config.ts` — explicitement rejetée ci-dessus comme coût à ne pas payer par défaut, mais à reconsidérer si ce seam échoue en pratique.
+**Tranché par l'expérience (ticket 01) : le seam tient tel qu'écrit, sans provider factice.** La question — que se passe-t-il quand `order.placed` part sans clé Resend valide ? — a été mesurée en exécutant un test d'intégration HTTP jetable qui complète réellement un panier sur une base disposable, dans les deux environnements qui existent :
+
+- **Sans clé du tout** — l'environnement de toute machine qui n'a pas de `.env` : `apps/backend/.env` est git-ignoré, donc un clone neuf, et la CI le jour où ce repo en aura une (il n'en a aucune aujourd'hui — pas de `.github/workflows`), tombent dans ce cas. L'app **démarre normalement**. L'erreur du constructeur Resend (`Missing API key`) n'est pas levée au boot mais **paresseusement, à la résolution du provider** — le module notification se charge, et seul l'envoi échoue. La ligne `notification` est **persistée** (`status: "failure"`, `external_id: null`), le subscriber avale l'erreur, le test passe. **Aucun appel réseau sortant n'est émis** : sans clé, le SDK échoue avant de toucher le réseau. Le seam **n'exige donc aucun accès réseau sortant** sur une machine sans clé — c'était la crainte, elle est infondée. Tout est retombé en ~185ms.
+- **Avec une clé bien formée mais invalide** : un vrai appel sortant part vers l'API Resend, revient en 401 (`API key is invalid`) en ~230–430ms, et la ligne finit **exactement dans le même état** (`status: "failure"`). Test vert.
+
+Dans les deux cas la ligne est persistée et le `status` vaut `failure` — ce qui confirme la lecture du module (`createNotifications` insère dans une transaction interne, appelle le provider, puis met à jour le statut dans un `finally`) et **confirme surtout que l'assertion ne doit pas porter sur `status`**, comme déjà écrit ci-dessus.
+
+Le provider factice sous `NODE_ENV=test` **reste rejeté** : il n'achèterait rien que le seam n'ait déjà (pas de réseau requis, pas d'email réellement envoyé), au prix d'une branche d'infrastructure dans `medusa-config.ts`. Le ticket 07 n'a pas à l'implémenter.
+
+**Deux mécaniques à respecter en écrivant ce seam** — l'expérience les a trouvées en échouant dessus, elles n'ont rien à voir avec Resend :
+
+1. **Rien n'attend le subscriber.** `utils.waitWorkflowExecutions()` attend les workflows, **pas les subscribers** : lu juste après le `POST /complete`, le module notification a rendu `0` ligne sur une exécution et une ligne encore `pending` sur une autre. L'assertion « exactement deux notifications » doit **attendre en boucle** que les lignes apparaissent et que leur `status` cesse d'être `pending`, jamais lire une seule fois.
+2. **Finir vite réveille un deadlock de teardown.** Quand le chemin d'envoi est rapide (~185ms, cas sans clé), le test se termine pendant que le subscriber `auto-capture-payment` écrit encore, et le `TRUNCATE` du runner entre deux tests part en **`deadlock detected`** — échec rouge sur **1 exécution sur 3**. Les ~400ms de l'appel réseau masquent le problème par accident, ce qui le rend d'autant plus traître. Le remède, vérifié 4 fois sur 4 : un **second `await utils.waitWorkflowExecutions()` après** la boucle d'attente, pas seulement avant.
 
 ### Volontairement non testé
 
@@ -151,4 +163,6 @@ Le rendu de l'email HTML (`kitchen-ticket-notification.tsx`) — react-email, co
 
 La question que ce spec posait à la feature Formules — où vit une Sélection sur la ligne de commande, sous une forme qui puisse alimenter un ticket cuisine — est tranchée par ADR 0005 : `line_item.metadata`, une clé plate par Composant. Ce spec en est le premier lecteur réel.
 
-Le point signalé en Testing Decisions (accès réseau sortant vers Resend en test) mérite d'être vérifié tôt dans l'implémentation — avant d'écrire les autres tests du Seam 3, pas après.
+Le point qui était signalé en Testing Decisions (accès réseau sortant vers Resend en test) est **tranché** : le ticket 01 l'a mesuré, le seam tient tel quel, aucun provider factice. Le détail — et les deux mécaniques de test qu'il a fallu découvrir pour que le seam soit vert de façon reproductible — vit désormais dans Testing Decisions, Seam 3.
+
+Ce que l'expérience a révélé au passage, sans rapport direct avec ce spec mais utile à qui touchera aux tests : `loadEnv("test", …)` charge **`.env.test` *et* `.env`** (`@medusajs/utils`, `load-env.js`). Les tests d'intégration héritent donc des variables de `.env` sur une machine de dev — dont `RESEND_API_KEY`. Concrètement, `pnpm test` émet aujourd'hui un vrai appel authentifié vers Resend à chaque test qui complète un panier. Sans conséquence en l'état (`RESEND_FROM` est sur `resend.dev`, le domaine partagé de test de Resend, qui refuse d'expédier vers une adresse tierce comme `client@example.com`), mais ça cesserait d'être anodin le jour où `RESEND_FROM` passera sur le domaine réel du restaurant : les tests enverraient alors de vrais emails. C'est ce jour-là — pas avant — que le provider factice sous `NODE_ENV=test` redeviendra la bonne réponse.
