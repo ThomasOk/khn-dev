@@ -1,20 +1,17 @@
 import { AbstractNotificationProviderService, MedusaError } from "@medusajs/framework/utils"
+import type { NotificationTypes } from "@medusajs/framework/types"
 import { render } from "@react-email/render"
 import * as React from "react"
 import { Resend } from "resend"
+import { mapAttachmentsForResend } from "../../lib/resend/map-attachments-for-resend"
 import OrderConfirmationEmail from "./templates/order-confirmation"
 import type { OrderConfirmationEmailProps } from "./templates/order-confirmation"
+import KitchenTicketNotificationEmail from "./templates/kitchen-ticket-notification"
+import type { KitchenTicketNotificationEmailProps } from "./templates/kitchen-ticket-notification"
 
 type Options = {
   apiKey: string
   from: string
-}
-
-type NotificationData = {
-  to: string
-  template: string
-  channel: string
-  data?: Record<string, unknown>
 }
 
 export class ResendNotificationService extends AbstractNotificationProviderService {
@@ -29,7 +26,9 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
     this.from = options.from
   }
 
-  async send(notification: NotificationData) {
+  async send(
+    notification: NotificationTypes.ProviderSendNotificationDTO
+  ): Promise<NotificationTypes.ProviderSendNotificationResultsDTO> {
     const { subject, html } = await this.renderTemplate(
       notification.template,
       notification.data ?? {}
@@ -40,6 +39,9 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
       to: notification.to,
       subject,
       html,
+      attachments: notification.attachments
+        ? mapAttachmentsForResend(notification.attachments)
+        : undefined,
     })
 
     if (error) throw new MedusaError(MedusaError.Types.UNEXPECTED_STATE, error.message)
@@ -57,6 +59,14 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
         const html = await render(React.createElement(OrderConfirmationEmail, props))
         return {
           subject: `Confirmation de commande #${props.order_id}`,
+          html,
+        }
+      }
+      case "kitchen-ticket-notification": {
+        const props = data as unknown as KitchenTicketNotificationEmailProps
+        const html = await render(React.createElement(KitchenTicketNotificationEmail, props))
+        return {
+          subject: `Nouvelle commande #${props.order_id}`,
           html,
         }
       }
