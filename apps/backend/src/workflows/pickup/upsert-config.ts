@@ -15,6 +15,7 @@ import PickupModuleService from "../../modules/pickup/service"
 export type UpsertConfigInput = {
   prep_delay_minutes: number
   slot_duration_minutes: number
+  restaurant_notification_email?: string | null
 }
 
 const upsertConfigStep = createStep(

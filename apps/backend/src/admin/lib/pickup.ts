@@ -20,6 +20,7 @@ export type PickupConfig = {
   id: string
   prep_delay_minutes: number
   slot_duration_minutes: number
+  restaurant_notification_email: string | null
 }
 
 // 0 = Sunday .. 6 = Saturday, matching Date.getDay() and the day_of_week column.

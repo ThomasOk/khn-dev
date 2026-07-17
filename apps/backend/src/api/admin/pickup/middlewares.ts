@@ -54,6 +54,7 @@ export type CreateClosureSchema = z.infer<typeof CreateClosureSchema>
 export const UpsertConfigSchema = z.object({
   prep_delay_minutes: z.number().int().min(0),
   slot_duration_minutes: z.number().int().min(1),
+  restaurant_notification_email: z.string().trim().email().nullish(),
 })
 export type UpsertConfigSchema = z.infer<typeof UpsertConfigSchema>
 
