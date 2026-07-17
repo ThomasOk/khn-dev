@@ -8,6 +8,11 @@ import { INVOICE_MODULE } from "../index"
 
 jest.setTimeout(60 * 1000)
 
+// Mirrors the counterId format in service.ts (spec §"InvoiceCounter — une
+// ligne par année, id = \"facture-2026\"") so assertions don't repeat the
+// template literal at every call site.
+const counterIdForYear = (year: number) => `facture-${year}`
+
 medusaIntegrationTestRunner({
   testSuite: ({ getContainer }) => {
     const invoiceService = () => getContainer().resolve(INVOICE_MODULE) as any
@@ -55,7 +60,7 @@ medusaIntegrationTestRunner({
         ).rejects.toThrow()
 
         const counters = await invoiceService().listInvoiceCounters({
-          id: `facture-${year}`,
+          id: counterIdForYear(year),
         })
         expect(counters).toHaveLength(0)
 
@@ -90,7 +95,37 @@ medusaIntegrationTestRunner({
         expect(invoices).toHaveLength(1)
 
         const counters = await invoiceService().listInvoiceCounters({
-          id: `facture-${year}`,
+          id: counterIdForYear(year),
+        })
+        expect(counters[0].value).toEqual(1)
+      })
+
+      it("called concurrently for the same order_id still returns a single Invoice and consumes a single number", async () => {
+        const year = 2106
+
+        const [first, second] = await Promise.all([
+          invoiceService().issueInvoice({
+            order_id: "order-concurrent-idempotent",
+            year,
+            frozen_data: { attempt: 1 },
+          }),
+          invoiceService().issueInvoice({
+            order_id: "order-concurrent-idempotent",
+            year,
+            frozen_data: { attempt: 2 },
+          }),
+        ])
+
+        expect(second.id).toEqual(first.id)
+        expect(second.number).toEqual(first.number)
+
+        const invoices = await invoiceService().listInvoices({
+          order_id: "order-concurrent-idempotent",
+        })
+        expect(invoices).toHaveLength(1)
+
+        const counters = await invoiceService().listInvoiceCounters({
+          id: counterIdForYear(year),
         })
         expect(counters[0].value).toEqual(1)
       })
@@ -114,10 +149,10 @@ medusaIntegrationTestRunner({
         expect(invoiceB.number).toEqual(1)
 
         const counterA = await invoiceService().listInvoiceCounters({
-          id: `facture-${yearA}`,
+          id: counterIdForYear(yearA),
         })
         const counterB = await invoiceService().listInvoiceCounters({
-          id: `facture-${yearB}`,
+          id: counterIdForYear(yearB),
         })
         expect(counterA).toHaveLength(1)
         expect(counterB).toHaveLength(1)

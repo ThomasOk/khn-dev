@@ -28,7 +28,22 @@ class InvoiceModuleService extends MedusaService({
     input: IssueInvoiceInput,
     @MedusaContext() sharedContext?: Context<EntityManager>
   ) {
-    return await this.issueInvoice_(input, sharedContext)
+    try {
+      return await this.issueInvoice_(input, sharedContext)
+    } catch (error) {
+      // Lost a race to a concurrent issueInvoice call for the same order_id:
+      // our transaction rolled back cleanly (no number burned), the other
+      // committed first. Return its Invoice instead of surfacing a
+      // duplicate-key error — issueInvoice is idempotent on order_id
+      // regardless of whether the replay is sequential or concurrent.
+      const [existing] = await this.listInvoices(
+        { order_id: input.order_id },
+        {},
+        sharedContext
+      )
+      if (existing) return existing
+      throw error
+    }
   }
 
   @InjectTransactionManager()
@@ -52,7 +67,7 @@ class InvoiceModuleService extends MedusaService({
     // transaction would burn a number).
     const manager = sharedContext!.transactionManager!
     const counterId = `facture-${input.year}`
-    const [{ value: number }] = await manager.execute(
+    const [{ value }] = await manager.execute(
       `insert into invoice_counter (id, value)
        values (?, 1)
        on conflict (id) do update set value = invoice_counter.value + 1, updated_at = now()
@@ -65,8 +80,8 @@ class InvoiceModuleService extends MedusaService({
         {
           order_id: input.order_id,
           year: input.year,
-          number,
-          formatted_number: formatInvoiceNumber(input.year, number),
+          number: value,
+          formatted_number: formatInvoiceNumber(input.year, value),
           frozen_data: input.frozen_data,
         },
       ],
