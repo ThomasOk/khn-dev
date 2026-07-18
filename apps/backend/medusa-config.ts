@@ -18,6 +18,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/pickup",
     },
     {
+      resolve: "./src/modules/table-reservation",
+    },
+    {
       resolve: "./src/modules/formule",
     },
     {
