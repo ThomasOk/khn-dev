@@ -1,5 +1,6 @@
 import {
   deriveAvailability,
+  deriveReservationAcceptance,
   ExistingReservationInput,
   ReservationClosureInput,
   ServiceWindowInput,
@@ -22,6 +23,7 @@ const baseConfig: TableReservationConfigInput = {
 }
 
 const service = (overrides: Partial<ServiceWindowInput> = {}): ServiceWindowInput => ({
+  id: "sw_test",
   day_of_week: 2, // Tuesday
   start_time: "12:00",
   end_time: "13:00",
@@ -369,6 +371,126 @@ describe("deriveAvailability", () => {
       })
 
       expect(result).toEqual({ times: [], open: false })
+    })
+  })
+})
+
+describe("deriveReservationAcceptance", () => {
+  // Seam 2 for ticket 04's POST route: the revalidation that runs inside the
+  // locked job. It must accept exactly the Heures deriveAvailability would
+  // have offered, and reject everything else with a reason the route can map
+  // to the right response — never silently accepting a stale client value.
+  const base = {
+    date: "2026-07-14", // Tuesday
+    services: [
+      service({ start_time: "19:00", end_time: "21:00", capacity: 6, duration_minutes: 60 }),
+    ],
+    reservations: [],
+    closures: [],
+    config: baseConfig,
+    now: new Date("2026-07-14T06:00:00Z"),
+  }
+
+  it("accepts an offerable Heure and reports its Service's id and current duration", () => {
+    const result = deriveReservationAcceptance({
+      ...base,
+      party_size: 2,
+      time: "19:30",
+    })
+
+    expect(result).toEqual({
+      accepted: true,
+      service_window_id: "sw_test",
+      duration_minutes: 60,
+    })
+  })
+
+  it("rejects a hand-crafted Heure that was never an offerable candidate at all", () => {
+    // 19:05 is inside the window but off the slot_step_minutes grid.
+    const result = deriveReservationAcceptance({
+      ...base,
+      party_size: 2,
+      time: "19:05",
+    })
+
+    expect(result).toEqual({ accepted: false, reason: "time_unavailable" })
+  })
+
+  it("rejects the exact Heure that capacity no longer has room for (ADR 0006)", () => {
+    const result = deriveReservationAcceptance({
+      ...base,
+      services: [
+        service({ start_time: "19:30", end_time: "19:30", capacity: 6, duration_minutes: 60 }),
+      ],
+      reservations: [reservation({ time: "19:30", party_size: 6, duration_minutes: 60 })],
+      party_size: 1,
+      time: "19:30",
+    })
+
+    expect(result).toEqual({ accepted: false, reason: "time_unavailable" })
+  })
+
+  it("rejects with party_size_too_large, distinct from an unavailable Heure", () => {
+    const result = deriveReservationAcceptance({
+      ...base,
+      config: { ...baseConfig, max_party_size: 8 },
+      party_size: 9,
+      time: "19:30",
+    })
+
+    expect(result).toEqual({ accepted: false, reason: "party_size_too_large" })
+  })
+
+  it("rejects with closed on a day covered by a Fermeture de réservation", () => {
+    const result = deriveReservationAcceptance({
+      ...base,
+      closures: [{ start_date: "2026-07-14", end_date: "2026-07-14" }],
+      party_size: 2,
+      time: "19:30",
+    })
+
+    expect(result).toEqual({ accepted: false, reason: "closed" })
+  })
+
+  it("rejects with closed past the horizon", () => {
+    const result = deriveReservationAcceptance({
+      ...base,
+      config: { ...baseConfig, horizon_days: 1 },
+      now: new Date("2026-01-01T06:00:00Z"),
+      party_size: 2,
+      time: "19:30",
+    })
+
+    expect(result).toEqual({ accepted: false, reason: "closed" })
+  })
+
+  it("picks the Service that actually has room when two Services differ only in capacity", () => {
+    const result = deriveReservationAcceptance({
+      ...base,
+      services: [
+        service({
+          id: "sw_lunch",
+          start_time: "12:00",
+          end_time: "12:00",
+          capacity: 10,
+          duration_minutes: 60,
+        }),
+        service({
+          id: "sw_dinner",
+          start_time: "19:00",
+          end_time: "19:00",
+          capacity: 4,
+          duration_minutes: 120,
+        }),
+      ],
+      party_size: 5,
+      time: "12:00",
+    })
+
+    expect(result).toEqual({
+      accepted: true,
+      service_window_id: "sw_lunch",
+      duration_minutes: 60,
     })
   })
 })

@@ -14,6 +14,23 @@ module.exports = defineConfig({
     }
   },
   modules: [
+    // ADR 0006: capacity acceptance for table-reservation races two
+    // customers against the last Couverts, so it locks on the requested
+    // date. Without this registration `execute()` silently falls back to
+    // the in-memory provider, which only protects a single process — the
+    // lock becomes a no-op the moment a second instance runs.
+    {
+      resolve: "@medusajs/medusa/locking",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/medusa/locking-postgres",
+            id: "locking-postgres",
+            is_default: true,
+          },
+        ],
+      },
+    },
     {
       resolve: "./src/modules/pickup",
     },
