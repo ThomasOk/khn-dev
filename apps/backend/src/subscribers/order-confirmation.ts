@@ -1,6 +1,7 @@
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { toNum } from "../lib/order/to-num"
+import { lineItemQuantity } from "../lib/order/line-item-quantity"
 
 export default async function sendOrderConfirmationEmail({
   event: { data },
@@ -49,7 +50,7 @@ export default async function sendOrderConfirmationEmail({
     }
 
     const items = (order.items ?? []).map((item: any) => {
-      const qty = toNum(item.detail?.quantity ?? item.quantity)
+      const qty = toNum(lineItemQuantity(item))
       const unitPrice = toNum(item.unit_price)
       return {
         id: item.id,
