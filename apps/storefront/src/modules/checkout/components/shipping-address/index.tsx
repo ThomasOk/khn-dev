@@ -1,22 +1,18 @@
 import { HttpTypes } from "@medusajs/types"
-import { Container } from "@modules/common/components/ui"
-import Checkbox from "@modules/common/components/checkbox"
 import Input from "@modules/common/components/input"
-import { mapKeys } from "lodash"
-import React, { useEffect, useMemo, useState } from "react"
-import AddressSelect from "../address-select"
+import React, { useEffect, useState } from "react"
 import CountrySelect from "../country-select"
 
-const ShippingAddress = ({
+// This form is Kim-Hi Noodle's only address: the Adresse de facturation
+// (CONTEXT.md). It writes to Medusa's `shipping_address` field because
+// that's what cart/order completion expects — never a delivery address,
+// since there is no delivery here (ADR: pickup only).
+const BillingAddressForm = ({
   customer,
   cart,
-  checked,
-  onChange,
 }: {
   customer: HttpTypes.StoreCustomer | null
   cart: HttpTypes.StoreCart | null
-  checked: boolean
-  onChange: () => void
 }) => {
   const [formData, setFormData] = useState<Record<string, string>>({
     "shipping_address.first_name": cart?.shipping_address?.first_name || "",
@@ -30,20 +26,6 @@ const ShippingAddress = ({
     "shipping_address.phone": cart?.shipping_address?.phone || "",
     email: cart?.email || "",
   })
-
-  const countriesInRegion = useMemo(
-    () => cart?.region?.countries?.map((c) => c.iso_2),
-    [cart?.region]
-  )
-
-  // check if customer has saved addresses that are in the current region
-  const addressesInRegion = useMemo(
-    () =>
-      customer?.addresses.filter(
-        (a) => a.country_code && countriesInRegion?.includes(a.country_code)
-      ),
-    [customer?.addresses, countriesInRegion]
-  )
 
   const setFormAddress = (
     address?: HttpTypes.StoreCartAddress,
@@ -73,15 +55,25 @@ const ShippingAddress = ({
   }
 
   useEffect(() => {
-    // Ensure cart is not null and has a shipping_address before setting form data
-    if (cart && cart.shipping_address) {
-      setFormAddress(cart?.shipping_address, cart?.email)
+    if (cart?.shipping_address) {
+      setFormAddress(cart.shipping_address, cart.email)
+      return
+    }
+
+    // Nothing on the cart yet: prefill from the customer's saved billing
+    // address (managed on the Profile page) rather than making them retype
+    // it — there's only ever one address to offer, so no picker is needed.
+    const defaultBillingAddress = customer?.addresses?.find(
+      (address) => address.is_default_billing
+    )
+    if (defaultBillingAddress) {
+      setFormAddress(defaultBillingAddress as HttpTypes.StoreCartAddress)
     }
 
     if (cart && !cart.email && customer?.email) {
       setFormAddress(undefined, customer.email)
     }
-  }, [cart]) // Add cart as a dependency
+  }, [cart, customer])
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -96,22 +88,6 @@ const ShippingAddress = ({
 
   return (
     <>
-      {customer && (addressesInRegion?.length || 0) > 0 && (
-        <Container className="mb-6 flex flex-col gap-y-4 p-5">
-          <p className="text-small-regular">
-            {`Hi ${customer.first_name}, do you want to use one of your saved addresses?`}
-          </p>
-          <AddressSelect
-            addresses={customer.addresses}
-            addressInput={
-              mapKeys(formData, (_, key) =>
-                key.replace("shipping_address.", "")
-              ) as unknown as HttpTypes.StoreCartAddress
-            }
-            onSelect={setFormAddress}
-          />
-        </Container>
-      )}
       <div className="grid grid-cols-2 gap-4">
         <Input
           label="First name"
@@ -184,16 +160,7 @@ const ShippingAddress = ({
           data-testid="shipping-province-input"
         />
       </div>
-      <div className="my-8">
-        <Checkbox
-          label="Billing address same as shipping address"
-          name="same_as_billing"
-          checked={checked}
-          onChange={onChange}
-          data-testid="billing-address-checkbox"
-        />
-      </div>
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
         <Input
           label="Email"
           name="email"
@@ -218,4 +185,4 @@ const ShippingAddress = ({
   )
 }
 
-export default ShippingAddress
+export default BillingAddressForm
