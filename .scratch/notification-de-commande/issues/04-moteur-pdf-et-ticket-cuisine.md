@@ -8,6 +8,8 @@
 
 **Blocked by:** rien — peut démarrer immédiatement.
 
+**Amendement (2026-07-18) :** ce ticket excluait prix, total et email (acceptance criterion « aucun prix, aucun total »). Sur demande du restaurateur, ces exclusions sont revues — le ticket affiche désormais : le numéro de commande en tête, les labels Client / Téléphone / Email (email du client inclus), un tableau Produit / Qté / Total (chaque ligne portant son propre total TTC), et un Total payé en pied de ticket. Voir l'amendement en tête du spec ; `kitchen-ticket.ts` et son test font foi.
+
 ## What to build
 
 Le document que la cuisine lit pendant le coup de feu, rendu en PDF. Pas encore d'email, pas encore de Formule (c'est le ticket 05) : une commande ordinaire produit un ticket imprimable tel quel sur le rouleau 80mm du comptoir.
@@ -22,11 +24,11 @@ Un utilitaire partagé rend une `docDefinition` pdfmake en buffer puis en base64
 
 ## Acceptance criteria
 
-- [ ] `pdfmake` est épinglé en `^0.3` dans le `package.json` du backend
-- [ ] Un utilitaire de rendu partagé rend une `docDefinition` en buffer puis en base64, sans rien savoir du contenu d'un ticket
-- [ ] Une fonction pure construit la `docDefinition` du ticket depuis une commande — aucune base, aucun réseau, aucun container
-- [ ] Test unitaire (miroir de `src/lib/slots/__tests__/derive-slots.unit.spec.ts`) : le buffer produit a **une seule page** et une largeur de **226,77pt (80mm)**, lues dans le `/MediaBox` en dur, sans lib supplémentaire
-- [ ] Test unitaire : la hauteur **grandit** avec le nombre de lignes de commande (ticket à 2 lignes vs ticket à 20 lignes)
-- [ ] Test unitaire : le texte extrait (via `pdf-parse`, nouvelle devDependency pure JS) contient le nom du client, le Créneau, chaque plat et son allergène, **dans cet ordre**
-- [ ] Test unitaire : **aucun prix, aucun total** n'apparaît dans le texte extrait
-- [ ] Test unitaire : les accents survivent — « Bœuf » dans le texte extrait, ni « Buf » ni un caractère de remplacement
+- [x] `pdfmake` est épinglé en `^0.3` dans le `package.json` du backend
+- [x] Un utilitaire de rendu partagé rend une `docDefinition` en buffer puis en base64, sans rien savoir du contenu d'un ticket
+- [x] Une fonction pure construit la `docDefinition` du ticket depuis une commande — aucune base, aucun réseau, aucun container
+- [x] Test unitaire (miroir de `src/lib/slots/__tests__/derive-slots.unit.spec.ts`) : le buffer produit a **une seule page** et une largeur de **226,77pt (80mm)**, lues dans le `/MediaBox` en dur, sans lib supplémentaire
+- [x] Test unitaire : la hauteur **grandit** avec le nombre de lignes de commande (ticket à 2 lignes vs ticket à 20 lignes)
+- [x] Test unitaire : le texte extrait (via `pdf-parse`, nouvelle devDependency pure JS) contient le nom du client, le Créneau, chaque plat et son allergène, **dans cet ordre**
+- [x] ~~Test unitaire : **aucun prix, aucun total** n'apparaît dans le texte extrait~~ — **obsolète depuis l'amendement du 2026-07-18** : remplacé par « shows each line's total in a Produit / Qté / Total table » et « shows the grand total paid »
+- [x] Test unitaire : les accents survivent — « Bœuf » dans le texte extrait, ni « Buf » ni un caractère de remplacement
