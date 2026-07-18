@@ -14,8 +14,8 @@ Contours :
 
 **Status:** ready-for-agent
 
-- [ ] Payer un panier via les vraies routes puis, `payment.captured` réglé, on trouve une `Invoice` liée à la Commande par le Module Link, avec numéro formaté et `file_id` non nul, un PDF dans le File Module, et une notification email au client portant la pièce jointe (test HTTP integration, prior art `kitchen-ticket-notification.spec.ts`)
-- [ ] Le total TTC de la Facture égale le montant encaissé
-- [ ] Rejouer `payment.captured` : toujours une seule `Invoice`, même numéro, aucun second fichier ni seconde notification
-- [ ] Un échec de rendu PDF / stockage / email ne « défait » pas l'attribution du numéro déjà émise (pas de trou) et n'empêche ni la confirmation client ni le Ticket cuisine
-- [ ] La Facture est émise à `payment.captured`, pas à `order.placed`
+- [x] Payer un panier via les vraies routes puis, `payment.captured` réglé, on trouve une `Invoice` liée à la Commande par le Module Link, avec numéro formaté et `file_id` non nul, un PDF dans le File Module, et une notification email au client portant la pièce jointe (test HTTP integration, prior art `kitchen-ticket-notification.spec.ts`)
+- [x] Le total TTC de la Facture égale le montant encaissé
+- [x] Rejouer `payment.captured` : toujours une seule `Invoice`, même numéro, aucun second fichier ni seconde notification
+- [x] Un échec de rendu PDF / stockage / email ne « défait » pas l'attribution du numéro déjà émise (pas de trou) et n'empêche ni la confirmation client ni le Ticket cuisine
+- [x] La Facture est émise à `payment.captured`, pas à `order.placed`

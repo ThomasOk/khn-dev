@@ -8,6 +8,8 @@ import OrderConfirmationEmail from "./templates/order-confirmation"
 import type { OrderConfirmationEmailProps } from "./templates/order-confirmation"
 import KitchenTicketNotificationEmail from "./templates/kitchen-ticket-notification"
 import type { KitchenTicketNotificationEmailProps } from "./templates/kitchen-ticket-notification"
+import InvoiceNotificationEmail from "./templates/invoice-notification"
+import type { InvoiceNotificationEmailProps } from "./templates/invoice-notification"
 
 type Options = {
   apiKey: string
@@ -67,6 +69,14 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
         const html = await render(React.createElement(KitchenTicketNotificationEmail, props))
         return {
           subject: `Nouvelle commande #${props.order_id}`,
+          html,
+        }
+      }
+      case "invoice-notification": {
+        const props = data as unknown as InvoiceNotificationEmailProps
+        const html = await render(React.createElement(InvoiceNotificationEmail, props))
+        return {
+          subject: `Votre facture ${props.formatted_number} — commande #${props.order_id}`,
           html,
         }
       }

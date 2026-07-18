@@ -9,6 +9,7 @@ import {
 import { buildKitchenTicketDocDefinition, KitchenTicketLineItem } from "../lib/pdf/kitchen-ticket"
 import { renderPdfDocDefinitionToBase64 } from "../lib/pdf/render"
 import { toNum } from "../lib/order/to-num"
+import { lineItemQuantity } from "../lib/order/line-item-quantity"
 
 // Second subscriber on order.placed, deliberately never merged with
 // sendOrderConfirmationEmail (spec §"Un second subscriber, indépendant du
@@ -88,7 +89,7 @@ export default async function sendKitchenTicketNotification({
       items.push({
         title: item!.title,
         variant_title: item!.variant_title,
-        quantity: toNum(item!.detail?.quantity ?? item!.quantity),
+        quantity: toNum(lineItemQuantity(item!)),
         metadata: item!.metadata as Record<string, unknown> | null,
         curation: variantId ? curationByVariantId.get(variantId) ?? null : null,
       })
