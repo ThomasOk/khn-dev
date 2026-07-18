@@ -1,4 +1,4 @@
-import { RESTAURANT_TIMEZONE } from "../slots/timezone"
+import { RESTAURANT_TIMEZONE } from "../time/timezone"
 import { InvoiceFrozenData } from "../invoice/frozen-data"
 import { PdfMakeDocDefinition } from "./render"
 

@@ -1,4 +1,4 @@
-import { RESTAURANT_TIMEZONE } from "../slots/timezone"
+import { RESTAURANT_TIMEZONE } from "../time/timezone"
 
 const yearFormatter = new Intl.DateTimeFormat("en-CA", {
   timeZone: RESTAURANT_TIMEZONE,
