@@ -47,13 +47,20 @@ async function extractText(buffer: Buffer): Promise<string> {
 }
 
 const baseOrder: KitchenTicketOrder = {
+  order_number: "42",
   customer_name: "Marie Dupont",
   customer_phone: "0601020304",
+  customer_email: "marie.dupont@example.com",
   pickup_slot_start: "2026-07-16T12:15:00+02:00",
   pickup_slot_end: "2026-07-16T12:30:00+02:00",
   items: [
-    { title: "Nouilles sautées", variant_title: "Bœuf, Saté (contient arachide)", quantity: 1 },
-    { title: "Samoussas", variant_title: "Légumes", quantity: 2 },
+    {
+      title: "Nouilles sautées",
+      variant_title: "Bœuf, Saté (contient arachide)",
+      quantity: 1,
+      line_total: 14,
+    },
+    { title: "Samoussas", variant_title: "Légumes", quantity: 2, line_total: 24 },
   ],
 }
 
@@ -62,6 +69,7 @@ function orderWithItemCount(count: number): KitchenTicketOrder {
     title: `Plat ${i}`,
     variant_title: "Nature",
     quantity: 1,
+    line_total: 10,
   }))
   return { ...baseOrder, items }
 }
@@ -83,20 +91,51 @@ describe("buildKitchenTicketDocDefinition", () => {
     expect(mediaBox(longBuffer).height).toBeGreaterThan(mediaBox(shortBuffer).height)
   })
 
-  it("shows the Créneau first, then the customer, then each line item in order", async () => {
+  it("shows the order number, then the Créneau, then the customer, then each line item in order", async () => {
     const text = await extractText(await renderToBuffer(baseOrder))
 
+    const orderNumberIndex = text.indexOf("Commande #42")
     const slotIndex = text.indexOf("jeu. 16/07 · 12:15–12:30")
     const nameIndex = text.indexOf("Marie Dupont")
     const phoneIndex = text.indexOf("0601020304")
+    const emailIndex = text.indexOf("marie.dupont@example.com")
     const firstItemIndex = text.indexOf("Nouilles sautées")
     const secondItemIndex = text.indexOf("Samoussas")
 
-    expect(slotIndex).toBeGreaterThanOrEqual(0)
+    expect(orderNumberIndex).toBeGreaterThanOrEqual(0)
+    expect(slotIndex).toBeGreaterThan(orderNumberIndex)
     expect(nameIndex).toBeGreaterThan(slotIndex)
     expect(phoneIndex).toBeGreaterThan(nameIndex)
-    expect(firstItemIndex).toBeGreaterThan(phoneIndex)
+    expect(emailIndex).toBeGreaterThan(phoneIndex)
+    expect(firstItemIndex).toBeGreaterThan(emailIndex)
     expect(secondItemIndex).toBeGreaterThan(firstItemIndex)
+  })
+
+  it("labels the customer name, phone and email", async () => {
+    const text = await extractText(await renderToBuffer(baseOrder))
+
+    expect(text).toContain("Client : Marie Dupont")
+    expect(text).toContain("Téléphone : 0601020304")
+    expect(text).toContain("Email : marie.dupont@example.com")
+  })
+
+  it("shows the grand total paid, summed from every line", async () => {
+    const text = await extractText(await renderToBuffer(baseOrder))
+
+    expect(text).toContain("Total payé : 38,00")
+  })
+
+  it("suppresses Medusa's auto-named \"Default variant\" — a Formule's sole Variante", async () => {
+    const order: KitchenTicketOrder = {
+      ...baseOrder,
+      items: [
+        { title: "Formule midi", variant_title: "Default variant", quantity: 1, line_total: 13.9 },
+      ],
+    }
+    const text = await extractText(await renderToBuffer(order))
+
+    expect(text).toContain("Formule midi")
+    expect(text).not.toContain("Default variant")
   })
 
   it("never lets a plat's seasoning or allergen text land apart from the plat itself", async () => {
@@ -105,11 +144,13 @@ describe("buildKitchenTicketDocDefinition", () => {
     expect(text).toContain("Nouilles sautées — Bœuf, Saté (contient arachide)")
   })
 
-  it("never shows a unit price or a total", async () => {
+  it("shows each line's total in a Produit / Qté / Total table", async () => {
     const text = await extractText(await renderToBuffer(baseOrder))
 
-    expect(text).not.toContain("€")
-    expect(text.toLowerCase()).not.toContain("total")
+    expect(text).toContain("Produit")
+    expect(text).toContain("Qté")
+    expect(text).toContain("14,00")
+    expect(text).toContain("24,00")
   })
 
   it("keeps accents intact — Bœuf, never Buf or a replacement character", async () => {
@@ -155,6 +196,7 @@ describe("buildKitchenTicketDocDefinition — Formule Sélection", () => {
         {
           title: "Menu Midi",
           quantity: 1,
+          line_total: 13.9,
           curation: menuMidiCuration,
           // Keys deliberately in the opposite order from rank, so a pass
           // that used metadata's own key order instead of rank would show
@@ -184,6 +226,7 @@ describe("buildKitchenTicketDocDefinition — Formule Sélection", () => {
         {
           title: "Menu Midi",
           quantity: 1,
+          line_total: 13.9,
           curation: menuMidiCuration,
           metadata: {
             [formuleSelectionMetadataKey("plat")]: "variant_discontinued",

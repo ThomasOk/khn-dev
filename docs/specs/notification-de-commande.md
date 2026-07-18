@@ -9,6 +9,8 @@ Décisions amont, à lire avant d'implémenter — ce spec ne les rejoue pas :
 [ADR 0005](../adr/0005-formule-curation-via-module-selection-via-metadata.md) et [le spec Formules](formules.md) (la Sélection vit en clés plates sur `line_item.metadata`, une par Composant — la forme de données que ce spec lit désormais),
 et le glossaire dans [CONTEXT.md](../../CONTEXT.md) (Ticket cuisine, Notification de commande, Facture, Formule, Composant, Sélection).
 
+**Amendement (2026-07-18).** Ce spec, dans sa version initiale, excluait explicitement prix, total et email du ticket cuisine (User Story 3 ci-dessous, § « Le contenu du ticket », Testing Decisions Seam 1) — en réaction directe aux défauts d'`orecap.pdf`. Sur demande du restaurateur, cette décision est **revue en deux temps** : (1) le ticket affiche un tableau Produit / Qté / Total, chaque ligne portant son propre total TTC (`item.total`, pas la ventilation HT de la Facture), suivi d'un **Total payé** en pied de ticket (somme des lignes) ; (2) le ticket affiche aussi le **numéro de commande** en tête, et **Client / Téléphone / Email** en labels explicites — l'email du client, initialement exclu, est désormais inclus. Reste inchangé : pas d'adresse de facturation, pas de TVA, pas de numéro de facture — ce qui reste propre à la Facture. Les passages ci-dessous qui décrivent encore l'absence de prix ou d'email sont **obsolètes** ; le code et les tests (`kitchen-ticket.ts`, `kitchen-ticket.unit.spec.ts`) font foi.
+
 ## Problem Statement
 
 Une commande payée n'informe aujourd'hui personne au restaurant. `order.placed` ne déclenche qu'un seul email — la confirmation au client (`apps/backend/src/subscribers/order-confirmation.ts`) — et rien côté restaurateur. La seule façon de savoir qu'une commande est arrivée est d'aller regarder l'admin Medusa, ce que personne ne fait en continu pendant un service.
@@ -82,7 +84,7 @@ Le template `kitchen-ticket` (`apps/backend/src/lib/pdf/kitchen-ticket.ts`, une 
 2. **Le nom du client** et son **téléphone**.
 3. **Chaque ligne de commande** : nom de la Variante, quantité, et tout texte d'assaisonnement/allergène **dans le même bloc**, jamais dans une ligne séparée qui pourrait finir sur une autre page. Pour une ligne Formule, le bloc est : le nom de la Formule (ex. « Menu Midi »), puis, indentée juste en dessous, la Sélection de chaque Composant — `label` → nom de la Variante — dans l'ordre de rang des Composants, jamais dans l'ordre technique des clés de `metadata`.
 
-**Explicitement absent** : email, prix unitaire, total, tout ce qui appartient à la Facture. Texte **ferré à gauche**, pas centré — `orecap.pdf` centre son texte dans une colonne étroite, ce qui rend le bord gauche en dents de scie et illisible en diagonale pendant un coup de feu.
+**Explicitement absent** : adresse de facturation, TVA, numéro de facture — ce qui reste propre à la Facture. *(Amendé le 2026-07-18 : le ticket porte désormais le numéro de commande, un total par ligne en tableau Produit / Qté / Total, un Total payé en pied de ticket, et l'email du client — voir l'amendement en tête de ce spec.)* Texte **ferré à gauche**, pas centré — `orecap.pdf` centre son texte dans une colonne étroite, ce qui rend le bord gauche en dents de scie et illisible en diagonale pendant un coup de feu.
 
 ### La Sélection de Formule sur le ticket
 
@@ -119,7 +121,7 @@ Assertions sur le buffer produit, par lecture directe du PDF (comme dans la rech
 - **une seule page**, et une largeur de **226,77pt (80mm)**, lues dans le `/MediaBox` ;
 - **la hauteur grandit** avec le nombre de lignes de commande (ticket à 2 lignes vs ticket à 20 lignes) ;
 - **le contenu textuel attendu est présent** — nom du client, Créneau, chaque plat et son allergène, dans cet ordre. Extraction de texte via `pdf-parse` (nouvelle devDependency, pure JS, aucun binaire système) plutôt qu'une lecture visuelle — c'est ce qui rend l'assertion reproductible en CI.
-- **aucun prix, aucun total** n'apparaît dans le texte extrait.
+- **chaque ligne affiche son propre total** dans un tableau Produit / Qté / Total *(amendé le 2026-07-18 — voir l'amendement en tête de ce spec)*.
 - **les accents survivent** — un plat nommé « Bœuf » dans le texte extrait, pas « Buf » ni un caractère de remplacement.
 - **une ligne Formule affiche sa Sélection** — le nom de la Formule suivi du `label` de chaque Composant et du nom de la Variante choisie, dans l'ordre de rang des Composants (pas l'ordre des clés de `metadata`) ; fixture construite comme dans `src/lib/formule/__tests__/validate-selection.unit.spec.ts` (une Curation, une Sélection valide dessus), pas une base réelle.
 - **une Sélection dont la Curation ne répond plus affiche l'id brut de la Variante** plutôt que de faire disparaître la ligne — mirroir de `resolveFormuleSelectionEntries` (`apps/backend/src/admin/lib/formule.ts`), même repli, même raison.

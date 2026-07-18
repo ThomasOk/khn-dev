@@ -32,14 +32,16 @@ export default async function sendKitchenTicketNotification({
       fields: [
         "id",
         "display_id",
+        "email",
         "metadata",
-        "items.id",
-        "items.title",
-        "items.variant_id",
-        "items.variant_title",
-        "items.quantity",
-        "items.detail.quantity",
-        "items.metadata",
+        // "tax_total" isn't read directly below — its presence is what
+        // makes the Order module compute and attach totals at all
+        // (OrderModuleService.shouldIncludeTotals), and "items.*" (not
+        // cherry-picked dotted fields) is what's needed for items.total /
+        // items.detail.quantity to come back populated — same trap
+        // documented in issueInvoiceWorkflow.
+        "tax_total",
+        "items.*",
         "shipping_address.first_name",
         "shipping_address.last_name",
         "shipping_address.phone",
@@ -90,6 +92,7 @@ export default async function sendKitchenTicketNotification({
         title: item!.title,
         variant_title: item!.variant_title,
         quantity: toNum(lineItemQuantity(item!)),
+        line_total: toNum((item as any)?.total),
         metadata: item!.metadata as Record<string, unknown> | null,
         curation: variantId ? curationByVariantId.get(variantId) ?? null : null,
       })
@@ -102,8 +105,10 @@ export default async function sendKitchenTicketNotification({
     const customerPhone = shippingAddress?.phone ?? ""
 
     const docDefinition = buildKitchenTicketDocDefinition({
+      order_number: String(order.display_id),
       customer_name: customerName,
       customer_phone: customerPhone,
+      customer_email: order.email ?? "",
       pickup_slot_start: slotStart,
       pickup_slot_end: slotEnd,
       items,
