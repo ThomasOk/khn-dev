@@ -13,6 +13,6 @@ Contours :
 
 **Status:** ready-for-agent
 
-- [ ] Sur la fiche d'une Commande facturée, le widget affiche le Numéro de facture et un lien de téléchargement
-- [ ] Le téléchargement fournit les octets du PDF stockés à l'émission (mêmes octets, aucune régénération)
-- [ ] Sur une Commande sans Facture, le widget n'affiche pas de lien de téléchargement
+- [x] Sur la fiche d'une Commande facturée, le widget affiche le Numéro de facture et un lien de téléchargement
+- [x] Le téléchargement fournit les octets du PDF stockés à l'émission (mêmes octets, aucune régénération)
+- [x] Sur une Commande sans Facture, le widget n'affiche pas de lien de téléchargement
