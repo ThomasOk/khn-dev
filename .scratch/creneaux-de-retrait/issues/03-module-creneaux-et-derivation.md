@@ -58,7 +58,7 @@ Le vocabulaire métier reste français ; le code est en anglais. Ce qui a été 
 | `deriverCreneaux` | `deriveSlots` (fonction pure, hors module) | `apps/backend/src/lib/slots/derive-slots.ts` |
 | `Créneau { debut, fin }` | `Slot { start, end }` | |
 | `maintenant` | `now` | |
-| fuseau `Europe/Paris` | `RESTAURANT_TIMEZONE` | `apps/backend/src/lib/slots/timezone.ts` |
+| fuseau `Europe/Paris` | `RESTAURANT_TIMEZONE` | `apps/backend/src/lib/time/timezone.ts` |
 
 Tests unitaires : `apps/backend/src/lib/slots/__tests__/derive-slots.unit.spec.ts` (hors
 `src/modules/*/__tests__/`, réservé au runner `integration:modules`).

@@ -1,5 +1,5 @@
 // The restaurant's timezone is the only authority for pickup times (mirrors
-// apps/backend/src/lib/slots/timezone.ts and apps/storefront/src/lib/util/timezone.ts,
+// apps/backend/src/lib/time/timezone.ts and apps/storefront/src/lib/util/timezone.ts,
 // kept separate here since the admin dashboard is a separately bundled SPA). The
 // order widget must still pass this constant explicitly to its formatter —
 // otherwise a browser set to another timezone reads the wrong wall-clock hour

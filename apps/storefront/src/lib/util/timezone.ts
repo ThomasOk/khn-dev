@@ -1,5 +1,5 @@
 // The restaurant's timezone is the only authority for pickup times (mirrors
-// apps/backend/src/lib/slots/timezone.ts, kept separate since it's a
+// apps/backend/src/lib/time/timezone.ts, kept separate since it's a
 // different app). Slots arrive from the backend as ISO 8601 with an offset;
 // every renderer must still pass this constant explicitly to its formatter —
 // otherwise a phone set to another timezone reads the wrong wall-clock hour

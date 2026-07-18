@@ -1,4 +1,4 @@
-import { RESTAURANT_TIMEZONE } from "../slots/timezone"
+import { RESTAURANT_TIMEZONE } from "../time/timezone"
 import { ResolvedFormuleCuration } from "../formule/get-curation-for-variant"
 import { resolveFormuleSelectionEntries } from "../formule/resolve-selection-entries"
 import { PdfMakeDocDefinition } from "./render"

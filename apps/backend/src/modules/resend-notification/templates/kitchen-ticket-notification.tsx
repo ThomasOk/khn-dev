@@ -10,7 +10,7 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
-import { RESTAURANT_TIMEZONE } from "../../../lib/slots/timezone";
+import { RESTAURANT_TIMEZONE } from "../../../lib/time/timezone";
 
 export type KitchenTicketNotificationEmailProps = {
   order_id: string | number;
