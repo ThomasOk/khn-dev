@@ -48,21 +48,6 @@ const Overview = ({ customer, orders }: OverviewProps) => {
                 </div>
               </div>
 
-              <div className="flex flex-col gap-y-4">
-                <h3 className="text-large-semi">Addresses</h3>
-                <div className="flex items-end gap-x-2">
-                  <span
-                    className="text-3xl-semi leading-none"
-                    data-testid="addresses-count"
-                    data-value={customer?.addresses?.length || 0}
-                  >
-                    {customer?.addresses?.length || 0}
-                  </span>
-                  <span className="uppercase text-base-regular text-ui-fg-subtle">
-                    Saved
-                  </span>
-                </div>
-              </div>
             </div>
 
             <div className="flex flex-col gap-y-4">
