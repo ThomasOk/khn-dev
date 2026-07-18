@@ -27,9 +27,10 @@ export async function getAvailability(
   const service: TableReservationModuleService = container.resolve(
     TABLE_RESERVATION_MODULE
   )
-  const [services, configs] = await Promise.all([
+  const [services, configs, closures] = await Promise.all([
     service.listServiceWindows(),
     service.listTableReservationConfigs(),
+    service.listReservationClosures(),
   ])
   const config = configs[0]
 
@@ -45,6 +46,7 @@ export async function getAvailability(
     party_size: query.party_size,
     services,
     reservations: [],
+    closures,
     config,
     now,
   })

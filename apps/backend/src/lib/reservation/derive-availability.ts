@@ -1,6 +1,7 @@
 import {
   CivilDay,
   civilDayAt,
+  civilDayKey,
   dayOfWeek,
   hhmmToMinutes,
   wallTimeToTimestamp,
@@ -41,6 +42,15 @@ export type ExistingReservationInput = {
   duration_minutes: number
 }
 
+// Fermeture de réservation — a civil-day PERIOD (inclusive on both ends) that
+// wipes availability for every day it covers, whatever the day's Services
+// say. Shares no table, row, or code with the pickup module's own Fermeture
+// exceptionnelle (ADR 0007).
+export type ReservationClosureInput = {
+  start_date: string // civil day "YYYY-MM-DD", inclusive
+  end_date: string // civil day "YYYY-MM-DD", inclusive
+}
+
 export type TableReservationConfigInput = {
   min_lead_minutes: number
   horizon_days: number
@@ -54,6 +64,7 @@ export type DeriveAvailabilityInput = {
   party_size: number
   services: ServiceWindowInput[]
   reservations: ExistingReservationInput[]
+  closures: ReservationClosureInput[]
   config: TableReservationConfigInput
   now: Date
 }
@@ -124,9 +135,24 @@ function peakOccupancy(
 }
 
 export function deriveAvailability(input: DeriveAvailabilityInput): Availability {
-  const { date, party_size, services, reservations, config, now } = input
+  const { date, party_size, services, reservations, closures, config, now } =
+    input
 
   const requestedDay = parseCivilDay(date)
+
+  // A Fermeture whose period covers the REQUESTED day wipes that day's
+  // Services entirely, bounds included — unlike deriveSlots, which only ever
+  // has to check "today", availability is derived for an arbitrary future
+  // date, so the closure check is against the requested day, not `now`.
+  // Civil-day keys are lexicographically ordered, so this stays a string
+  // comparison — no Date is built to check the interval.
+  const requestedKey = civilDayKey(requestedDay)
+  if (
+    closures.some((c) => requestedKey >= c.start_date && requestedKey <= c.end_date)
+  ) {
+    return { times: [], open: false }
+  }
+
   const today = civilDayAt(now.getTime())
   const daysUntil = daysBetween(requestedDay, today)
   const withinHorizon = daysUntil >= 0 && daysUntil <= config.horizon_days

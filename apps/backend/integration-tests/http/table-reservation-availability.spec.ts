@@ -1,6 +1,7 @@
 import { medusaIntegrationTestRunner } from "@medusajs/test-utils"
 import { Modules } from "@medusajs/framework/utils"
 import { TABLE_RESERVATION_MODULE } from "../../src/modules/table-reservation"
+import { PICKUP_MODULE } from "../../src/modules/pickup"
 import { parisMinutesOfDay, parisDayOfWeek, parisDateKey, hhmm } from "./paris-time"
 
 // Seam 1 of the table-reservation spec: the highest seam, exercised over real
@@ -25,6 +26,7 @@ medusaIntegrationTestRunner({
     let publishableKey: string
 
     const tableReservation = () => getContainer().resolve(TABLE_RESERVATION_MODULE) as any
+    const pickup = () => getContainer().resolve(PICKUP_MODULE) as any
 
     const withKey = () => ({
       headers: { "x-publishable-api-key": publishableKey },
@@ -124,6 +126,58 @@ medusaIntegrationTestRunner({
         expect(response.status).toEqual(200)
         expect(response.data.open).toBe(false)
         expect(response.data.times).toEqual([])
+      })
+
+      it("empties the day on a Fermeture de réservation, and leaves GET /store/pickup-slots unaffected for the same day (ADR 0007)", async () => {
+        const now = new Date()
+        const base = parisMinutesOfDay(now)
+        const today = parisDateKey(now)
+
+        await createConfig()
+        await tableReservation().createServiceWindows({
+          name: "Test service",
+          day_of_week: parisDayOfWeek(now),
+          start_time: hhmm(Math.max(0, base - 60)),
+          end_time: hhmm(Math.min(1425, base + 180)),
+          capacity: 20,
+          duration_minutes: 90,
+          active: true,
+        })
+        // A Fermeture de réservation on today's civil day — no table for
+        // pickup to share, no row, no code (ADR 0007).
+        await tableReservation().createReservationClosures({
+          start_date: today,
+          end_date: today,
+        })
+
+        // click & collect keeps its OWN calendar: a pickup schedule for the
+        // same day, and deliberately NO pickup closure, to prove the two
+        // channels stay independent.
+        await pickup().createPickupConfigs({
+          prep_delay_minutes: 30,
+          slot_duration_minutes: 15,
+        })
+        await pickup().createPickupSchedules({
+          day_of_week: parisDayOfWeek(now),
+          start_time: hhmm(Math.max(0, base - 60)),
+          end_time: hhmm(Math.min(1425, base + 180)),
+          active: true,
+        })
+
+        const availabilityResponse = await api.get(
+          `/store/table-reservations/availability?date=${today}&party_size=2`,
+          withKey()
+        )
+
+        expect(availabilityResponse.status).toEqual(200)
+        expect(availabilityResponse.data.open).toBe(false)
+        expect(availabilityResponse.data.times).toEqual([])
+
+        const pickupSlotsResponse = await api.get("/store/pickup-slots", withKey())
+
+        expect(pickupSlotsResponse.status).toEqual(200)
+        expect(pickupSlotsResponse.data.orders_open).toBe(true)
+        expect(pickupSlotsResponse.data.slots.length).toBeGreaterThan(0)
       })
 
       it("returns open: false once the requested date falls past the horizon", async () => {
