@@ -8,18 +8,18 @@ Vérifié contre la 2.16 installée : le module Locking expose `execute(keys, jo
 
 **Blocked by:** 02 — Les Services et la disponibilité.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Modèle Réservation et sa migration : date et heure locales en texte, couverts, durée d'occupation, référence du Service, statut (`confirmed` | `cancelled`), nom, email, téléphone, note optionnelle, jeton d'annulation unique, date d'annulation
-- [ ] `POST /store/table-reservations` renvoie `201` avec `{ id, date, time, party_size, cancellation_token }`
-- [ ] **Toutes** les valeurs du client sont revalidées serveur, y compris l'heure : la route est publique, une heure non revalidée n'est qu'un champ que le client contrôle
-- [ ] La **Durée d'occupation est copiée** sur la Réservation à sa création et n'est plus jamais relue depuis le Service — changer la durée d'un Service ne modifie aucune Réservation existante
-- [ ] Refus au-delà de la taille de groupe maximale, avec le téléphone dans la réponse
-- [ ] Refus quand la capacité serait dépassée à un instant quelconque de l'intervalle
-- [ ] `400` sur entrée invalide, `409` sur conflit de capacité ou heure plus offrable
-- [ ] `locking-postgres` enregistré dans la configuration Medusa — **sans cette ligne le verrou est un no-op silencieux dès la deuxième instance**
-- [ ] Recherche de disponibilité et insertion dans le même job verrouillé, clé dérivée de la date
-- [ ] Un échec d'acquisition du verrou renvoie `409` avec un message invitant à réessayer, **jamais une 500**
-- [ ] Test d'intégration HTTP — **le test qui porte l'ADR 0006** : remplir la capacité à 19h30, puis vérifier que 20h00 est refusé alors que personne n'a réservé à 20h00
-- [ ] Test d'intégration HTTP : la Réservation persistée porte sa propre durée d'occupation ; modifier ensuite la durée du Service ne la change pas
-- [ ] Test d'intégration HTTP de concurrence : N requêtes en parallèle sur les dernières places, le total accepté ne dépasse jamais la capacité, les perdants reçoivent `409`. **Écrire dans le test que ce cas passerait aussi avec le provider en mémoire** — il prouve la logique d'exclusion, pas la protection multi-instance, que seule la configuration garantit
+- [x] Modèle Réservation et sa migration : date et heure locales en texte, couverts, durée d'occupation, référence du Service, statut (`confirmed` | `cancelled`), nom, email, téléphone, note optionnelle, jeton d'annulation unique, date d'annulation
+- [x] `POST /store/table-reservations` renvoie `201` avec `{ id, date, time, party_size, cancellation_token }`
+- [x] **Toutes** les valeurs du client sont revalidées serveur, y compris l'heure : la route est publique, une heure non revalidée n'est qu'un champ que le client contrôle
+- [x] La **Durée d'occupation est copiée** sur la Réservation à sa création et n'est plus jamais relue depuis le Service — changer la durée d'un Service ne modifie aucune Réservation existante
+- [x] Refus au-delà de la taille de groupe maximale, avec le téléphone dans la réponse
+- [x] Refus quand la capacité serait dépassée à un instant quelconque de l'intervalle
+- [x] `400` sur entrée invalide, `409` sur conflit de capacité ou heure plus offrable
+- [x] `locking-postgres` enregistré dans la configuration Medusa — **sans cette ligne le verrou est un no-op silencieux dès la deuxième instance**
+- [x] Recherche de disponibilité et insertion dans le même job verrouillé, clé dérivée de la date
+- [x] Un échec d'acquisition du verrou renvoie `409` avec un message invitant à réessayer, **jamais une 500**
+- [x] Test d'intégration HTTP — **le test qui porte l'ADR 0006** : remplir la capacité à 19h30, puis vérifier que 20h00 est refusé alors que personne n'a réservé à 20h00
+- [x] Test d'intégration HTTP : la Réservation persistée porte sa propre durée d'occupation ; modifier ensuite la durée du Service ne la change pas
+- [x] Test d'intégration HTTP de concurrence : N requêtes en parallèle sur les dernières places, le total accepté ne dépasse jamais la capacité, les perdants reçoivent `409`. **Écrire dans le test que ce cas passerait aussi avec le provider en mémoire** — il prouve la logique d'exclusion, pas la protection multi-instance, que seule la configuration garantit

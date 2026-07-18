@@ -23,6 +23,7 @@ import {
 // Mirrors the persisted ServiceWindow model structurally, so rows can be
 // passed straight in, while keeping this function isolated from the module.
 export type ServiceWindowInput = {
+  id: string
   day_of_week: number // 0 = Sunday .. 6 = Saturday
   start_time: string // local "HH:MM" in RESTAURANT_TIMEZONE
   end_time: string // local "HH:MM"
@@ -134,55 +135,20 @@ function peakOccupancy(
   return peak
 }
 
-export function deriveAvailability(input: DeriveAvailabilityInput): Availability {
-  const { date, party_size, services, reservations, closures, config, now } =
-    input
-
-  const requestedDay = parseCivilDay(date)
-
-  // A Fermeture whose period covers the REQUESTED day wipes that day's
-  // Services entirely, bounds included — unlike deriveSlots, which only ever
-  // has to check "today", availability is derived for an arbitrary future
-  // date, so the closure check is against the requested day, not `now`.
-  // Civil-day keys are lexicographically ordered, so this stays a string
-  // comparison — no Date is built to check the interval.
-  const requestedKey = civilDayKey(requestedDay)
-  if (
-    closures.some((c) => requestedKey >= c.start_date && requestedKey <= c.end_date)
-  ) {
-    return { times: [], open: false }
-  }
-
-  const today = civilDayAt(now.getTime())
-  const daysUntil = daysBetween(requestedDay, today)
-  const withinHorizon = daysUntil >= 0 && daysUntil <= config.horizon_days
-
-  const dow = dayOfWeek(requestedDay)
-  const todaysServices = services.filter(
-    (s) => s.active && s.day_of_week === dow
-  )
-
-  const open = withinHorizon && todaysServices.length > 0
-
-  if (!open) {
-    return { times: [], open: false }
-  }
-
-  // Above the plafond: never an error, just nothing to offer — the route adds
-  // the téléphone alongside `open: true`.
-  if (party_size > config.max_party_size) {
-    return { times: [], open: true }
-  }
-
-  const earliestStartMs = now.getTime() + config.min_lead_minutes * MINUTE_MS
-
-  const existingIntervals = reservations.map((r) => {
-    const start = hhmmToMinutes(r.time)
-    return { start, end: start + r.duration_minutes, party_size: r.party_size }
-  })
-
-  const times: string[] = []
-
+// The candidate Heures a set of today's Services can offer a party_size,
+// each already checked against the délai minimum and the capacity sweep.
+// Shared between deriveAvailability (which only needs the Heure) and
+// deriveReservationAcceptance (which also needs to know WHICH Service
+// accepted a specific Heure, to snapshot its id and Durée d'occupation onto
+// the Réservation) — the two must never diverge on what counts as offerable.
+function* offerableCandidates(
+  todaysServices: ServiceWindowInput[],
+  existingIntervals: { start: number; end: number; party_size: number }[],
+  config: TableReservationConfigInput,
+  requestedDay: CivilDay,
+  party_size: number,
+  earliestStartMs: number
+): Generator<{ startMin: number; service: ServiceWindowInput }> {
   for (const service of todaysServices) {
     const windowStart = hhmmToMinutes(service.start_time)
     const windowEnd = hhmmToMinutes(service.end_time)
@@ -210,10 +176,171 @@ export function deriveAvailability(input: DeriveAvailabilityInput): Availability
         continue
       }
 
-      times.push(minutesToHHMM(startMin))
+      yield { startMin, service }
     }
+  }
+}
+
+// The day-level context both deriveAvailability and deriveReservationAcceptance
+// need before they can even consider a single candidate Heure: is the day
+// covered by a Fermeture, past the horizon, or without a matching Service at
+// all — collapsed into a single `null` outcome, since both callers treat
+// every one of those reasons identically ("closed"/`open: false`). When the
+// day IS open, callers get back exactly what offerableCandidates needs.
+type OpenDayContext = {
+  requestedDay: CivilDay
+  todaysServices: ServiceWindowInput[]
+  earliestStartMs: number
+  existingIntervals: { start: number; end: number; party_size: number }[]
+}
+
+function resolveOpenDayContext(
+  date: string,
+  closures: ReservationClosureInput[],
+  services: ServiceWindowInput[],
+  reservations: ExistingReservationInput[],
+  config: TableReservationConfigInput,
+  now: Date
+): OpenDayContext | null {
+  const requestedDay = parseCivilDay(date)
+
+  // A Fermeture whose period covers the REQUESTED day wipes that day's
+  // Services entirely, bounds included — unlike deriveSlots, which only ever
+  // has to check "today", availability is derived for an arbitrary future
+  // date, so the closure check is against the requested day, not `now`.
+  // Civil-day keys are lexicographically ordered, so this stays a string
+  // comparison — no Date is built to check the interval.
+  const requestedKey = civilDayKey(requestedDay)
+  if (
+    closures.some((c) => requestedKey >= c.start_date && requestedKey <= c.end_date)
+  ) {
+    return null
+  }
+
+  const today = civilDayAt(now.getTime())
+  const daysUntil = daysBetween(requestedDay, today)
+  const withinHorizon = daysUntil >= 0 && daysUntil <= config.horizon_days
+
+  const dow = dayOfWeek(requestedDay)
+  const todaysServices = services.filter(
+    (s) => s.active && s.day_of_week === dow
+  )
+
+  if (!withinHorizon || todaysServices.length === 0) {
+    return null
+  }
+
+  const earliestStartMs = now.getTime() + config.min_lead_minutes * MINUTE_MS
+
+  const existingIntervals = reservations.map((r) => {
+    const start = hhmmToMinutes(r.time)
+    return { start, end: start + r.duration_minutes, party_size: r.party_size }
+  })
+
+  return { requestedDay, todaysServices, earliestStartMs, existingIntervals }
+}
+
+export function deriveAvailability(input: DeriveAvailabilityInput): Availability {
+  const { date, party_size, services, reservations, closures, config, now } =
+    input
+
+  const context = resolveOpenDayContext(
+    date,
+    closures,
+    services,
+    reservations,
+    config,
+    now
+  )
+  if (!context) {
+    return { times: [], open: false }
+  }
+
+  // Above the plafond: never an error, just nothing to offer — the route adds
+  // the téléphone alongside `open: true`.
+  if (party_size > config.max_party_size) {
+    return { times: [], open: true }
+  }
+
+  const times: string[] = []
+
+  for (const { startMin } of offerableCandidates(
+    context.todaysServices,
+    context.existingIntervals,
+    config,
+    context.requestedDay,
+    party_size,
+    context.earliestStartMs
+  )) {
+    times.push(minutesToHHMM(startMin))
   }
 
   times.sort()
   return { times, open: true }
+}
+
+// The acceptance decision for one specific customer-chosen Heure — the
+// revalidation POST /store/table-reservations runs, inside the SAME locked
+// job as the insert (ADR 0006). It reuses offerableCandidates so acceptance
+// can never diverge from what GET .../availability would have offered, and
+// reports which Service accepted the Heure so its id and CURRENT Durée
+// d'occupation can be snapshotted onto the Réservation.
+export type ReservationAcceptanceInput = DeriveAvailabilityInput & {
+  time: string // local "HH:MM", the customer's chosen Heure de réservation
+}
+
+export type ReservationAcceptance =
+  | { accepted: true; service_window_id: string; duration_minutes: number }
+  | {
+      accepted: false
+      // "closed": no Service that day, past the horizon, or a Fermeture.
+      // "party_size_too_large": above the plafond — the caller shows the
+      // téléphone, this is not the same failure as a capacity conflict.
+      // "time_unavailable": the Heure itself is no longer offerable (capacity
+      // reached, below the délai minimum, or never a valid candidate at all).
+      reason: "closed" | "party_size_too_large" | "time_unavailable"
+    }
+
+export function deriveReservationAcceptance(
+  input: ReservationAcceptanceInput
+): ReservationAcceptance {
+  const { date, time, party_size, services, reservations, closures, config, now } =
+    input
+
+  const context = resolveOpenDayContext(
+    date,
+    closures,
+    services,
+    reservations,
+    config,
+    now
+  )
+  if (!context) {
+    return { accepted: false, reason: "closed" }
+  }
+
+  if (party_size > config.max_party_size) {
+    return { accepted: false, reason: "party_size_too_large" }
+  }
+
+  const requestedMin = hhmmToMinutes(time)
+
+  for (const { startMin, service } of offerableCandidates(
+    context.todaysServices,
+    context.existingIntervals,
+    config,
+    context.requestedDay,
+    party_size,
+    context.earliestStartMs
+  )) {
+    if (startMin === requestedMin) {
+      return {
+        accepted: true,
+        service_window_id: service.id,
+        duration_minutes: service.duration_minutes,
+      }
+    }
+  }
+
+  return { accepted: false, reason: "time_unavailable" }
 }
