@@ -13,6 +13,13 @@ export type ServiceWindow = {
   active: boolean
 }
 
+export type ReservationClosure = {
+  id: string
+  start_date: string
+  end_date: string
+  reason: string | null
+}
+
 export type TableReservationConfig = {
   id: string
   min_lead_minutes: number

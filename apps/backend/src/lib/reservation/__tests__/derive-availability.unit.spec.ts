@@ -1,6 +1,7 @@
 import {
   deriveAvailability,
   ExistingReservationInput,
+  ReservationClosureInput,
   ServiceWindowInput,
   TableReservationConfigInput,
 } from "../derive-availability"
@@ -53,6 +54,7 @@ describe("deriveAvailability", () => {
         party_size: 2,
         services: [service({ day_of_week: 0, start_time: "11:00", end_time: "12:00" })],
         reservations: [],
+        closures: [],
         config: { ...baseConfig, slot_step_minutes: 15 },
         now,
       })
@@ -75,6 +77,7 @@ describe("deriveAvailability", () => {
         party_size: 2,
         services: [service({ day_of_week: 0, start_time: "11:00", end_time: "12:00" })],
         reservations: [],
+        closures: [],
         config: { ...baseConfig, slot_step_minutes: 15 },
         now,
       })
@@ -91,6 +94,7 @@ describe("deriveAvailability", () => {
       party_size: 2,
       services: [service({ start_time: "12:00", end_time: "13:00" })],
       reservations: [],
+      closures: [],
       config: { ...baseConfig, min_lead_minutes: 30, slot_step_minutes: 15 },
     }
 
@@ -121,6 +125,7 @@ describe("deriveAvailability", () => {
         party_size: 2,
         services: [service({ day_of_week: 4, start_time: "12:00", end_time: "13:00" })],
         reservations: [],
+        closures: [],
         config: baseConfig,
         now,
       })
@@ -138,6 +143,7 @@ describe("deriveAvailability", () => {
         party_size: 2,
         services: [service({ day_of_week: 5, start_time: "12:00", end_time: "13:00" })],
         reservations: [],
+        closures: [],
         config: baseConfig,
         now,
       })
@@ -155,6 +161,7 @@ describe("deriveAvailability", () => {
         service({ start_time: "19:00", end_time: "19:00", capacity: 6, duration_minutes: 60 }),
       ],
       reservations: [reservation({ time: "19:00", party_size: 4, duration_minutes: 60 })],
+      closures: [],
       config: baseConfig,
       now: new Date("2026-07-14T06:00:00Z"),
     }
@@ -179,6 +186,7 @@ describe("deriveAvailability", () => {
         service({ start_time: "19:00", end_time: "19:00", capacity: 4, duration_minutes: 120 }), // dinner
       ],
       reservations: [],
+      closures: [],
       config: baseConfig,
       now: new Date("2026-07-14T06:00:00Z"),
     })
@@ -203,6 +211,7 @@ describe("deriveAvailability", () => {
         reservation({ time: "19:00", party_size: 2, duration_minutes: 60 }), // A
         reservation({ time: "19:30", party_size: 2, duration_minutes: 120 }), // B, overlaps
       ],
+      closures: [],
       config: baseConfig,
       now: new Date("2026-07-14T06:00:00Z"),
     })
@@ -225,6 +234,7 @@ describe("deriveAvailability", () => {
         reservation({ time: "19:00", party_size: 3, duration_minutes: 60 }), // C: [19:00, 20:00)
         reservation({ time: "21:00", party_size: 3, duration_minutes: 60 }), // D: [21:00, 22:00)
       ],
+      closures: [],
       config: baseConfig,
       now: new Date("2026-07-14T06:00:00Z"),
     })
@@ -244,6 +254,7 @@ describe("deriveAvailability", () => {
         service({ day_of_week: 6, start_time: "22:00", end_time: "23:00", capacity: 5, duration_minutes: 120 }),
       ],
       reservations: [reservation({ time: "23:45", party_size: 2, duration_minutes: 60 })],
+      closures: [],
       config: { ...baseConfig, slot_step_minutes: 30 },
       now: new Date("2026-07-18T06:00:00Z"),
     }
@@ -258,6 +269,7 @@ describe("deriveAvailability", () => {
       party_size: 2,
       services: [service({ day_of_week: 2 })], // Tuesday only
       reservations: [],
+      closures: [],
       config: baseConfig,
       now: new Date("2026-07-14T06:00:00Z"),
     })
@@ -271,6 +283,7 @@ describe("deriveAvailability", () => {
       party_size: 9,
       services: [service()],
       reservations: [],
+      closures: [],
       config: { ...baseConfig, max_party_size: 8 },
       now: new Date("2026-07-14T06:00:00Z"),
     })
@@ -286,11 +299,76 @@ describe("deriveAvailability", () => {
         service({ start_time: "19:00", end_time: "21:00", duration_minutes: 60, capacity: 10 }),
       ],
       reservations: [],
+      closures: [],
       config: { ...baseConfig, slot_step_minutes: 30, last_seating_margin_minutes: 30 },
       now: new Date("2026-07-14T06:00:00Z"),
     })
 
     // Window 19:00-21:00, margin 30 ⇒ last offerable start is 20:30, included.
     expect(result.times).toEqual(["19:00", "19:30", "20:00", "20:30"])
+  })
+
+  describe("Fermeture de réservation", () => {
+    // A closure period 2026-07-13 (Mon) .. 2026-07-15 (Wed). A Service is
+    // declared every day of that stretch plus its neighbours, so it is the
+    // closure boundary itself under test, never a missing Service.
+    const base = {
+      party_size: 2,
+      services: [
+        service({ day_of_week: 0, start_time: "12:00", end_time: "12:00" }), // Sunday 07-12, day before
+        service({ day_of_week: 1, start_time: "12:00", end_time: "12:00" }), // Monday 07-13, start_date
+        service({ day_of_week: 2, start_time: "12:00", end_time: "12:00" }), // Tuesday 07-14, inside
+        service({ day_of_week: 3, start_time: "12:00", end_time: "12:00" }), // Wednesday 07-15, end_date
+        service({ day_of_week: 4, start_time: "12:00", end_time: "12:00" }), // Thursday 07-16, day after
+      ],
+      reservations: [],
+      config: baseConfig,
+      now: new Date("2026-07-10T06:00:00Z"),
+    }
+    const closures: ReservationClosureInput[] = [
+      { start_date: "2026-07-13", end_date: "2026-07-15" },
+    ]
+
+    it("empties availability entirely for a day inside the period", () => {
+      const result = deriveAvailability({ ...base, date: "2026-07-14", closures })
+
+      expect(result).toEqual({ times: [], open: false })
+    })
+
+    it("empties availability on the start_date bound, inclusive", () => {
+      const result = deriveAvailability({ ...base, date: "2026-07-13", closures })
+
+      expect(result).toEqual({ times: [], open: false })
+    })
+
+    it("empties availability on the end_date bound, inclusive", () => {
+      const result = deriveAvailability({ ...base, date: "2026-07-15", closures })
+
+      expect(result).toEqual({ times: [], open: false })
+    })
+
+    it("still offers a Service the day just before the period starts", () => {
+      const result = deriveAvailability({ ...base, date: "2026-07-12", closures })
+
+      expect(result.open).toBe(true)
+      expect(result.times).not.toEqual([])
+    })
+
+    it("offers a Service again the day just after the period ends", () => {
+      const result = deriveAvailability({ ...base, date: "2026-07-16", closures })
+
+      expect(result.open).toBe(true)
+      expect(result.times).not.toEqual([])
+    })
+
+    it("wipes even a single-day closure (start_date === end_date), the bank-holiday case", () => {
+      const result = deriveAvailability({
+        ...base,
+        date: "2026-07-14",
+        closures: [{ start_date: "2026-07-14", end_date: "2026-07-14" }],
+      })
+
+      expect(result).toEqual({ times: [], open: false })
+    })
   })
 })

@@ -3,6 +3,7 @@ import { CalendarMini } from "@medusajs/icons"
 import { Container, Heading, Text } from "@medusajs/ui"
 import { ConfigSection } from "../../../components/table-reservation/config-section"
 import { ServiceWindowsSection } from "../../../components/table-reservation/service-windows-section"
+import { ReservationClosuresSection } from "../../../components/table-reservation/closures-section"
 
 // The table-reservation settings page: Services, and the horizon/délai
 // minimum/pas/taille de groupe maximale/téléphone/email configuration.
@@ -23,6 +24,7 @@ const TableReservationSettingsPage = () => {
 
       <ConfigSection />
       <ServiceWindowsSection />
+      <ReservationClosuresSection />
     </div>
   )
 }
