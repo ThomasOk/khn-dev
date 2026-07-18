@@ -56,7 +56,8 @@ The weekly pattern of windows during which retraits are possible, editable from 
 _Avoid_: Opening hours, heures d'ouverture
 
 **Fermeture exceptionnelle**:
-A period (start date, end date, both inclusive) on which no retrait is possible, overriding the weekly Horaires de retrait — a public holiday (the degenerate case of a one-day period), the August closure, a funeral. Recorded from the admin, never in code.
+A period (start date, end date, both inclusive) on which no retrait is possible, overriding the weekly Horaires de retrait — a public holiday (the degenerate case of a one-day period), the August closure, a funeral. Recorded from the admin, never in code. It closes **the retrait and nothing else**: the dining room keeps its own Fermeture de réservation, entered separately (ADR 0007), so the August closure has to be recorded twice, on purpose.
+_Avoid_: Fermeture (unqualified — always say which of the two calendars you mean)
 
 **Délai de préparation**:
 The minimum time between an order being placed and the earliest créneau offered to that customer — the kitchen needs to cook. Configuration, not a constant in the code: the first value will be wrong and must be fixable without a deploy.
@@ -108,7 +109,49 @@ _Avoid_: Adresse de livraison, shipping address (the field is named that; the co
 **Nom / Email / Téléphone**:
 The three things a Commande genuinely needs. The **nom** is what gets called across the counter. The **email** carries the Facture. The **téléphone** is the one nobody values until the kitchen runs out of bœuf at 12h05 and must reach the client *before* the Créneau, not after.
 
+### La réservation de table
+
+**Réservation**:
+The restaurant's commitment to seat a stated number of Couverts at a stated Heure de réservation, confirmed to the customer immediately and unconditionally. It is a **promise, not a request**: no human approves it afterwards, and what the site confirms the restaurant owes. It shares nothing with a Commande — no Cart, no payment, no Carte, no Créneau de retrait, and its own separate calendar. Maps to `TableReservation`.
+_Avoid_: Commande, réservation de créneau, booking; and beware Medusa's inventory `Reservation`, which holds stock and is an unrelated concept that happens to share the word
+
+**Couvert**:
+One seated diner. The unit in which both a Réservation's size and a Service's Capacité are expressed. A Couvert is not a table: the system does not know that tables exist (ADR 0006).
+_Avoid_: Personne, place, siège, table
+
+**Service**:
+A recurring named window during which the restaurant seats customers — "Déjeuner, mardi, 12h00–14h00". Where an Horaire de retrait is only hours, a Service also carries its **own Capacité and its own Durée d'occupation**, because a Tuesday lunch and a Saturday dinner differ in both. The last bookable Heure is derived from the Service's end, never entered by hand. Maps to `ServiceWindow`.
+_Avoid_: Horaire (that is the retrait's weekly pattern), créneau, sitting, `Service` alone in code (a Medusa module's service is a different thing entirely)
+
+**Capacité**:
+The number of Couverts a Service can seat simultaneously. **Configuration, not a measurement of the dining room** — it is expected to be set *below* the real number of seats and lowered again the first time a full house was accepted, because counting in Couverts over-accepts small groups (ADR 0006). One number decides whether the whole system is too permissive or too strict.
+_Avoid_: Nombre de places, capacity of the restaurant (it belongs to a Service, not to the building)
+
+**Heure de réservation**:
+The instant the customer commits to arriving at — "19h30". It is the only thing about the timing the customer chooses. Contrast with a Créneau de retrait, which is an *interval* the customer picks: here the interval is the restaurant's business, not the client's.
+_Avoid_: Créneau (that word means the retrait, always), plage horaire
+
+**Durée d'occupation**:
+How long a Réservation holds its Couverts, counted from the Heure de réservation. It belongs to the Service and to the restaurant — the customer neither chooses it nor is shown it. It is **copied onto the Réservation** when the Réservation is taken, so that re-tuning a Service later never rewrites the occupancy of tables already promised.
+_Avoid_: Turn time, temps de table, durée de réservation (the customer reserves an hour, never a duration)
+
+**Fermeture de réservation**:
+A period on which no Réservation is possible, overriding that period's Services. Deliberately **not the same object as a Fermeture exceptionnelle**, which closes the retrait: the two calendars are separate and are entered separately (ADR 0007), which is what lets a privatised evening close the dining room while click & collect carries on.
+
+**Annulation (réservation)**:
+The customer releasing their Réservation from the link in their confirmation email, at any moment **up to the Heure de réservation** — there is no cut-off, because a cancellation at 19h25 for 19h30 is still worth infinitely more than an empty table nobody expected. It is the only state change a Réservation ever has: a Réservation is `confirmée` or `annulée`, and nothing else (ADR 0008). Modifying a Réservation is not possible — one cancels and books again.
+
+**Feuille de service**:
+The dining room's production document: one day's Réservations by ascending Heure, with the nom, the number of Couverts and the téléphone. The counterpart of the Ticket cuisine — read standing up, carries no prices, and is a rendering of **the day**, never of a single Réservation.
+_Avoid_: Livre de réservations (that is the whole register, not one day's), plan de salle (that would be tables, which are not modelled)
+
 ### Not in the domain
+
+**Table (le meuble)**:
+The actual furniture, its seats, and which Réservation sits at it. **Not modelled, deliberately** — capacity is counted in Couverts over an interval instead (ADR 0006). Recorded here because "where is the table plan?" is the first question a future reader will ask, and because the answer is a decision, not a gap.
+
+**No-show**:
+A Réservation whose customer never came. It happens, it costs money, and the system **does not record it** (ADR 0008): a measurement is only worth taking when something can be done with it, and every lever against no-shows (deposit, blacklist) needs a durable customer identity that this domain refuses to require.
 
 **Supplément**:
 A paid add-on to a dish (+1 € œuf). **Does not exist at Kim-Hi Noodle today**, and nothing should be built for it. Recorded here because it is the obvious thing to assume a restaurant has: it would be the first concept to put a price *outside* Medusa's pricing engine, so if it ever arrives, it needs a deliberate decision, not an ad-hoc field.
