@@ -8,7 +8,9 @@ import { z } from "@medusajs/framework/zod"
 // deriveAvailability expect. Validated here so the module never stores a
 // malformed time.
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/
-const YMD = /^\d{4}-\d{2}-\d{2}$/
+// Exported: the reservations list route validates its `date` query param
+// with this same pattern, outside validateAndTransformBody's reach.
+export const YMD = /^\d{4}-\d{2}-\d{2}$/
 
 export const CreateServiceWindowSchema = z
   .object({
@@ -59,6 +61,23 @@ export type CreateReservationClosureSchema = z.infer<
   typeof CreateReservationClosureSchema
 >
 
+// The restaurateur's correction of a Réservation from the admin (ticket 07):
+// every field is optional, so a call about the wrong phone number only
+// touches `customer_phone`. No re-validation of Capacité or Fermetures here —
+// see update-reservation.ts.
+export const UpdateTableReservationSchema = z.object({
+  date: z.string().regex(YMD).optional(),
+  time: z.string().regex(HHMM).optional(),
+  party_size: z.number().int().min(1).optional(),
+  customer_name: z.string().trim().min(1).optional(),
+  customer_email: z.string().trim().email().optional(),
+  customer_phone: z.string().trim().min(1).optional(),
+  note: z.string().trim().min(1).nullish(),
+})
+export type UpdateTableReservationSchema = z.infer<
+  typeof UpdateTableReservationSchema
+>
+
 export const UpsertConfigSchema = z.object({
   min_lead_minutes: z.number().int().min(0),
   horizon_days: z.number().int().min(0),
@@ -90,5 +109,10 @@ export const tableReservationAdminMiddlewares: MiddlewareRoute[] = [
     matcher: "/admin/table-reservation/closures",
     method: "POST",
     middlewares: [validateAndTransformBody(CreateReservationClosureSchema)],
+  },
+  {
+    matcher: "/admin/table-reservation/reservations/:id",
+    method: "POST",
+    middlewares: [validateAndTransformBody(UpdateTableReservationSchema)],
   },
 ]

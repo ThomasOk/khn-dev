@@ -20,6 +20,18 @@ export type ReservationClosure = {
   reason: string | null
 }
 
+export type TableReservation = {
+  id: string
+  date: string
+  time: string
+  party_size: number
+  customer_name: string
+  customer_email: string
+  customer_phone: string
+  note: string | null
+  status: "confirmed" | "cancelled"
+}
+
 export type TableReservationConfig = {
   id: string
   min_lead_minutes: number

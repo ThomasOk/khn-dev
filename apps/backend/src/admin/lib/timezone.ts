@@ -6,6 +6,19 @@
 // (e.g. 11:15 instead of 12:15), which is the spec's most likely bug.
 export const RESTAURANT_TIMEZONE = "Europe/Paris"
 
+const dateKeyFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: RESTAURANT_TIMEZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+})
+
+// "YYYY-MM-DD" for right now, in the restaurant's own civil day — never the
+// admin browser's timezone, which can disagree with Paris around midnight.
+export function todayInRestaurantTimezone(): string {
+  return dateKeyFormatter.format(new Date())
+}
+
 const dayFormatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: RESTAURANT_TIMEZONE,
   weekday: "short",
