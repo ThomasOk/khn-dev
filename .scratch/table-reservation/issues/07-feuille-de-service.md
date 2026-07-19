@@ -6,10 +6,10 @@ C'est aussi ce qui rend l'ADR 0008 tenable : puisque personne ne clique sur rien
 
 **Blocked by:** 04 — Réserver.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Route admin renvoyant les Réservations d'un jour donné, triées par heure croissante
-- [ ] Les Réservations annulées **n'y figurent pas**
-- [ ] Vue admin affichant nom, heure, Couverts, téléphone et note, imprimable en une page
-- [ ] Le restaurateur peut consulter et corriger une Réservation depuis l'admin — le client a appelé
-- [ ] Test d'intégration HTTP : un jour donné renvoie les `confirmed` dans l'ordre horaire et **pas** les `cancelled`
+- [x] Route admin renvoyant les Réservations d'un jour donné, triées par heure croissante
+- [x] Les Réservations annulées **n'y figurent pas**
+- [x] Vue admin affichant nom, heure, Couverts, téléphone et note, imprimable en une page
+- [x] Le restaurateur peut consulter et corriger une Réservation depuis l'admin — le client a appelé
+- [x] Test d'intégration HTTP : un jour donné renvoie les `confirmed` dans l'ordre horaire et **pas** les `cancelled`
