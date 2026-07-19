@@ -6,12 +6,12 @@ C'est le **seul changement d'état** qu'une Réservation connaîtra jamais (ADR 
 
 **Blocked by:** 04 — Réserver.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] `POST /store/table-reservations/:id/cancel` avec le jeton dans le corps, réponse `200`
-- [ ] Aucun délai butoir : l'annulation reste possible jusqu'à l'heure de la Réservation
-- [ ] **Idempotente** : annuler une Réservation déjà annulée renvoie `200`, pas une erreur — le client a cliqué deux fois sur son lien
-- [ ] `404` **identique** pour une Réservation inconnue et pour un jeton invalide, afin de ne rien révéler à qui essaie des identifiants
-- [ ] La capacité est rendue : l'appel de disponibilité qui suit propose à nouveau l'heure libérée
-- [ ] Une Réservation annulée ne compte plus dans le calcul d'occupation
-- [ ] Test d'intégration HTTP : annulation avec jeton valide, jeton faux, double annulation, et **libération effective de la capacité** vérifiée par un appel de disponibilité
+- [x] `POST /store/table-reservations/:id/cancel` avec le jeton dans le corps, réponse `200`
+- [x] Aucun délai butoir : l'annulation reste possible jusqu'à l'heure de la Réservation
+- [x] **Idempotente** : annuler une Réservation déjà annulée renvoie `200`, pas une erreur — le client a cliqué deux fois sur son lien
+- [x] `404` **identique** pour une Réservation inconnue et pour un jeton invalide, afin de ne rien révéler à qui essaie des identifiants
+- [x] La capacité est rendue : l'appel de disponibilité qui suit propose à nouveau l'heure libérée
+- [x] Une Réservation annulée ne compte plus dans le calcul d'occupation
+- [x] Test d'intégration HTTP : annulation avec jeton valide, jeton faux, double annulation, et **libération effective de la capacité** vérifiée par un appel de disponibilité
