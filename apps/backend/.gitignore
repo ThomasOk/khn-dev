@@ -2,6 +2,11 @@
 .env
 .DS_Store
 /uploads
+# Factures générées par le module File local (issue-invoice.ts) — un fichier
+# par exécution du workflow, y compris chaque run de test HTTP (sa propre
+# base jetable, donc son propre F-2026-000001). Ne concerne pas les autres
+# assets de static/ (ex. samoussas.jpg), qui restent suivis.
+static/private-*.pdf
 /node_modules
 yarn-error.log
 
