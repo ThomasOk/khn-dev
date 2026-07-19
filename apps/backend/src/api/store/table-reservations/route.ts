@@ -25,6 +25,12 @@ export async function POST(
       email,
       phone,
       note,
+      // Feeds ticket 08's per-IP frequency guard. Behind a reverse proxy,
+      // this is only the real client IP if Express's `trust proxy` is
+      // configured for that deployment — otherwise every request resolves to
+      // the proxy's own address, and the guard degrades to one shared budget
+      // for every customer rather than one per IP.
+      ip: req.ip ?? "unknown",
       now_ms: Date.now(),
     },
   })
