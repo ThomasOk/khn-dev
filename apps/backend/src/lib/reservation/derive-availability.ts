@@ -11,10 +11,9 @@ import {
 // clock, on the model of deriveSlots. It derives the offerable Heures de
 // réservation for one date and one party_size from the admin-configured
 // Services — including capacity, which deriveSlots never had to consider
-// (ADR 0006). No Réservation can be persisted yet (that is ticket 04); this
-// function accepts existing reservations as plain data specifically so the
-// hard part — overlapping intervals, mixed durations, the semi-open bound —
-// can be tested before persistence exists at all.
+// (ADR 0006). It accepts existing reservations as plain data rather than
+// reading them itself, so the hard part — overlapping intervals, mixed
+// durations, the semi-open bound — stays testable without a database.
 //
 // Hard rule inherited from deriveSlots: there is NO `new Date()` with no
 // argument and NO system-clock read anywhere in this file. `now` is the only

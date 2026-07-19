@@ -4,11 +4,12 @@ import TableReservationModuleService from "../../modules/table-reservation/servi
 import { Availability, deriveAvailability } from "./derive-availability"
 
 // Shared by GET /store/table-reservations/availability — resolves the admin
-// configuration and calls the pure deriveAvailability with it. No
-// TableReservation can be persisted yet (that model belongs to a later
-// ticket): `reservations` is always empty here, so capacity is unconstrained
-// by anything already booked, but the shape already matches what a later
-// ticket will fill in with real rows.
+// configuration and calls the pure deriveAvailability with it. Loads the
+// day's `confirmed` Réservations (same query the reserve workflow's locked
+// job runs, src/workflows/table-reservation/reserve-table.ts) so a booked
+// Heure is actually shown as consumed, and a cancelled one — excluded by the
+// `status: "confirmed"` filter itself — frees its Couverts immediately
+// (ticket 05).
 export type AvailabilityQuery = {
   date: string
   party_size: number
@@ -27,10 +28,11 @@ export async function getAvailability(
   const service: TableReservationModuleService = container.resolve(
     TABLE_RESERVATION_MODULE
   )
-  const [services, configs, closures] = await Promise.all([
+  const [services, configs, closures, reservations] = await Promise.all([
     service.listServiceWindows(),
     service.listTableReservationConfigs(),
     service.listReservationClosures(),
+    service.listTableReservations({ date: query.date, status: "confirmed" }),
   ])
   const config = configs[0]
 
@@ -45,7 +47,11 @@ export async function getAvailability(
     date: query.date,
     party_size: query.party_size,
     services,
-    reservations: [],
+    reservations: reservations.map((r) => ({
+      time: r.time,
+      party_size: r.party_size,
+      duration_minutes: r.duration_minutes,
+    })),
     closures,
     config,
     now,

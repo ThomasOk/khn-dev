@@ -21,10 +21,22 @@ export type CreateTableReservationSchema = z.infer<
   typeof CreateTableReservationSchema
 >
 
+export const CancelTableReservationSchema = z.object({
+  token: z.string().trim().min(1),
+})
+export type CancelTableReservationSchema = z.infer<
+  typeof CancelTableReservationSchema
+>
+
 export const tableReservationStoreMiddlewares: MiddlewareRoute[] = [
   {
     matcher: "/store/table-reservations",
     method: "POST",
     middlewares: [validateAndTransformBody(CreateTableReservationSchema)],
+  },
+  {
+    matcher: "/store/table-reservations/:id/cancel",
+    method: "POST",
+    middlewares: [validateAndTransformBody(CancelTableReservationSchema)],
   },
 ]
