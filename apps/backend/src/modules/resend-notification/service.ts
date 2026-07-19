@@ -4,12 +4,19 @@ import { render } from "@react-email/render"
 import * as React from "react"
 import { Resend } from "resend"
 import { mapAttachmentsForResend } from "../../lib/resend/map-attachments-for-resend"
+import { formatReservationSubject } from "../../lib/reservation/format-reservation"
 import OrderConfirmationEmail from "./templates/order-confirmation"
 import type { OrderConfirmationEmailProps } from "./templates/order-confirmation"
 import KitchenTicketNotificationEmail from "./templates/kitchen-ticket-notification"
 import type { KitchenTicketNotificationEmailProps } from "./templates/kitchen-ticket-notification"
 import InvoiceNotificationEmail from "./templates/invoice-notification"
 import type { InvoiceNotificationEmailProps } from "./templates/invoice-notification"
+import TableReservationConfirmationEmail from "./templates/table-reservation-confirmation"
+import type { TableReservationConfirmationEmailProps } from "./templates/table-reservation-confirmation"
+import TableReservationNotificationEmail from "./templates/table-reservation-notification"
+import type { TableReservationNotificationEmailProps } from "./templates/table-reservation-notification"
+import TableReservationCancellationNotificationEmail from "./templates/table-reservation-cancellation-notification"
+import type { TableReservationCancellationNotificationEmailProps } from "./templates/table-reservation-cancellation-notification"
 
 type Options = {
   apiKey: string
@@ -77,6 +84,36 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
         const html = await render(React.createElement(InvoiceNotificationEmail, props))
         return {
           subject: `Votre facture ${props.formatted_number} — commande #${props.order_id}`,
+          html,
+        }
+      }
+      case "table-reservation-confirmation": {
+        const props = data as unknown as TableReservationConfirmationEmailProps
+        const html = await render(
+          React.createElement(TableReservationConfirmationEmail, props)
+        )
+        return {
+          subject: "Votre réservation chez Kim-Hi Noodle est confirmée",
+          html,
+        }
+      }
+      case "table-reservation-notification": {
+        const props = data as unknown as TableReservationNotificationEmailProps
+        const html = await render(
+          React.createElement(TableReservationNotificationEmail, props)
+        )
+        return {
+          subject: formatReservationSubject("reservation", props),
+          html,
+        }
+      }
+      case "table-reservation-cancellation-notification": {
+        const props = data as unknown as TableReservationCancellationNotificationEmailProps
+        const html = await render(
+          React.createElement(TableReservationCancellationNotificationEmail, props)
+        )
+        return {
+          subject: formatReservationSubject("cancellation", props),
           html,
         }
       }
