@@ -70,6 +70,13 @@ export default function NavLinks({ categories, scrolled = true }: NavLinksProps)
       </LocalizedClientLink>
 
       <LocalizedClientLink
+        href="/table-reservations"
+        className="text-sm text-white transition-colors duration-200 [@media(hover:hover)]:hover:text-orange-300"
+      >
+        Réserver
+      </LocalizedClientLink>
+
+      <LocalizedClientLink
         href="/contact"
         className="text-sm text-white transition-colors duration-200 [@media(hover:hover)]:hover:text-orange-300"
       >

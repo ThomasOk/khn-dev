@@ -6,6 +6,21 @@
 // (e.g. 11:15 instead of 12:15), which is the spec's most likely bug.
 export const RESTAURANT_TIMEZONE = "Europe/Paris"
 
+// en-CA formats as "YYYY-MM-DD" directly — the same civil-day text the
+// table-reservation API expects for `date`. Driven only by the explicit
+// timeZone, never the host's, so server and browser render the identical
+// string regardless of either machine's local zone (no hydration mismatch).
+const civilDayFormatter = new Intl.DateTimeFormat("en-CA", {
+  timeZone: RESTAURANT_TIMEZONE,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+})
+
+export function todayInRestaurantTimezone(): string {
+  return civilDayFormatter.format(new Date())
+}
+
 const timeFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeZone: RESTAURANT_TIMEZONE,
   hour: "2-digit",

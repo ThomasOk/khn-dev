@@ -110,6 +110,16 @@ const SideMenu = ({ categories }: SideMenuProps) => {
                       </li>
                       <li>
                         <LocalizedClientLink
+                          href="/table-reservations"
+                          className="text-3xl leading-10 transition-colors duration-150 [@media(hover:hover)]:hover:text-ui-fg-disabled"
+                          onClick={close}
+                          data-testid="reservations-link"
+                        >
+                          Réserver
+                        </LocalizedClientLink>
+                      </li>
+                      <li>
+                        <LocalizedClientLink
                           href="/contact"
                           className="text-3xl leading-10 transition-colors duration-150 [@media(hover:hover)]:hover:text-ui-fg-disabled"
                           onClick={close}
