@@ -3,12 +3,16 @@ import {
   createStep,
   createWorkflow,
   StepResponse,
+  transform,
+  when,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
+import { emitEventStep } from "@medusajs/medusa/core-flows"
 import { MedusaError, Modules } from "@medusajs/framework/utils"
 import { ILockingModule } from "@medusajs/framework/types"
 import { TABLE_RESERVATION_MODULE } from "../../modules/table-reservation"
 import TableReservationModuleService from "../../modules/table-reservation/service"
+import { TableReservationEvents } from "../../modules/table-reservation/events"
 import { deriveReservationAcceptance } from "../../lib/reservation/derive-availability"
 
 // The only place in the table-reservation feature with a real concurrency
@@ -177,7 +181,25 @@ const reserveTableStep = createStep(
 const reserveTableWorkflow = createWorkflow(
   "reserve-table",
   function (input: ReserveTableInput) {
-    return new WorkflowResponse(reserveTableStep(input))
+    const result = reserveTableStep(input)
+
+    // Only a genuine "created" outcome is worth a notification — never
+    // "party_size_too_large", which never touched the database (ticket 06).
+    when(result, (result) => result.outcome === "created").then(function () {
+      const reservationId = transform({ result }, ({ result }) => {
+        if (result.outcome !== "created") {
+          return ""
+        }
+        return result.reservation.id
+      })
+
+      emitEventStep({
+        eventName: TableReservationEvents.RESERVED,
+        data: { id: reservationId },
+      })
+    })
+
+    return new WorkflowResponse(result)
   }
 )
 

@@ -2,11 +2,15 @@ import {
   createStep,
   createWorkflow,
   StepResponse,
+  transform,
+  when,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
+import { emitEventStep } from "@medusajs/medusa/core-flows"
 import { MedusaError } from "@medusajs/framework/utils"
 import { TABLE_RESERVATION_MODULE } from "../../modules/table-reservation"
 import TableReservationModuleService from "../../modules/table-reservation/service"
+import { TableReservationEvents } from "../../modules/table-reservation/events"
 
 // The customer's only self-service action on a Réservation (ADR 0008: no
 // modification, no other lifecycle). No lock is needed here — unlike
@@ -22,6 +26,10 @@ export type CancelReservationInput = {
 export type CancelReservationResult = {
   id: string
   status: "cancelled"
+  // Internal to the workflow (the route never forwards it, ticket 06): true
+  // only when THIS call flipped confirmed -> cancelled, so a second click on
+  // an already-cancelled link never triggers a second restaurant notification.
+  just_cancelled: boolean
 }
 
 const cancelReservationStep = createStep(
@@ -48,7 +56,11 @@ const cancelReservationStep = createStep(
     // 200, not an error, and must not overwrite the first cancellation's
     // cancelled_at.
     if (reservation.status === "cancelled") {
-      return new StepResponse({ id: reservation.id, status: "cancelled" as const })
+      return new StepResponse({
+        id: reservation.id,
+        status: "cancelled" as const,
+        just_cancelled: false,
+      })
     }
 
     const cancelled = await tableReservation.updateTableReservations({
@@ -57,14 +69,29 @@ const cancelReservationStep = createStep(
       cancelled_at: new Date(input.now_ms),
     })
 
-    return new StepResponse({ id: cancelled.id, status: "cancelled" as const })
+    return new StepResponse({
+      id: cancelled.id,
+      status: "cancelled" as const,
+      just_cancelled: true,
+    })
   }
 )
 
 const cancelReservationWorkflow = createWorkflow(
   "cancel-table-reservation",
   function (input: CancelReservationInput) {
-    return new WorkflowResponse(cancelReservationStep(input))
+    const result = cancelReservationStep(input)
+
+    when(result, (result) => result.just_cancelled).then(function () {
+      const reservationId = transform({ result }, ({ result }) => result.id)
+
+      emitEventStep({
+        eventName: TableReservationEvents.CANCELLED,
+        data: { id: reservationId },
+      })
+    })
+
+    return new WorkflowResponse(result)
   }
 )
 
