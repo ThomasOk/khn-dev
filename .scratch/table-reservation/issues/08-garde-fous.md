@@ -8,14 +8,14 @@ La plus importante n'est pas l'anti-fraude, c'est **une seule Réservation activ
 
 **Blocked by:** 04 — Réserver.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Une seule Réservation `confirmed` par email et par Service : la seconde renvoie `409`
-- [ ] Ce contrôle tourne **dans le job verrouillé**, pas avant ni après
-- [ ] Une Réservation annulée ne bloque plus : le client peut refaire une demande sur le même Service
-- [ ] Limite de fréquence par email et par IP
-- [ ] Plafond global de Réservations créées par jour
-- [ ] **Aucune vérification d'identité, aucun double opt-in** : un email invalide signifie que le client n'aura pas son lien d'annulation, pas qu'il ne viendra pas
-- [ ] Le **téléphone reste obligatoire** — c'est le vrai canal de rattrapage
-- [ ] Test d'intégration HTTP : deux créations identiques d'affilée donnent une Réservation et un `409` ; après annulation de la première, une nouvelle création passe
-- [ ] Test d'intégration HTTP : deux créations identiques **en parallèle** ne donnent qu'une seule Réservation
+- [x] Une seule Réservation `confirmed` par email et par Service : la seconde renvoie `409`
+- [x] Ce contrôle tourne **dans le job verrouillé**, pas avant ni après
+- [x] Une Réservation annulée ne bloque plus : le client peut refaire une demande sur le même Service
+- [x] Limite de fréquence par email et par IP
+- [x] Plafond global de Réservations créées par jour
+- [x] **Aucune vérification d'identité, aucun double opt-in** : un email invalide signifie que le client n'aura pas son lien d'annulation, pas qu'il ne viendra pas
+- [x] Le **téléphone reste obligatoire** — c'est le vrai canal de rattrapage
+- [x] Test d'intégration HTTP : deux créations identiques d'affilée donnent une Réservation et un `409` ; après annulation de la première, une nouvelle création passe
+- [x] Test d'intégration HTTP : deux créations identiques **en parallèle** ne donnent qu'une seule Réservation
