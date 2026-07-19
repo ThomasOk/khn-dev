@@ -8,15 +8,15 @@ Le point de soin est le **groupe qui grossit**. Passer de 4 à 5 personnes est f
 
 **Blocked by:** 05 — Annuler, et 08 — Les garde-fous (on n'expose pas un formulaire public sans limite de fréquence).
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Page de réservation autonome, hors du groupe de routes du checkout
-- [ ] Appels via le SDK JS Medusa, jamais en `fetch` brut
-- [ ] Le client choisit date et Couverts, et ne voit que des heures réellement réservables
-- [ ] Au-delà de la taille de groupe maximale, la page affiche franchement le téléphone du restaurant au lieu d'un formulaire qui ne mènerait à rien
-- [ ] Quand il n'y a aucune heure, la page dit **pourquoi** (jour fermé, hors horizon, service passé) au lieu d'afficher une liste vide
-- [ ] Confirmation affichée immédiatement après la réservation, avec le récapitulatif
-- [ ] Page d'annulation recevant le lien à jeton de l'email, avec un état clair quand la Réservation est déjà annulée
-- [ ] Les textes poussent vers le téléphone pour la modification, en particulier l'agrandissement du groupe
-- [ ] Le téléphone du restaurant est visible sur la page, pour les cas que le formulaire ne couvre pas
-- [ ] Aucune infra de test React n'est mise en place — vérification à la main, comme pour le checkout des Créneaux
+- [x] Page de réservation autonome, hors du groupe de routes du checkout
+- [x] Appels via le SDK JS Medusa, jamais en `fetch` brut
+- [x] Le client choisit date et Couverts, et ne voit que des heures réellement réservables
+- [x] Au-delà de la taille de groupe maximale, la page affiche franchement le téléphone du restaurant au lieu d'un formulaire qui ne mènerait à rien
+- [x] Quand il n'y a aucune heure, la page dit **pourquoi** (jour fermé, hors horizon, service passé) au lieu d'afficher une liste vide
+- [x] Confirmation affichée immédiatement après la réservation, avec le récapitulatif
+- [x] Page d'annulation recevant le lien à jeton de l'email, avec un état clair quand la Réservation est déjà annulée
+- [x] Les textes poussent vers le téléphone pour la modification, en particulier l'agrandissement du groupe
+- [x] Le téléphone du restaurant est visible sur la page, pour les cas que le formulaire ne couvre pas
+- [x] Aucune infra de test React n'est mise en place — vérification à la main, comme pour le checkout des Créneaux
