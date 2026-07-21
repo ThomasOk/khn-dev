@@ -45,7 +45,7 @@ export default function NavClient({ categories, children }: NavClientProps) {
                 alt="Kim-Hi Noodle"
                 width={120}
                 height={40}
-                className="h-10 w-auto object-contain"
+                className="h-8 w-auto object-contain"
                 priority
               />
             </LocalizedClientLink>
@@ -62,11 +62,11 @@ export default function NavClient({ categories, children }: NavClientProps) {
                 alt="Kim-Hi Noodle"
                 width={100}
                 height={34}
-                className="h-8 w-auto object-contain"
+                className="h-7 w-auto object-contain"
                 priority
               />
             </LocalizedClientLink>
-            <NavLinks categories={categories} scrolled={scrolled} />
+            <NavLinks />
           </div>
 
           <div className={`flex-1 flex items-center justify-end h-full transition-colors duration-300 ${textClass}`}>

@@ -5,25 +5,44 @@ const Hero = () => {
   return (
     <div className="relative h-screen w-full overflow-hidden">
       <Image
-        src="/images/restaurant_hero.png"
-        alt="Kim-Hi Noodle - le restaurant"
+        src="/images/pad_thai.png"
+        alt="Pad thai - Kim-Hi Noodle"
         fill
-        className="object-cover object-center"
+        className="object-cover object-[50%_68%]"
         priority
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+      <div className="absolute inset-0 bg-black/60" />
 
-      <div className="absolute bottom-10 left-8 small:left-16 z-10 flex flex-col gap-6">
-        <h1 className="text-4xl small:text-6xl font-bold text-white uppercase leading-tight max-w-xl">
-          De multiples façons de déguster les nouilles.
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-6 px-6 text-center">
+        <div className="flex items-center gap-4 text-white/80">
+          <span className="h-px w-10 bg-white/50" />
+          <span className="text-xs tracking-[0.3em] uppercase">
+            Savourez chaque bouchée
+          </span>
+          <span className="h-px w-10 bg-white/50" />
+        </div>
+
+        <h1 className="font-display text-4xl small:text-6xl leading-tight text-white max-w-3xl">
+          <span className="font-bold">De multiples façons de</span>
+          <br />
+          <span className="italic font-normal">déguster les nouilles</span>
         </h1>
-        <LocalizedClientLink
-          href="/store"
-          className="self-start inline-flex items-center px-6 py-3 border border-white text-white text-sm font-medium transition-colors duration-200 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-neutral-900"
-        >
-          Voir la carte
-        </LocalizedClientLink>
+
+        <div className="flex items-center gap-4 mt-2">
+          <LocalizedClientLink
+            href="/table-reservations"
+            className="inline-flex items-center px-6 py-3 border border-white text-white text-xs tracking-[0.15em] uppercase transition-colors duration-200 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-neutral-900"
+          >
+            Réserver une table
+          </LocalizedClientLink>
+          <LocalizedClientLink
+            href="/store"
+            className="inline-flex items-center px-6 py-3 bg-white text-neutral-900 text-xs tracking-[0.15em] uppercase transition-colors duration-200 [@media(hover:hover)]:hover:bg-orange-300"
+          >
+            Commander
+          </LocalizedClientLink>
+        </div>
       </div>
     </div>
   )

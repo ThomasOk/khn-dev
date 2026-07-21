@@ -1,48 +1,63 @@
-import { getCollectionByHandle } from "@lib/data/collections"
-import { listProducts } from "@lib/data/products"
-import { HttpTypes } from "@medusajs/types"
-import ProductPreview from "@modules/products/components/product-preview"
+import Image from "next/image"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import RevealWrapper from "@modules/common/components/reveal-wrapper"
 
-const PopularProducts = async ({ region }: { region: HttpTypes.StoreRegion }) => {
-  const collection = await getCollectionByHandle("nos-incontournables")
+type CategoryTile = {
+  name: string
+  handle: string
+  image: string
+}
 
-  const queryParams = {
-    limit: 4,
-    fields: "*variants.calculated_price",
-    ...(collection ? { collection_id: collection.id } : {}),
-  }
+const categories: CategoryTile[] = [
+  { name: "Entrées", handle: "entrees", image: "/images/home_entree.png" },
+  { name: "Plats", handle: "plats", image: "/images/home_plats.png" },
+  { name: "Soupes", handle: "soupes", image: "/images/home_soupe.png" },
+]
 
-  const {
-    response: { products },
-  } = await listProducts({ regionId: region.id, queryParams })
-
-  if (!products.length) return null
-
+const PopularProducts = () => {
   return (
-    <section className="bg-white py-20 small:py-28">
+    <section className="bg-khn-cream py-20 small:py-28">
       <div className="content-container">
         <RevealWrapper>
-          <div className="flex flex-col items-center gap-3 mb-12 text-center">
-            <p className="text-orange-600 text-sm font-medium uppercase tracking-widest">
-              Nos Incontournables
-            </p>
-            <h2 className="font-display text-4xl small:text-5xl leading-tight text-stone-900">
-              Les plats qui reviennent toujours
+          <div className="flex flex-col items-center gap-4 mb-12 text-center">
+            <h2 className="font-display uppercase text-4xl small:text-5xl leading-tight text-stone-900">
+              Explorez notre univers culinaire
             </h2>
+            <span className="block h-1 w-16 bg-orange-500" />
+            <p className="text-stone-600 text-base">
+              Laissez-vous guider à travers nos spécialités traditionnelles.
+            </p>
           </div>
         </RevealWrapper>
 
-        <div className="flex small:grid small:grid-cols-4 gap-6 overflow-x-auto small:overflow-visible snap-x snap-mandatory small:snap-none no-scrollbar pb-4 small:pb-0">
-          {products.map((product, i) => (
-            <div
-              key={product.id}
-              className="snap-start shrink-0 w-[72vw] xsmall:w-[48vw] small:w-auto"
-            >
-              <RevealWrapper delay={i * 80}>
-                <ProductPreview product={product} region={region} />
-              </RevealWrapper>
-            </div>
+        <div className="grid grid-cols-1 small:grid-cols-3 gap-6 max-w-6xl mx-auto px-4 small:px-10">
+          {categories.map((category, i) => (
+            <RevealWrapper key={category.handle} delay={i * 100}>
+              <LocalizedClientLink
+                href={`/categories/${category.handle}`}
+                className="group flex h-full flex-col bg-white"
+              >
+                <div className="relative aspect-[5/3] overflow-hidden">
+                  <Image
+                    src={category.image}
+                    alt={category.name}
+                    fill
+                    className="object-cover object-bottom transition-transform duration-300 ease-out [@media(hover:hover)]:group-hover:scale-105"
+                    sizes="(max-width: 1024px) 100vw, 33vw"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col items-center px-6 py-8 min-h-[180px] small:min-h-[200px]">
+                  <div className="flex flex-1 items-center">
+                    <h3 className="font-display uppercase text-2xl small:text-3xl text-stone-900">
+                      {category.name}
+                    </h3>
+                  </div>
+                  <span className="text-stone-400 text-xs font-medium tracking-[0.2em] uppercase transition-colors duration-200 [@media(hover:hover)]:group-hover:text-orange-600 [@media(hover:hover)]:group-hover:underline">
+                    Voir la carte
+                  </span>
+                </div>
+              </LocalizedClientLink>
+            </RevealWrapper>
           ))}
         </div>
       </div>
