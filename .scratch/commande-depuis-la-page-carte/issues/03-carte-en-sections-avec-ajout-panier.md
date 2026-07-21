@@ -29,7 +29,8 @@ Les Formules sont **hors de ce ticket** : elles apparaîtront dans leur section,
 
 - [ ] La Carte s'affiche sur la route de listing existante, sans qu'aucune route nouvelle soit créée
 - [ ] Les sections apparaissent dans l'ordre du rang des catégories racines ; réordonner ces catégories dans l'admin change l'ordre affiché, sans redéploiement
-- [ ] Un Produit rangé dans une sous-catégorie apparaît dans la section de sa catégorie racine, et n'y apparaît **qu'une fois**
+- [ ] Un Produit rangé dans une sous-catégorie **seule** apparaît bien dans la section de sa catégorie racine
+- [ ] Un Produit rangé **à la fois** dans une sous-catégorie et dans sa catégorie parente n'apparaît **qu'une fois** dans la section
 - [ ] Chaque section affiche tous ses Produits — aucune pagination, aucun bouton « page suivante »
 - [ ] Un Produit à Variante unique s'ajoute au panier en une seule action depuis la Carte
 - [ ] Un Produit à plusieurs Variantes n'est ajoutable qu'une fois sa Variante choisie, et c'est bien la Variante choisie qui arrive au panier
