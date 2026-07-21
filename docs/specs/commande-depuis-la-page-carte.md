@@ -110,6 +110,8 @@ Une section de la Carte est une catégorie racine ; les sections se suivent dans
 
 Une section liste les Produits de sa catégorie **et de toutes ses descendantes**. Dans Medusa, un Produit rangé dans une sous-catégorie n'appartient pas à sa catégorie parente : sans cette remontée, ranger un plat un cran plus bas le ferait disparaître de la Carte sans le moindre signal (User Story 41). Les sous-catégories ne sont pas affichées comme sous-titres — elles servent au rangement, pas à la lecture.
 
+Medusa autorise par ailleurs un Produit à appartenir à plusieurs catégories : un plat rangé à la fois dans une section et dans l'une de ses sous-catégories est donc atteint deux fois par cette remontée, et ne doit apparaître qu'une seule fois dans la section.
+
 ### Les cartes consomment le Produit déjà chargé
 
 C'est la décision qui rend la page unique tenable. Le chargement des Produits d'une section demande déjà au serveur les prix calculés et les quantités en stock de chaque Variante — c'est-à-dire exactement ce dont le sélecteur de Variante a besoin pour fonctionner. L'aiguillage actuel entre Formule et Produit ordinaire (`ProductActionsWrapper`), écrit pour une page produit qui ne connaît que l'identifiant du Produit, recharge le Produit pour son propre compte. Le réutiliser tel quel sur une grille referait ce chargement une fois par carte, pour des données déjà en main.
@@ -178,7 +180,7 @@ Introduire ici un premier exécuteur de tests storefront — composant ou bout-e
 - le panier latéral et la barre mobile se mettent à jour après chaque ajout, sans rechargement de page, et sans réinitialiser les choix en cours sur les autres cartes ;
 - la navigation par ancres amène bien à chaque section avec son titre visible sous la barre collante, sans recharger la page, et le repère de section courante suit le défilement ;
 - réordonner les catégories depuis l'admin Medusa change bien l'ordre des sections de la Carte, sans redéploiement ;
-- un Produit rangé dans une sous-catégorie apparaît bien dans la section de sa catégorie racine, et n'y apparaît qu'une fois ;
+- un Produit rangé dans une sous-catégorie seule apparaît bien dans la section de sa catégorie racine ; un Produit rangé à la fois dans la sous-catégorie et dans sa parente n'y apparaît qu'une fois ;
 - **la non-régression de la page produit dédiée** : sur un Produit à plusieurs Variantes, choisir une Variante met toujours à jour l'URL, et ouvrir cette URL restitue bien la Variante — la garantie que rendre la synchronisation optionnelle n'a rien cassé ;
 - **la non-régression des routes de catégorie** : une adresse de catégorie déjà partagée répond toujours ;
 - aux deux largeurs, desktop et mobile : ouverture et fermeture du panier plein écran, position de défilement conservée à la fermeture.

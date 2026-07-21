@@ -16,7 +16,9 @@ Ce ticket est clos quand l'admin Medusa contient une Carte représentative, c'es
 - **au moins un Produit à Variante unique** (le cas le plus courant de la Carte : un plat sans choix, qui doit s'ajouter au panier en une seule action) ;
 - **au moins un Produit à plusieurs Variantes** — typiquement des Samoussas Légumes / Bœuf — pour exercer le sélecteur de Variante et le garde-fou qui empêche l'ajout tant que rien n'est choisi ;
 - **au moins deux Formules**, chacune avec ses Composants et leur Curation posée depuis l'écran d'admin existant. Deux, pas une : le risque de régression du ticket 05 est précisément que deux Formules composées côte à côte se mélangent, et il ne se teste pas avec une seule ;
-- **au moins un Produit rangé dans une sous-catégorie** plutôt qu'à la racine. C'est le seul moyen de prouver que la remontée des descendants du ticket 03 fonctionne — sans lui, on livrerait un garde-fou que rien ne vérifie.
+- **deux Produits qui exercent la remontée des descendants**, et il faut bien les deux, chacun couvrant une moitié du problème :
+  - l'un rangé dans une sous-catégorie **et dans elle seule**, jamais aussi dans sa catégorie parente. C'est ce qui prouve que la remontée du ticket 03 fonctionne : s'il était aussi affecté au parent, il s'afficherait de toute façon par appartenance directe, et une remontée cassée passerait pour fonctionnelle. Une donnée de test qui ne peut pas échouer ne prouve rien ;
+  - l'autre rangé **à la fois** dans la sous-catégorie et dans sa catégorie parente — Medusa autorise un Produit dans plusieurs catégories. La remontée l'atteint alors par deux chemins, et c'est le seul cas qui prouve qu'il ne s'affiche pas en double.
 
 Les Produits doivent porter les champs que la Carte affiche : un titre, une description courte, une image, et un prix par Variante dans la région du storefront.
 
@@ -26,5 +28,6 @@ Les Produits doivent porter les champs que la Carte affiche : un titre, une desc
 - [ ] Au moins un Produit à Variante unique existe, avec un prix
 - [ ] Au moins un Produit à plusieurs Variantes existe, chaque Variante ayant son propre prix
 - [ ] Au moins deux Formules existent, chacune avec ses Composants et leur Curation renseignée
-- [ ] Au moins un Produit est rangé dans une sous-catégorie d'une section, et pas à la racine de cette section
+- [ ] Un Produit est rangé dans une sous-catégorie **et dans elle seule** — il n'est **pas** affecté à la catégorie parente
+- [ ] Un autre Produit est rangé **à la fois** dans une sous-catégorie et dans sa catégorie parente
 - [ ] Les Produits portent titre, description et image — la carte de grille les affiche, une Carte sans eux ne se juge pas
