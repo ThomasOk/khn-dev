@@ -8,9 +8,13 @@ import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
 
 type ItemsTemplateProps = {
   cart: HttpTypes.StoreCart
+  showRemove?: boolean
 }
 
-const ItemsPreviewTemplate = async ({ cart }: ItemsTemplateProps) => {
+const ItemsPreviewTemplate = async ({
+  cart,
+  showRemove = false,
+}: ItemsTemplateProps) => {
   const items = cart.items
   const formuleSelections = await getCartFormuleSelections(cart)
   const hasOverflow = items && items.length > 4
@@ -37,6 +41,7 @@ const ItemsPreviewTemplate = async ({ cart }: ItemsTemplateProps) => {
                       type="preview"
                       currencyCode={cart.currency_code}
                       formuleSelection={formuleSelections[item.id]}
+                      showRemove={showRemove}
                     />
                   )
                 })

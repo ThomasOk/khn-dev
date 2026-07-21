@@ -17,6 +17,11 @@ import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
 
+// Mirrors the "small" breakpoint in tailwind.config.js: below it, the Carte's sticky
+// cart column (docs/specs/commande-depuis-la-page-carte.md) is `hidden`, so this is the
+// client's only add-to-cart feedback there and must keep auto-opening.
+const CARTE_CART_COLUMN_BREAKPOINT_PX = 1024
+
 const CartDropdown = ({
   cart: cartState,
 }: {
@@ -65,13 +70,44 @@ const CartDropdown = ({
 
   const pathname = usePathname()
 
-  // open cart dropdown when modifying the cart items, but only if we're not on the cart page
+  const [hasVisibleCartColumn, setHasVisibleCartColumn] = useState(false)
+
+  // The Carte's sticky cart column only renders above the "small" breakpoint (see
+  // CARTE_CART_COLUMN_BREAKPOINT_PX above) — below it, this dropdown remains the only
+  // add-to-cart feedback, so the auto-open below must stay gated on actual viewport width,
+  // not just the route.
   useEffect(() => {
-    if (itemRef.current !== totalItems && !pathname.includes("/cart")) {
+    if (!pathname.includes("/store")) {
+      setHasVisibleCartColumn(false)
+      return
+    }
+
+    const mql = window.matchMedia(
+      `(min-width: ${CARTE_CART_COLUMN_BREAKPOINT_PX}px)`
+    )
+    const update = () => setHasVisibleCartColumn(mql.matches)
+
+    update()
+    mql.addEventListener("change", update)
+
+    return () => mql.removeEventListener("change", update)
+  }, [pathname])
+
+  // Open cart dropdown when modifying the cart items, but only where its content would
+  // add something the client can't already see: not on the cart page, and not on the
+  // Carte (/store) above the breakpoint where its sticky cart column
+  // (docs/specs/commande-depuis-la-page-carte.md) already shows the same update live
+  // and sits right under where this popover renders.
+  useEffect(() => {
+    if (
+      itemRef.current !== totalItems &&
+      !pathname.includes("/cart") &&
+      !hasVisibleCartColumn
+    ) {
       timedOpen()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [totalItems, itemRef.current])
+  }, [totalItems, itemRef.current, hasVisibleCartColumn])
 
   return (
     <div

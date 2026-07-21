@@ -20,6 +20,7 @@ type ItemProps = {
   type?: "full" | "preview"
   currencyCode: string
   formuleSelection?: FormuleSelectionEntry[]
+  showRemove?: boolean
 }
 
 const Item = ({
@@ -27,6 +28,7 @@ const Item = ({
   type = "full",
   currencyCode,
   formuleSelection,
+  showRemove = false,
 }: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -159,6 +161,15 @@ const Item = ({
             style="tight"
             currencyCode={currencyCode}
           />
+          {type === "preview" && showRemove && (
+            <DeleteButton
+              id={item.id}
+              className="mt-1"
+              data-testid="product-delete-button"
+            >
+              Supprimer
+            </DeleteButton>
+          )}
         </span>
       </Table.Cell>
     </Table.Row>
