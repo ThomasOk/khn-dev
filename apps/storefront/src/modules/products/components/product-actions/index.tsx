@@ -17,6 +17,15 @@ type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   disabled?: boolean
+  // Defaults to true: the dedicated product page is alone on its page and
+  // keeps its shareable link to a specific Variante (User Story 34). The
+  // Carte turns it off — N instances on the same URL would otherwise
+  // overwrite each other (User Story 33).
+  syncVariantWithUrl?: boolean
+  // Defaults to true: only the dedicated product page needs it. The Carte
+  // turns it off — the persistent cart bar (ticket 07) already occupies
+  // that spot.
+  showMobileActions?: boolean
 }
 
 const optionsAsKeymap = (
@@ -31,6 +40,8 @@ const optionsAsKeymap = (
 export default function ProductActions({
   product,
   disabled,
+  syncVariantWithUrl = true,
+  showMobileActions = true,
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -47,6 +58,27 @@ export default function ProductActions({
       setOptions(variantOptions ?? {})
     }
   }, [product.variants])
+
+  // Restore the Variante from the URL on mount, so a shared link lands on
+  // the Variante it points to instead of an unselected picker.
+  useEffect(() => {
+    if (!syncVariantWithUrl) {
+      return
+    }
+
+    const variantId = searchParams.get("v_id")
+    if (!variantId) {
+      return
+    }
+
+    const variant = product.variants?.find((v) => v.id === variantId)
+    if (!variant) {
+      return
+    }
+
+    setOptions(optionsAsKeymap(variant.options) ?? {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const selectedVariant = useMemo(() => {
     if (!product.variants || product.variants.length === 0) {
@@ -76,6 +108,10 @@ export default function ProductActions({
   }, [product.variants, options])
 
   useEffect(() => {
+    if (!syncVariantWithUrl) {
+      return
+    }
+
     const params = new URLSearchParams(searchParams.toString())
     const value = isValidVariant ? selectedVariant?.id : null
 
@@ -90,7 +126,7 @@ export default function ProductActions({
     }
 
     router.replace(pathname + "?" + params.toString())
-  }, [selectedVariant, isValidVariant])
+  }, [selectedVariant, isValidVariant, syncVariantWithUrl])
 
   // check if the selected variant is in stock
   const inStock = useMemo(() => {
@@ -182,17 +218,19 @@ export default function ProductActions({
             ? "Out of stock"
             : "Add to cart"}
         </Button>
-        <MobileActions
-          product={product}
-          variant={selectedVariant}
-          options={options}
-          updateOptions={setOptionValue}
-          inStock={inStock}
-          handleAddToCart={handleAddToCart}
-          isAdding={isAdding}
-          show={!inView}
-          optionsDisabled={!!disabled || isAdding}
-        />
+        {showMobileActions && (
+          <MobileActions
+            product={product}
+            variant={selectedVariant}
+            options={options}
+            updateOptions={setOptionValue}
+            inStock={inStock}
+            handleAddToCart={handleAddToCart}
+            isAdding={isAdding}
+            show={!inView}
+            optionsDisabled={!!disabled || isAdding}
+          />
+        )}
       </div>
     </>
   )
