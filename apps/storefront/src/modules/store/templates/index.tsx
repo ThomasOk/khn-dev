@@ -3,6 +3,7 @@ import { HttpTypes } from "@medusajs/types"
 
 import { Heading } from "@modules/common/components/ui"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
+import CarteCartBar from "@modules/store/components/carte-cart-bar"
 import CarteCartColumn from "@modules/store/components/carte-cart-column"
 import CarteSection from "@modules/store/components/carte-section"
 import CarteSectionNav from "@modules/store/components/carte-section-nav"
@@ -14,6 +15,12 @@ const CarteCartColumnFallback = () => (
       Votre panier
     </Heading>
   </div>
+)
+
+// Keeps the bar's fixed footprint present from first paint, so it doesn't pop
+// in only once the cart fetch resolves (User Story 26: "toujours visible").
+const CarteCartBarFallback = () => (
+  <div className="small:hidden fixed inset-x-0 bottom-0 z-40 h-14 bg-neutral-900" />
 )
 
 const StoreTemplate = ({
@@ -38,7 +45,7 @@ const StoreTemplate = ({
       <DineInMenuBanner />
       <CarteSectionNav categories={rootCategories} />
       <div className="grid grid-cols-1 small:grid-cols-[1fr_360px] gap-x-10">
-        <div className="flex flex-col gap-16 mt-8">
+        <div className="flex flex-col gap-16 mt-8 pb-20 small:pb-0">
           {rootCategories.map((category) => (
             <Suspense key={category.id} fallback={<SkeletonProductGrid />}>
               <CarteSection
@@ -57,6 +64,9 @@ const StoreTemplate = ({
           </div>
         </div>
       </div>
+      <Suspense fallback={<CarteCartBarFallback />}>
+        <CarteCartBar countryCode={countryCode} />
+      </Suspense>
     </div>
   )
 }
