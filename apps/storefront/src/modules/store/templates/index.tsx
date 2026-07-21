@@ -3,6 +3,7 @@ import { HttpTypes } from "@medusajs/types"
 
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import CarteSection from "@modules/store/components/carte-section"
+import CarteSectionNav from "@modules/store/components/carte-section-nav"
 import DineInMenuBanner from "@modules/store/components/dine-in-menu-banner"
 
 const StoreTemplate = ({
@@ -25,7 +26,8 @@ const StoreTemplate = ({
         La carte
       </h1>
       <DineInMenuBanner />
-      <div className="flex flex-col gap-16">
+      <CarteSectionNav categories={rootCategories} />
+      <div className="flex flex-col gap-16 mt-8">
         {rootCategories.map((category) => (
           <Suspense key={category.id} fallback={<SkeletonProductGrid />}>
             <CarteSection

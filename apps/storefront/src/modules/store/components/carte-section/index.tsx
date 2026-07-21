@@ -5,6 +5,7 @@ import { getRegion } from "@lib/data/regions"
 import { collectCategoryIdsWithDescendants } from "@lib/util/category-tree"
 import { Heading } from "@modules/common/components/ui"
 import CarteProductCard from "@modules/store/components/carte-product-card"
+import { CARTE_NAV_OFFSET_PX } from "@modules/store/components/carte-section-nav/constants"
 
 // One section of the Carte per root category (docs/specs/commande-depuis-
 // la-page-carte.md, "Les sections sont les catégories racines"). Products
@@ -44,7 +45,16 @@ export default async function CarteSection({
   }
 
   return (
-    <section id={category.handle} data-testid="carte-section">
+    // scrollMarginTop clears both the fixed main nav and the sticky section
+    // nav (docs/specs/commande-depuis-la-page-carte.md, "compenser la
+    // hauteur de la barre") so a jump never lands with the title hidden.
+    // Shares CARTE_NAV_OFFSET_PX with CarteSectionNav's scrollspy so the
+    // two bars' combined height is only ever defined in one place.
+    <section
+      id={category.handle}
+      style={{ scrollMarginTop: CARTE_NAV_OFFSET_PX }}
+      data-testid="carte-section"
+    >
       <Heading level="h2" className="mb-6 text-neutral-900">
         {category.name}
       </Heading>
