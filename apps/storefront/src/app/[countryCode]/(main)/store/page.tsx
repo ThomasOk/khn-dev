@@ -1,7 +1,6 @@
 import { Metadata } from "next"
 
 import { listCategories } from "@lib/data/categories"
-import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import StoreTemplate from "@modules/store/templates"
 
 export const metadata: Metadata = {
@@ -10,27 +9,16 @@ export const metadata: Metadata = {
 }
 
 type Params = {
-  searchParams: Promise<{
-    sortBy?: SortOptions
-    page?: string
-  }>
   params: Promise<{
     countryCode: string
   }>
 }
 
 export default async function StorePage(props: Params) {
-  const params = await props.params;
-  const searchParams = await props.searchParams;
-  const { sortBy, page } = searchParams
+  const params = await props.params
   const categories = await listCategories()
 
   return (
-    <StoreTemplate
-      sortBy={sortBy}
-      page={page}
-      countryCode={params.countryCode}
-      categories={categories}
-    />
+    <StoreTemplate countryCode={params.countryCode} categories={categories} />
   )
 }

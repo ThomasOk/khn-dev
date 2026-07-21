@@ -15,7 +15,7 @@ export const listCategories = async (query?: Record<string, unknown>) => {
       {
         query: {
           fields:
-            "*category_children, *products, *parent_category, *parent_category.parent_category",
+            "+rank, +parent_category_id, *category_children, *products, *parent_category, *parent_category.parent_category",
           limit,
           ...query,
         },
