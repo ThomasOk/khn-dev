@@ -13,7 +13,7 @@ export default async function Nav() {
       <Suspense
         fallback={
           <LocalizedClientLink
-            className="transition-colors duration-200 text-sm tabular-nums"
+            className="text-xs tracking-[0.15em] uppercase text-white tabular-nums transition-colors duration-200 [@media(hover:hover)]:hover:text-orange-300"
             href="/cart"
             data-testid="nav-cart-link"
           >

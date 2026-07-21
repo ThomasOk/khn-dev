@@ -4,6 +4,7 @@ import { Suspense } from "react"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
+import DineInMenuBanner from "@modules/store/components/dine-in-menu-banner"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 
@@ -51,6 +52,8 @@ export default function CategoryTemplate({
       {category.description && (
         <p className="mb-5 text-neutral-600 text-sm">{category.description}</p>
       )}
+
+      <DineInMenuBanner />
 
       {rootCategories.length > 0 && (
         <div className="flex gap-2 mb-8 overflow-x-auto pb-1">

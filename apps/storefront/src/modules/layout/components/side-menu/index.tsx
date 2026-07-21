@@ -11,6 +11,17 @@ type SideMenuProps = {
   categories: HttpTypes.StoreProductCategory[]
 }
 
+const DELIVERY_PLATFORMS = [
+  {
+    name: "Uber Eats",
+    href: "https://www.ubereats.com/store/kim-hi-noodle/yM9hQfPEUeaaTSyLWAy_MQ?diningMode=DELIVERY",
+  },
+  {
+    name: "Deliveroo",
+    href: "https://deliveroo.fr/fr/menu/Montpellier/castelnau-le-lez/kim-hi-noodle",
+  },
+]
+
 const SideMenu = ({ categories }: SideMenuProps) => {
   const rootCategories = categories.filter((c) => !c.parent_category)
 
@@ -67,7 +78,11 @@ const SideMenu = ({ categories }: SideMenuProps) => {
                     className="flex flex-col h-full bg-[rgba(3,7,18,0.5)] rounded-rounded justify-between p-6"
                   >
                     <div className="flex justify-end">
-                      <button data-testid="close-menu-button" aria-label="Fermer le menu" onClick={close}>
+                      <button
+                        data-testid="close-menu-button"
+                        aria-label="Fermer le menu"
+                        onClick={close}
+                      >
                         <XMark />
                       </button>
                     </div>
@@ -105,8 +120,28 @@ const SideMenu = ({ categories }: SideMenuProps) => {
                           onClick={close}
                           data-testid="about-link"
                         >
-                          À propos
+                          Notre histoire
                         </LocalizedClientLink>
+                      </li>
+                      <li>
+                        <span className="text-3xl leading-10 text-white/70">
+                          Livraison
+                        </span>
+                        <ul className="flex flex-col gap-2 mt-3 ml-4">
+                          {DELIVERY_PLATFORMS.map((platform) => (
+                            <li key={platform.name}>
+                              <a
+                                href={platform.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-lg leading-7 text-white/70 transition-colors duration-150 [@media(hover:hover)]:hover:text-white"
+                                onClick={close}
+                              >
+                                {platform.name}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
                       </li>
                       <li>
                         <LocalizedClientLink
@@ -115,7 +150,7 @@ const SideMenu = ({ categories }: SideMenuProps) => {
                           onClick={close}
                           data-testid="reservations-link"
                         >
-                          Réserver
+                          Réserver une table
                         </LocalizedClientLink>
                       </li>
                       <li>

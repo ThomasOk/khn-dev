@@ -31,7 +31,7 @@ export default async function Home(props: {
       <Hero />
       <StorySection />
       <DishOfMoment region={region} />
-      <PopularProducts region={region} />
+      <PopularProducts />
       <ReservationSection />
     </>
   )

@@ -4,71 +4,42 @@ import RevealWrapper from "@modules/common/components/reveal-wrapper"
 
 const StorySection = () => {
   return (
-    <section className="bg-khn-cream py-20 small:py-28">
+    <section className="relative bg-khn-teal bg-[url('/images/pattern_bg.png')] bg-repeat bg-[length:1400px_auto] min-h-[85vh] flex items-center py-16 small:py-24">
       <div className="content-container">
-        <div className="grid grid-cols-1 small:grid-cols-2 gap-12 small:gap-20 items-center">
-
+        <div className="grid grid-cols-1 small:grid-cols-2 items-stretch max-w-5xl mx-auto">
           <RevealWrapper direction="left">
-            <div className="flex flex-col gap-6">
-              <p className="text-orange-600 text-sm font-medium uppercase tracking-widest">
-                Notre Histoire
-              </p>
-              <h2 className="font-display text-4xl small:text-5xl leading-tight text-stone-900">
-                Une passion pour les nouilles, une âme de quartier.
+            <div className="flex flex-col justify-center gap-6 h-full bg-khn-teal-panel p-8 small:p-10">
+              <h2 className="font-display uppercase text-4xl small:text-5xl leading-tight text-white">
+                Ici, les nouilles ont une histoire.
               </h2>
-              <p className="text-stone-600 text-base leading-relaxed">
-                Kim-Hi Noodle est né d&apos;une conviction simple : les meilleures
-                nouilles sont celles qui se partagent. Fondé par une famille
-                passionnée de cuisine asiatique, notre restaurant perpétue des
-                recettes transmises de génération en génération, revisitées avec
-                les produits frais du marché.
-              </p>
-              <p className="text-stone-600 text-base leading-relaxed">
-                Chaque bol est préparé à la minute, avec des bouillons mijotés
-                lentement et des garnitures soigneusement sélectionnées. Venez
-                comme vous êtes — en famille, entre amis, ou pour une pause
-                solitaire bien méritée.
+              <span className="block h-1 w-16 bg-orange-500" />
+              <p className="text-white/80 text-base leading-relaxed max-w-md">
+                Kim-Hi Noodle est née d&apos;une envie simple. Celle de partager
+                les saveurs du Cambodge avec sincérité et générosité. Des
+                nouilles artisanales, des bouillons travaillés avec soin, une
+                carte qui voyage entre les grandes traditions culinaires
+                asiatiques.
               </p>
               <LocalizedClientLink
-                href="/store"
-                className="self-start inline-flex items-center justify-center min-h-[44px] px-6 py-3 bg-stone-900 text-white text-sm font-medium transition-colors duration-200 [@media(hover:hover)]:hover:bg-stone-700"
+                href="/about"
+                className="self-start inline-flex items-center min-h-[44px] px-6 py-3 border border-white text-white text-xs tracking-[0.15em] uppercase transition-colors duration-200 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-khn-teal"
               >
-                Découvrir la carte
+                Notre histoire
               </LocalizedClientLink>
             </div>
           </RevealWrapper>
 
           <RevealWrapper direction="right" delay={150}>
-            <div className="flex justify-center py-6 small:py-0">
-              <div className="relative w-full mx-6 my-4">
-
-                {/* Polaroid principal */}
-                <div className="relative bg-white border-2 border-black p-3 pb-12 shadow-xl shadow-stone-300/50 rotate-[-2deg] transition-[transform,box-shadow] duration-300 ease-out will-change-transform motion-reduce:transition-none [@media(hover:hover)]:hover:rotate-0 [@media(hover:hover)]:hover:shadow-2xl">
-
-                  {/* Zone image */}
-                  <div className="relative aspect-[4/4.5] overflow-hidden border-2 border-black">
-                    <Image
-                      src="/images/restaurant_story.png"
-                      alt="L'équipe Kim-Hi Noodle en cuisine"
-                      fill
-                      className="object-cover object-center"
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                    />
-                  </div>
-
-                  {/* Bande caption polaroid */}
-                  <p
-                    className="text-center text-black text-lg font-bold mt-4 font-cursive select-none pointer-events-none"
-                    aria-hidden="true"
-                  >
-                    Kim-Hi Noodle <span className="font-black">♡</span>
-                  </p>
-
-                </div>
-              </div>
+            <div className="relative h-full min-h-[380px] small:min-h-[520px]">
+              <Image
+                src="/images/restaurant_story.png"
+                alt="Façade du restaurant Kim-Hi Noodle"
+                fill
+                className="object-cover object-center"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
             </div>
           </RevealWrapper>
-
         </div>
       </div>
     </section>

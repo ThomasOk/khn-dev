@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react"
-import { PencilSquare, Printer } from "@medusajs/icons"
+import { PencilSquare, Receipt } from "@medusajs/icons"
 import {
   Button,
   Container,
@@ -81,7 +81,7 @@ export const ServiceSheetSection = () => {
             className="w-40"
           />
           <Button size="small" variant="secondary" onClick={() => window.print()}>
-            <Printer />
+            <Receipt />
             Print
           </Button>
         </div>

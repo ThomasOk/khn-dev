@@ -3,6 +3,7 @@ import { HttpTypes } from "@medusajs/types"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
+import DineInMenuBanner from "@modules/store/components/dine-in-menu-banner"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 import PaginatedProducts from "./paginated-products"
@@ -30,6 +31,7 @@ const StoreTemplate = ({
       <h1 className="text-2xl font-normal mb-5 text-neutral-900" data-testid="store-page-title">
         La carte
       </h1>
+      <DineInMenuBanner />
       {rootCategories.length > 0 && (
         <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
           <LocalizedClientLink
