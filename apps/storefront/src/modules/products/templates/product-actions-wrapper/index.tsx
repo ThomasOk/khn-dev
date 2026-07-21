@@ -4,20 +4,16 @@ import { HttpTypes } from "@medusajs/types"
 import FormuleActions from "@modules/products/components/formule-actions"
 import ProductActions from "@modules/products/components/product-actions"
 
-// The dedicated product page only has an id and must load the Produit for
-// its own account. A Carte card already has the Produit the page loaded for
-// it — with the calculated prices and stock quantities the selector needs —
-// and passes it directly to skip that second round trip (docs/specs/
-// commande-depuis-la-page-carte.md, "Les cartes consomment le Produit déjà
-// chargé"). Either way, the Curation lookup below still runs per Produit.
+// Only the dedicated product page uses this wrapper: it has an id and must
+// load the Produit for its own account. A Carte card already has the Produit
+// the page loaded for it (docs/specs/commande-depuis-la-page-carte.md, "Les
+// cartes consomment le Produit déjà chargé") and resolves its own Curation
+// directly (CarteProductCard), so it renders FormuleActions/ProductActions
+// without going through this wrapper at all.
 type ProductActionsWrapperProps = {
+  id: string
   region: HttpTypes.StoreRegion
-  syncVariantWithUrl?: boolean
-  showMobileActions?: boolean
-} & (
-  | { id: string; product?: never }
-  | { id?: never; product: HttpTypes.StoreProduct }
-)
+}
 
 /**
  * Fetches real time pricing for a product and renders the product actions component.
@@ -26,17 +22,12 @@ type ProductActionsWrapperProps = {
  */
 export default async function ProductActionsWrapper({
   id,
-  product: preloadedProduct,
   region,
-  syncVariantWithUrl,
-  showMobileActions,
 }: ProductActionsWrapperProps) {
-  const product =
-    preloadedProduct ??
-    (await listProducts({
-      queryParams: { id: [id!] },
-      regionId: region.id,
-    }).then(({ response }) => response.products[0]))
+  const product = await listProducts({
+    queryParams: { id: [id] },
+    regionId: region.id,
+  }).then(({ response }) => response.products[0])
 
   if (!product) {
     return null
@@ -48,12 +39,5 @@ export default async function ProductActionsWrapper({
     return <FormuleActions product={product} composants={formule.composants} />
   }
 
-  return (
-    <ProductActions
-      product={product}
-      region={region}
-      syncVariantWithUrl={syncVariantWithUrl}
-      showMobileActions={showMobileActions}
-    />
-  )
+  return <ProductActions product={product} region={region} />
 }

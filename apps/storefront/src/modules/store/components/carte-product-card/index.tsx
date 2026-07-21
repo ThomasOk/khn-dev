@@ -1,18 +1,17 @@
 import { Suspense } from "react"
 import { HttpTypes } from "@medusajs/types"
 
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { Text } from "@modules/common/components/ui"
-import Thumbnail from "@modules/products/components/thumbnail"
-import ProductActionsWrapper from "@modules/products/templates/product-actions-wrapper"
-import SkeletonCardDetails from "@modules/skeletons/components/skeleton-card-details"
+import { getFormule } from "@lib/data/formules"
+import CarteFormuleCard from "@modules/store/components/carte-formule-card"
+import CartePlatCard from "@modules/store/components/carte-plat-card"
+import SkeletonCarteCard from "@modules/skeletons/components/skeleton-carte-card"
 
-// The Carte's card, distinct from ProductPreview: that one wraps its whole
-// content in a link to the product page, which breaks the moment a card
-// also carries a Variante selector and an add-to-cart button — opening a
-// dropdown would also navigate (docs/specs/commande-depuis-la-page-carte.md,
-// "La carte n'est plus un lien qui enveloppe tout son contenu"). Here only
-// the image and title are inside the link; the action zone never is.
+// Whether a Produit is a Formule is read from its Curation, never guessed
+// from its category (docs/specs/commande-depuis-la-page-carte.md, "Les
+// cartes consomment le Produit déjà chargé") — a Formule filed outside the
+// Formules section must still render as a Formule. That lookup is this
+// card's own loading boundary: cards reveal themselves as their Curation
+// arrives rather than waiting on the slowest one on the page.
 export default function CarteProductCard({
   product,
   region,
@@ -21,31 +20,26 @@ export default function CarteProductCard({
   region: HttpTypes.StoreRegion
 }) {
   return (
-    <div className="flex flex-col gap-y-3" data-testid="carte-product-card">
-      <LocalizedClientLink
-        href={`/products/${product.handle}`}
-        className="group"
-      >
-        <Thumbnail
-          thumbnail={product.thumbnail}
-          images={product.images}
-          size="full"
-        />
-        <Text
-          className="mt-3 font-medium text-neutral-900 text-sm leading-snug"
-          data-testid="carte-product-title"
-        >
-          {product.title}
-        </Text>
-      </LocalizedClientLink>
-      <Suspense fallback={<SkeletonCardDetails />}>
-        <ProductActionsWrapper
-          product={product}
-          region={region}
-          syncVariantWithUrl={false}
-          showMobileActions={false}
-        />
-      </Suspense>
-    </div>
+    <Suspense fallback={<SkeletonCarteCard />}>
+      <CarteProductCardContent product={product} region={region} />
+    </Suspense>
   )
+}
+
+async function CarteProductCardContent({
+  product,
+  region,
+}: {
+  product: HttpTypes.StoreProduct
+  region: HttpTypes.StoreRegion
+}) {
+  const formule = await getFormule(product.id, region.id)
+
+  if (formule) {
+    return (
+      <CarteFormuleCard product={product} composants={formule.composants} />
+    )
+  }
+
+  return <CartePlatCard product={product} region={region} />
 }
