@@ -7,8 +7,9 @@ import {
   Transition,
 } from "@headlessui/react"
 import { convertToLocale } from "@lib/util/money"
+import { hasFormuleSelection } from "@lib/util/formule-selection"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@modules/common/components/ui"
+import { Button, clx } from "@modules/common/components/ui"
 import DeleteButton from "@modules/common/components/delete-button"
 import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
@@ -150,22 +151,34 @@ const CartDropdown = ({
                         ? -1
                         : 1
                     })
-                    .map((item) => (
+                    .map((item) => {
+                      // A Formule has no image of its own — showing the
+                      // default placeholder thumbnail for it is noise, so
+                      // the mini cart skips the thumbnail column entirely
+                      // rather than rendering a fallback image.
+                      const isFormule = hasFormuleSelection(item.metadata)
+
+                      return (
                       <div
-                        className="grid grid-cols-[122px_1fr] gap-x-4"
+                        className={clx("grid gap-x-4", {
+                          "grid-cols-[122px_1fr]": !isFormule,
+                          "grid-cols-1": isFormule,
+                        })}
                         key={item.id}
                         data-testid="cart-item"
                       >
-                        <LocalizedClientLink
-                          href={`/products/${item.product_handle}`}
-                          className="w-24"
-                        >
-                          <Thumbnail
-                            thumbnail={item.thumbnail}
-                            images={item.variant?.product?.images}
-                            size="square"
-                          />
-                        </LocalizedClientLink>
+                        {!isFormule && (
+                          <LocalizedClientLink
+                            href={`/products/${item.product_handle}`}
+                            className="w-24"
+                          >
+                            <Thumbnail
+                              thumbnail={item.thumbnail}
+                              images={item.variant?.product?.images}
+                              size="square"
+                            />
+                          </LocalizedClientLink>
+                        )}
                         <div className="flex flex-col justify-between flex-1">
                           <div className="flex flex-col flex-1">
                             <div className="flex items-start justify-between">
@@ -208,7 +221,8 @@ const CartDropdown = ({
                           </DeleteButton>
                         </div>
                       </div>
-                    ))}
+                      )
+                    })}
                 </div>
                 <div className="p-4 flex flex-col gap-y-4 text-small-regular">
                   <div className="flex items-center justify-between">

@@ -5,7 +5,7 @@ const Hero = () => {
   return (
     <div className="relative h-screen w-full overflow-hidden">
       <Image
-        src="/images/pad_thai.png"
+        src="/images/pad_thai.webp"
         alt="Pad thai - Kim-Hi Noodle"
         fill
         className="object-cover object-[50%_68%]"

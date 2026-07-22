@@ -1,11 +1,18 @@
 import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
-import { Inter, Playfair_Display, Edu_NSW_ACT_Cursive } from "next/font/google"
+import { Inter, Lato, Playfair_Display, Edu_NSW_ACT_Cursive } from "next/font/google"
 import "styles/globals.css"
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
+  display: "swap",
+})
+
+const lato = Lato({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-lato",
   display: "swap",
 })
 
@@ -27,7 +34,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-mode="light" className={`${inter.variable} ${playfair.variable} ${eduNswActHand.variable}`}>
+    <html lang="fr" data-mode="light" className={`${inter.variable} ${lato.variable} ${playfair.variable} ${eduNswActHand.variable}`}>
       <body>
         <main className="relative">{props.children}</main>
       </body>

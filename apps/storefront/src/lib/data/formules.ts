@@ -17,6 +17,13 @@ import { getAuthHeaders, getCacheOptions } from "./cookies"
 export type FormuleComposantVariant = {
   id: string
   title: string
+  // Raw Variante title ("Porc / Tofu"), undecorated by the Produit name —
+  // what a grouped Variante picker shows once `product_title` already
+  // carries the dish name (see formule-composer-modal.tsx's grouping).
+  variant_title: string
+  product_id: string
+  product_title: string
+  thumbnail: string | null
   calculated_price: Record<string, unknown> | null
 }
 
