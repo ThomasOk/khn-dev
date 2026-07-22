@@ -2,7 +2,10 @@
 
 import { Table, Text, clx } from "@modules/common/components/ui"
 import { updateLineItem } from "@lib/data/cart"
-import { FormuleSelectionEntry } from "@lib/util/formule-selection"
+import {
+  FormuleSelectionEntry,
+  hasFormuleSelection,
+} from "@lib/util/formule-selection"
 import { HttpTypes } from "@medusajs/types"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -53,22 +56,29 @@ const Item = ({
   const maxQtyFromInventory = 10
   const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
 
+  // A Formule has no image of its own — showing the default placeholder
+  // thumbnail for it is noise, so the cart skips the thumbnail entirely
+  // rather than rendering a fallback image.
+  const isFormule = hasFormuleSelection(item.metadata)
+
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
-        <LocalizedClientLink
-          href={`/products/${item.product_handle}`}
-          className={clx("flex", {
-            "w-16": type === "preview",
-            "small:w-24 w-12": type === "full",
-          })}
-        >
-          <Thumbnail
-            thumbnail={item.thumbnail}
-            images={item.variant?.product?.images}
-            size="square"
-          />
-        </LocalizedClientLink>
+        {!isFormule && (
+          <LocalizedClientLink
+            href={`/products/${item.product_handle}`}
+            className={clx("flex", {
+              "w-16": type === "preview",
+              "small:w-24 w-12": type === "full",
+            })}
+          >
+            <Thumbnail
+              thumbnail={item.thumbnail}
+              images={item.variant?.product?.images}
+              size="square"
+            />
+          </LocalizedClientLink>
+        )}
       </Table.Cell>
 
       <Table.Cell className="text-left">

@@ -1,4 +1,4 @@
-import { ChevronUpDown } from "@medusajs/icons"
+import { ChevronDown } from "@medusajs/icons"
 import { clx } from "@modules/common/components/ui"
 import {
   SelectHTMLAttributes,
@@ -61,7 +61,7 @@ const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
             {children}
           </select>
           <span className="absolute right-4 inset-y-0 flex items-center pointer-events-none ">
-            <ChevronUpDown />
+            <ChevronDown />
           </span>
         </div>
       </div>

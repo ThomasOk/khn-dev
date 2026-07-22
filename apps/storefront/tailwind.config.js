@@ -82,6 +82,7 @@ module.exports = {
           "Times New Roman",
           "serif",
         ],
+        lato: ["var(--font-lato)", "Helvetica Neue", "Arial", "sans-serif"],
         cursive: [
           "var(--font-cursive)",
           "cursive",

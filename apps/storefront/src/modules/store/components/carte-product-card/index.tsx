@@ -36,9 +36,7 @@ async function CarteProductCardContent({
   const formule = await getFormule(product.id, region.id)
 
   if (formule) {
-    return (
-      <CarteFormuleCard product={product} composants={formule.composants} />
-    )
+    return <CarteFormuleCard product={product} composants={formule.composants} />
   }
 
   return <CartePlatCard product={product} region={region} />

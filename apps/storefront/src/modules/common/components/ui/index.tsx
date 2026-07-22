@@ -59,7 +59,7 @@ Heading.displayName = "Heading"
 
 // Button Component
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
-  variant?: "primary" | "secondary" | "transparent"
+  variant?: "primary" | "secondary" | "transparent" | "accent"
   size?: "small" | "medium" | "large"
   isLoading?: boolean
 }
@@ -87,6 +87,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           variant === "secondary" &&
             "bg-white text-black border border-gray-200 hover:bg-gray-50",
           variant === "transparent" && "bg-transparent hover:bg-gray-100",
+          variant === "accent" && "bg-khn-teal text-white hover:bg-khn-teal-panel",
           size === "small" && "h-8 px-3 text-sm",
           size === "medium" && "h-10 px-4",
           size === "large" && "h-12 px-6 text-lg",

@@ -26,6 +26,9 @@ type ProductActionsProps = {
   // turns it off — the persistent cart bar (ticket 07) already occupies
   // that spot.
   showMobileActions?: boolean
+  // Defaults to true. The Carte turns it off — the card shows the price
+  // next to the product title instead (see CartePlatCard).
+  showPrice?: boolean
 }
 
 const optionsAsKeymap = (
@@ -42,6 +45,7 @@ export default function ProductActions({
   disabled,
   syncVariantWithUrl = true,
   showMobileActions = true,
+  showPrice = true,
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -51,9 +55,11 @@ export default function ProductActions({
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
 
-  // If there is only 1 variant, preselect the options
+  // Preselect the first Variante's options, so a card never opens on an
+  // empty picker (the client can always add straight away and change their
+  // mind after).
   useEffect(() => {
-    if (product.variants?.length === 1) {
+    if (product.variants?.length) {
       const variantOptions = optionsAsKeymap(product.variants[0].options)
       setOptions(variantOptions ?? {})
     }
@@ -174,7 +180,11 @@ export default function ProductActions({
   return (
     <>
       <div className="flex flex-col gap-y-2" ref={actionsRef}>
-        <div>
+        {/* Reserved even when this Produit has nothing to choose, so its
+            add-to-cart button lines up with the Variante selector of a
+            neighbouring card in the same Carte row instead of landing next
+            to that neighbour's description. */}
+        <div className="min-h-[4.25rem]">
           {(product.variants?.length ?? 0) > 1 && (
             <div className="flex flex-col gap-y-4">
               {(product.options || []).map((option) => {
@@ -196,7 +206,7 @@ export default function ProductActions({
           )}
         </div>
 
-        <ProductPrice product={product} variant={selectedVariant} />
+        {showPrice && <ProductPrice product={product} variant={selectedVariant} />}
 
         <Button
           onClick={handleAddToCart}
@@ -207,16 +217,16 @@ export default function ProductActions({
             isAdding ||
             !isValidVariant
           }
-          variant="primary"
-          className="w-full h-10"
+          variant="accent"
+          className="w-full h-11 uppercase text-xs tracking-[0.15em] rounded-none"
           isLoading={isAdding}
           data-testid="add-product-button"
         >
           {!selectedVariant && !options
-            ? "Select variant"
+            ? "Sélectionnez une variante"
             : !inStock || !isValidVariant
-            ? "Out of stock"
-            : "Add to cart"}
+            ? "Rupture de stock"
+            : "Ajouter au panier"}
         </Button>
         {showMobileActions && (
           <MobileActions
