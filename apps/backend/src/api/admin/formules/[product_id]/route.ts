@@ -22,6 +22,9 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       "composants.product_variants.id",
       "composants.product_variants.title",
       "composants.product_variants.product.title",
+      "composants.product_variants.options.option_id",
+      "composants.product_variants.options.value",
+      "composants.product_variants.options.option.title",
     ],
     filters: { product_id },
   })
@@ -31,9 +34,29 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     return res.json({ formule: null })
   }
 
-  const composants = [...formule.composants].sort(
-    (a, b) => (a?.rank ?? 0) - (b?.rank ?? 0)
-  )
+  // `options` is flattened here (option_id/option_title/value), not the
+  // query-graph's nested `option: { title }` shape, the same wire contract
+  // as the store route (src/api/store/formules/[product_id]/route.ts) —
+  // variantDisplayName (admin/lib/formule.ts) reads it to spell out each
+  // Option instead of trusting a Variante's flattened title's word order.
+  const composants = [...formule.composants]
+    .sort((a, b) => (a?.rank ?? 0) - (b?.rank ?? 0))
+    .map((composant) => ({
+      id: composant!.id,
+      key: composant!.key,
+      label: composant!.label,
+      rank: composant!.rank,
+      product_variants: (composant!.product_variants ?? []).map((variant) => ({
+        id: variant!.id,
+        title: variant!.title,
+        product: variant!.product ? { title: variant!.product.title } : null,
+        options: (variant!.options ?? []).map((option) => ({
+          option_id: option!.option_id as string,
+          option_title: option!.option?.title ?? "",
+          value: option!.value,
+        })),
+      })),
+    }))
 
   res.json({
     formule: {

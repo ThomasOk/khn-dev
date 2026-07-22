@@ -2,10 +2,17 @@
 // AGENTS.md); "Formule" and "Composant" stay untranslated on purpose (ticket
 // 01-curation-module-et-administration.md, §"Correspondance des noms").
 
+export type CuratedVariantOption = {
+  option_id: string
+  option_title: string
+  value: string
+}
+
 export type CuratedVariant = {
   id: string
   title: string
   product?: { title: string } | null
+  options?: CuratedVariantOption[]
 }
 
 export type FormuleComposant = {
@@ -22,17 +29,41 @@ export type Formule = {
   composants: FormuleComposant[]
 }
 
+// Medusa auto-names the sole Variante of a Produit with no real Options
+// "Default variant" (every Formule, and every single-Variante dish, hits
+// this) — a label with no meaning to a restaurateur, so it's suppressed
+// rather than printed as if it distinguished anything. Same constant as the
+// storefront's own line-item-options component and the backend's
+// kitchen-ticket.ts / store/formules route.
+const DEFAULT_VARIANT_TITLE = "Default variant"
+
 // A Variante's title alone ("Bœuf") isn't enough to cook from — it's the dish
 // name that disambiguates (spec: "par nom lisible", never by ID). Falls back
 // to the variant title alone when the product isn't loaded on the object.
+//
+// A flattened title ("Porc / Crevettes") stops being enough once a Variante
+// has more than one Option: nothing about the string says which word answers
+// "Choix Nems" and which answers "Choix Banh Sung" — a restaurateur reading
+// an order has no way to know without knowing the Produit's Option order by
+// heart. Once there's more than one Option, spell each one out instead
+// (`options` is optional so callers without it — e.g. curation-modal.tsx's
+// "available Variantes to curate" list — keep the old plain-title behaviour).
 export function variantDisplayName(variant: {
   title: string
   product?: { title: string } | null
+  options?: CuratedVariantOption[]
 }): string {
-  if (variant.product?.title) {
-    return `${variant.product.title} — ${variant.title}`
+  const detail =
+    variant.options && variant.options.length > 1
+      ? variant.options.map((o) => `${o.option_title}: ${o.value}`).join(", ")
+      : variant.title
+
+  const hasMeaningfulDetail = detail !== DEFAULT_VARIANT_TITLE
+
+  if (hasMeaningfulDetail && variant.product?.title) {
+    return `${variant.product.title} — ${detail}`
   }
-  return variant.title
+  return variant.product?.title ?? detail
 }
 
 export type FormuleSelectionEntry = {
