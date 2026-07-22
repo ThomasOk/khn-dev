@@ -5,6 +5,13 @@ import { addToCart } from "@lib/data/cart"
 import { FormuleComposant, FormuleComposantVariant } from "@lib/data/formules"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { formuleSelectionKey } from "@lib/util/formule-selection"
+import {
+  ComposantProductGroup,
+  deriveOptionChoices,
+  groupVariantsByProduct,
+  isValueAvailable,
+  resolveVariantId,
+} from "@lib/util/formule-variant-group"
 import { HttpTypes } from "@medusajs/types"
 import { Button, clx } from "@modules/common/components/ui"
 import NativeSelect from "@modules/common/components/native-select"
@@ -12,7 +19,7 @@ import PlaceholderImage from "@modules/common/icons/placeholder-image"
 import X from "@modules/common/icons/x"
 import { useParams } from "next/navigation"
 import Image from "next/image"
-import { Fragment, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useState } from "react"
 
 type FormuleComposerModalProps = {
   product: HttpTypes.StoreProduct
@@ -35,7 +42,9 @@ export default function FormuleComposerModal({
   const countryCode = useParams().countryCode as string
   const { cheapestPrice } = getProductPrice({ product })
 
-  const [selections, setSelections] = useState<Record<string, string>>({})
+  const [selections, setSelections] = useState<
+    Record<string, string | undefined>
+  >({})
   const [isAdding, setIsAdding] = useState(false)
 
   const variant = product.variants?.[0]
@@ -52,12 +61,14 @@ export default function FormuleComposerModal({
 
     setIsAdding(true)
 
+    // `isComplete` above guarantees every Composant has a string Sélection
+    // by this point — the cast reflects that, not a new assumption.
     const metadata = Object.fromEntries(
       composants.map((composant) => [
         formuleSelectionKey(composant.key),
         selections[composant.key],
       ])
-    )
+    ) as Record<string, string>
 
     await addToCart({
       variantId: variant.id,
@@ -179,43 +190,6 @@ export default function FormuleComposerModal({
   )
 }
 
-type ComposantProductGroup = {
-  productId: string
-  productTitle: string
-  thumbnail: string | null
-  variants: FormuleComposantVariant[]
-}
-
-// A curated Produit with several Options (e.g. Banh Sung's 2 Options, 6
-// Variantes) would otherwise explode into one row per combination — grouping
-// by `product_id` turns that into one card per Produit, with a Variante
-// picker only when there's actually more than one curated Variante to pick
-// from. Order follows each Produit's first appearance in the Curation.
-function groupByProduct(
-  variants: FormuleComposantVariant[]
-): ComposantProductGroup[] {
-  const groups: ComposantProductGroup[] = []
-  const indexByProductId = new Map<string, number>()
-
-  for (const variant of variants) {
-    const existingIndex = indexByProductId.get(variant.product_id)
-
-    if (existingIndex === undefined) {
-      indexByProductId.set(variant.product_id, groups.length)
-      groups.push({
-        productId: variant.product_id,
-        productTitle: variant.product_title,
-        thumbnail: variant.thumbnail,
-        variants: [variant],
-      })
-    } else {
-      groups[existingIndex].variants.push(variant)
-    }
-  }
-
-  return groups
-}
-
 function ComposantSection({
   composant,
   current,
@@ -224,7 +198,7 @@ function ComposantSection({
 }: {
   composant: FormuleComposant
   current: string | undefined
-  onSelect: (variantId: string) => void
+  onSelect: (variantId: string | undefined) => void
   disabled: boolean
 }) {
   return (
@@ -239,7 +213,7 @@ function ComposantSection({
         className="flex flex-col gap-y-2"
         data-testid={`formule-composant-${composant.key}`}
       >
-        {groupByProduct(composant.variants).map((group) =>
+        {groupVariantsByProduct(composant.variants).map((group) =>
           group.variants.length > 1 ? (
             <ComposantOptionGroup
               key={group.productId}
@@ -264,9 +238,12 @@ function ComposantSection({
 }
 
 // A Produit with more than one curated Variante in this Composant: one card,
-// the Variante choice deferred to a dropdown instead of one selectable row
-// per Variante. `current` only marks the card selected when it holds one of
-// this group's own Variante ids — another group's selection leaves it blank.
+// one select per Option (e.g. "Viande 1", "Viande 2") instead of one flat
+// row per Variante combination — the client picks each Option independently
+// and the matching curated Variante is resolved underneath. `current` only
+// marks the card selected when it holds one of this group's own Variante
+// ids — another group's selection leaves it blank and clears this card's own
+// Option selects.
 function ComposantOptionGroup({
   group,
   current,
@@ -275,18 +252,39 @@ function ComposantOptionGroup({
 }: {
   group: ComposantProductGroup
   current: string | undefined
-  onSelect: (variantId: string) => void
+  onSelect: (variantId: string | undefined) => void
   disabled: boolean
 }) {
-  const selectedId = group.variants.some((v) => v.id === current)
-    ? current
-    : ""
+  const currentVariant = group.variants.find((v) => v.id === current)
+  const optionChoices = useMemo(() => deriveOptionChoices(group), [group])
+
+  const [selectedValues, setSelectedValues] = useState<Record<string, string>>(
+    () =>
+      Object.fromEntries(
+        (currentVariant?.options ?? []).map((o) => [o.option_id, o.value])
+      )
+  )
+
+  // Another group in the same Composant got selected instead — clear this
+  // card's own Option selects so it doesn't keep showing a stale partial
+  // pick.
+  useEffect(() => {
+    if (!currentVariant) {
+      setSelectedValues({})
+    }
+  }, [currentVariant])
+
+  const handleOptionChange = (optionId: string, value: string) => {
+    const next = { ...selectedValues, [optionId]: value }
+    setSelectedValues(next)
+    onSelect(resolveVariantId(group, next))
+  }
 
   return (
     <div
       className={clx(
         "flex items-center gap-x-4 p-3 border bg-white transition-colors",
-        selectedId ? "border-orange-400 bg-orange-50" : "border-stone-200"
+        currentVariant ? "border-orange-400 bg-orange-50" : "border-stone-200"
       )}
       data-testid="composant-option-group"
     >
@@ -295,20 +293,38 @@ function ComposantOptionGroup({
         <span className="font-display font-semibold text-sm uppercase tracking-wide text-stone-900">
           {group.productTitle}
         </span>
-        <NativeSelect
-          value={selectedId ?? ""}
-          onChange={(e) => onSelect(e.target.value)}
-          disabled={disabled}
-          placeholder="Choisir…"
-          className="bg-white h-9 text-sm"
-          data-testid="composant-option-variant-select"
-        >
-          {group.variants.map((variant) => (
-            <option key={variant.id} value={variant.id}>
-              {variant.variant_title}
-            </option>
+        <div className="flex flex-col gap-2">
+          {optionChoices.map((choice) => (
+            <NativeSelect
+              key={choice.optionId}
+              value={selectedValues[choice.optionId] ?? ""}
+              onChange={(e) =>
+                handleOptionChange(choice.optionId, e.target.value)
+              }
+              disabled={disabled}
+              placeholder={choice.optionTitle}
+              className="bg-white h-9 text-sm w-full"
+              data-testid="composant-option-variant-select"
+            >
+              {choice.values.map((value) => (
+                <option
+                  key={value}
+                  value={value}
+                  disabled={
+                    !isValueAvailable(
+                      group,
+                      choice.optionId,
+                      value,
+                      selectedValues
+                    )
+                  }
+                >
+                  {value}
+                </option>
+              ))}
+            </NativeSelect>
           ))}
-        </NativeSelect>
+        </div>
       </div>
     </div>
   )

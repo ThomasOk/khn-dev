@@ -1,4 +1,9 @@
-import { Formule, formuleSelectionEntries, resolveFormuleSelectionEntries } from "../formule"
+import {
+  Formule,
+  formuleSelectionEntries,
+  resolveFormuleSelectionEntries,
+  variantDisplayName,
+} from "../formule"
 
 // Pure parsing seam for the order widget (ticket 05): turns a line item's
 // raw metadata into the `{ composantKey, variantId }` pairs the widget
@@ -36,6 +41,72 @@ describe("formuleSelectionEntries", () => {
         formule_plat_variant_id: "",
       })
     ).toEqual([])
+  })
+})
+
+// A flattened title ("Porc / Crevettes") stops disambiguating anything once
+// a Variante has more than one Option — nothing says which word answers
+// which Option. variantDisplayName must spell each one out instead, but
+// only past the 1-Option mark: a single-Option Variante's plain title was
+// never ambiguous.
+describe("variantDisplayName", () => {
+  it("uses the flattened title when the Variante has a single Option", () => {
+    expect(
+      variantDisplayName({
+        title: "Bœuf",
+        product: { title: "Samoussas" },
+        options: [{ option_id: "opt_1", option_title: "Choix Samoussas", value: "Bœuf" }],
+      })
+    ).toBe("Samoussas — Bœuf")
+  })
+
+  it("uses the flattened title when no options are given at all", () => {
+    expect(
+      variantDisplayName({ title: "Bœuf", product: { title: "Samoussas" } })
+    ).toBe("Samoussas — Bœuf")
+  })
+
+  it("spells out each Option once a Variante has more than one", () => {
+    expect(
+      variantDisplayName({
+        title: "Porc / Crevettes",
+        product: { title: "Banh Sung" },
+        options: [
+          { option_id: "opt_nems", option_title: "Choix Nems", value: "Porc" },
+          { option_id: "opt_banh_sung", option_title: "Choix Banh Sung", value: "Crevettes" },
+        ],
+      })
+    ).toBe("Banh Sung — Choix Nems: Porc, Choix Banh Sung: Crevettes")
+  })
+
+  it("falls back to the plain detail when the product isn't loaded", () => {
+    expect(
+      variantDisplayName({
+        title: "Porc / Crevettes",
+        options: [
+          { option_id: "opt_nems", option_title: "Choix Nems", value: "Porc" },
+          { option_id: "opt_banh_sung", option_title: "Choix Banh Sung", value: "Crevettes" },
+        ],
+      })
+    ).toBe("Choix Nems: Porc, Choix Banh Sung: Crevettes")
+  })
+
+  // Medusa auto-names the sole Variante of a Produit with no real Options
+  // "Default variant" — meaningless to a restaurateur, so the dish name
+  // alone must carry the label instead of "Dish — Default variant".
+  it("suppresses Medusa's auto-generated \"Default variant\" title", () => {
+    expect(
+      variantDisplayName({
+        title: "Default variant",
+        product: { title: "Mochi Glacé" },
+      })
+    ).toBe("Mochi Glacé")
+  })
+
+  it("falls back to the raw title when it's \"Default variant\" and the product isn't loaded", () => {
+    expect(variantDisplayName({ title: "Default variant" })).toBe(
+      "Default variant"
+    )
   })
 })
 
@@ -131,5 +202,52 @@ describe("resolveFormuleSelectionEntries", () => {
         null
       )
     ).toEqual([{ composantKey: "entree", label: "entree", variantLabel: "variant_boeuf" }])
+  })
+
+  // A Variante curated with more than one Option (e.g. Banh Sung's "Choix
+  // Nems" / "Choix Banh Sung") must resolve to each Option spelled out, not
+  // the flattened "Porc / Crevettes" — that string alone can't tell a
+  // restaurateur which word answers which Option.
+  it("spells out each Option for a Variante curated with more than one", () => {
+    const banhSungFormule: Formule = {
+      id: "formule_2",
+      product_id: "prod_banh_sung_formule",
+      composants: [
+        {
+          id: "composant_plat",
+          key: "plat",
+          label: "Plat",
+          rank: 0,
+          product_variants: [
+            {
+              id: "variant_banh_sung_porc_crevettes",
+              title: "Porc / Crevettes",
+              product: { title: "Banh Sung" },
+              options: [
+                { option_id: "opt_nems", option_title: "Choix Nems", value: "Porc" },
+                {
+                  option_id: "opt_banh_sung",
+                  option_title: "Choix Banh Sung",
+                  value: "Crevettes",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }
+
+    expect(
+      resolveFormuleSelectionEntries(
+        [{ composantKey: "plat", variantId: "variant_banh_sung_porc_crevettes" }],
+        banhSungFormule
+      )
+    ).toEqual([
+      {
+        composantKey: "plat",
+        label: "Plat",
+        variantLabel: "Banh Sung — Choix Nems: Porc, Choix Banh Sung: Crevettes",
+      },
+    ])
   })
 })

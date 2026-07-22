@@ -12,11 +12,13 @@ import {
 // nothing of a Sélection — that is the storefront's job at add-to-cart.
 //
 // `product_id`/`product_title` ride along on every curated Variante so the
-// storefront can group Variantes of the same Produit into one card with a
-// Variante picker, instead of one flat row per curated Variante (a Produit
-// with several Options otherwise explodes into one row per combination).
-// The Curation itself stays Variante-grained in the admin (ADR 0005) — this
-// is a storefront presentation grouping, not a change to what's curated.
+// storefront can group Variantes of the same Produit into one card, and
+// `options` (the Option/value pairs the Variante was built from, e.g.
+// "Viande 1" → "Porc") lets it offer one select per Option instead of one
+// flat row per curated Variante — a Produit with several Options otherwise
+// explodes into one row per combination. The Curation itself stays
+// Variante-grained in the admin (ADR 0005) — this is a storefront
+// presentation grouping, not a change to what's curated.
 //
 // `region_id` is required because the curated Variantes' prices are resolved
 // by the pricing engine like any other Variante (same contract as the native
@@ -33,14 +35,40 @@ import {
 // src/lib/formule/get-curation-for-variant.ts's curatedVariantName.
 const DEFAULT_VARIANT_TITLE = "Default variant"
 
+// A Variante's own flattened `title` ("Porc / Crevettes") only reads as two
+// Option values in *position* order — nothing on a kitchen ticket or an
+// order's admin page says which slash-separated word answers which Option
+// (e.g. Banh Sung's "Choix Nems" vs "Choix Banh Sung"). Once a Variante
+// carries more than one Option, spell out `option_title: value` pairs
+// instead of trusting the reader to know the Produit's Option order by
+// heart. A single-Option Variante keeps the plain value — it was never
+// ambiguous. Kept as its own copy rather than imported, same layering as
+// admin/lib/formule.ts's variantDisplayName and
+// src/lib/formule/get-curation-for-variant.ts's curatedVariantName.
+function curatedVariantDetail(variant: {
+  title: string
+  options?: { value: string; option?: { title: string } | null }[]
+}): string {
+  const options = variant.options ?? []
+
+  if (options.length > 1) {
+    return options
+      .map((option) => `${option.option?.title ?? ""}: ${option.value}`)
+      .join(", ")
+  }
+
+  return variant.title
+}
+
 function curatedVariantTitle(variant: {
   title: string
   product?: { title: string } | null
+  options?: { value: string; option?: { title: string } | null }[]
 }): string {
   const hasMeaningfulVariantTitle = variant.title !== DEFAULT_VARIANT_TITLE
 
   if (hasMeaningfulVariantTitle && variant.product?.title) {
-    return `${variant.product.title} — ${variant.title}`
+    return `${variant.product.title} — ${curatedVariantDetail(variant)}`
   }
 
   return variant.product?.title ?? variant.title
@@ -86,6 +114,9 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       "composants.product_variants.product_id",
       "composants.product_variants.product.title",
       "composants.product_variants.product.thumbnail",
+      "composants.product_variants.options.option_id",
+      "composants.product_variants.options.value",
+      "composants.product_variants.options.option.title",
     ],
     filters: { product_id },
   })
@@ -145,6 +176,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         product_title: variant!.product?.title ?? variant!.title,
         thumbnail: variant!.product?.thumbnail ?? null,
         calculated_price: priceByVariantId.get(variant!.id) ?? null,
+        options: (variant!.options ?? []).map((option) => ({
+          option_id: option!.option_id as string,
+          option_title: option!.option?.title ?? "",
+          value: option!.value,
+        })),
       })),
     }))
 

@@ -27,14 +27,38 @@ export type ResolvedFormuleCuration = {
   composants: ResolvedFormuleComposantCuration[]
 }
 
+// Medusa auto-names the sole Variante of a Produit with no real Options
+// "Default variant" (every Formule, and every single-Variante dish, hits
+// this) — a label with no meaning to the kitchen, so it's suppressed rather
+// than printed as if it distinguished anything. Same constant as the
+// storefront's own line-item-options component and admin/lib/formule.ts.
+const DEFAULT_VARIANT_TITLE = "Default variant"
+
+// A flattened `title` ("Porc / Crevettes") only reads as two Option values in
+// *position* order — nothing on a Ticket cuisine says which slash-separated
+// word answers "Choix Nems" versus "Choix Banh Sung". Once a Variante has
+// more than one Option, spell out `option_title: value` pairs instead of
+// trusting the cuisinier to know the Produit's Option order by heart. Same
+// layering as admin/lib/formule.ts's variantDisplayName and
+// src/api/store/formules/[product_id]/route.ts's curatedVariantTitle.
 function curatedVariantName(variant: {
   title: string
   product?: { title: string } | null
+  options?: { value: string; option?: { title: string } | null }[]
 }): string {
-  if (variant.product?.title) {
-    return `${variant.product.title} — ${variant.title}`
+  const detail =
+    variant.options && variant.options.length > 1
+      ? variant.options
+          .map((o) => `${o.option?.title ?? ""}: ${o.value}`)
+          .join(", ")
+      : variant.title
+
+  const hasMeaningfulDetail = detail !== DEFAULT_VARIANT_TITLE
+
+  if (hasMeaningfulDetail && variant.product?.title) {
+    return `${variant.product.title} — ${detail}`
   }
-  return variant.title
+  return variant.product?.title ?? detail
 }
 
 // Resolves the same projection as GET /store/formules/:product_id
@@ -70,6 +94,8 @@ export async function getFormuleCurationForVariant(
       "composants.product_variants.id",
       "composants.product_variants.title",
       "composants.product_variants.product.title",
+      "composants.product_variants.options.value",
+      "composants.product_variants.options.option.title",
     ],
     filters: { product_id: productId },
   })

@@ -14,6 +14,16 @@ import { getAuthHeaders, getCacheOptions } from "./cookies"
 // `calculated_price` travels through untyped: the storefront never displays
 // a curated Variante's own price (the Formule's price is fixed, ADR 0001) —
 // it is only here because the route contract requires it.
+// One Option/value pair a curated Variante was built from (e.g. "Viande 1" →
+// "Porc") — what lets a grouped Variante picker offer one select per Option
+// instead of one row per Variante combination (see
+// lib/util/formule-variant-group.ts).
+export type FormuleComposantVariantOption = {
+  option_id: string
+  option_title: string
+  value: string
+}
+
 export type FormuleComposantVariant = {
   id: string
   title: string
@@ -25,6 +35,7 @@ export type FormuleComposantVariant = {
   product_title: string
   thumbnail: string | null
   calculated_price: Record<string, unknown> | null
+  options: FormuleComposantVariantOption[]
 }
 
 export type FormuleComposant = {

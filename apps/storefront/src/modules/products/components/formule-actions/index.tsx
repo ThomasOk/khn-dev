@@ -28,7 +28,9 @@ export default function FormuleActions({
 }: FormuleActionsProps) {
   const countryCode = useParams().countryCode as string
 
-  const [selections, setSelections] = useState<Record<string, string>>({})
+  const [selections, setSelections] = useState<
+    Record<string, string | undefined>
+  >({})
   const [isAdding, setIsAdding] = useState(false)
 
   // A Formule is a Produit à Variante unique (ADR 0001) — the line item
@@ -41,7 +43,7 @@ export default function FormuleActions({
     [composants, selections]
   )
 
-  const handleSelect = (key: string, variantId: string) => {
+  const handleSelect = (key: string, variantId: string | undefined) => {
     setSelections((prev) => ({ ...prev, [key]: variantId }))
   }
 
@@ -52,12 +54,14 @@ export default function FormuleActions({
 
     setIsAdding(true)
 
+    // `isComplete` above guarantees every Composant has a string Sélection
+    // by this point — the cast reflects that, not a new assumption.
     const metadata = Object.fromEntries(
       composants.map((composant) => [
         formuleSelectionKey(composant.key),
         selections[composant.key],
       ])
-    )
+    ) as Record<string, string>
 
     await addToCart({
       variantId: variant.id,
