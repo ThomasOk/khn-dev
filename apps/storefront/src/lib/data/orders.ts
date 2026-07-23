@@ -22,7 +22,7 @@ export const retrieveOrder = async (id: string) => {
         // metadata (unlike the list endpoint's defaults), so without this the
         // confirmation page's pickup slot silently reads undefined.
         fields:
-          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.product,+metadata",
+          "*payment_collections.payments,*items,*items.metadata,*items.variant,*items.variant.options,*items.variant.options.option,*items.product,+metadata",
       },
       headers,
       next,
@@ -52,7 +52,8 @@ export const listOrders = async (
         limit,
         offset,
         order: "-created_at",
-        fields: "*items,+items.metadata,*items.variant,*items.product",
+        fields:
+          "*items,+items.metadata,*items.variant,*items.variant.options,*items.variant.options.option,*items.product",
         ...filters,
       },
       headers,

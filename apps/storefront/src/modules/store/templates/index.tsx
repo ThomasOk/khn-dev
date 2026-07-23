@@ -8,11 +8,15 @@ import CarteCartColumn from "@modules/store/components/carte-cart-column"
 import CarteHero from "@modules/store/components/carte-hero"
 import CarteSection from "@modules/store/components/carte-section"
 import CarteSectionNav from "@modules/store/components/carte-section-nav"
+import { CARTE_NAV_OFFSET_PX } from "@modules/store/components/carte-section-nav/constants"
 import DineInMenuBanner from "@modules/store/components/dine-in-menu-banner"
 
 const CarteCartColumnFallback = () => (
   <div className="flex flex-col gap-y-6 bg-white">
-    <Heading level="h2" className="text-2xl font-normal text-neutral-900">
+    <Heading
+      level="h2"
+      className="font-display text-2xl uppercase tracking-[0.06em] text-neutral-900"
+    >
       Votre panier
     </Heading>
   </div>
@@ -57,7 +61,18 @@ const StoreTemplate = ({
             ))}
           </div>
           <div className="hidden small:block">
-            <div className="sticky top-16 max-h-[calc(100vh-5rem)] overflow-y-auto mt-8 py-6 px-6 border border-neutral-200 rounded-md">
+            {/* Stacked under the fixed main nav *and* CarteSectionNav's own
+                sticky bar (both already pinned by the time this scrolls into
+                view) — top and max-h share CARTE_NAV_OFFSET_PX with that
+                bar's scrollMarginTop so the cart starts right below it
+                instead of sliding underneath. */}
+            <div
+              className="sticky overflow-y-auto mt-8 py-6 px-6 bg-white border border-neutral-200 shadow-sm"
+              style={{
+                top: CARTE_NAV_OFFSET_PX,
+                maxHeight: `calc(100vh - ${CARTE_NAV_OFFSET_PX}px)`,
+              }}
+            >
               <Suspense fallback={<CarteCartColumnFallback />}>
                 <CarteCartColumn />
               </Suspense>

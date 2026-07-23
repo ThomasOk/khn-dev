@@ -173,7 +173,7 @@ export default function FormuleComposerModal({
                       onClick={handleAddToCart}
                       disabled={!isComplete || !variant || isAdding}
                       variant="accent"
-                      className="w-full h-11 uppercase text-xs tracking-[0.15em] rounded-none"
+                      className="w-full h-11 uppercase text-xs tracking-[0.15em] rounded-base"
                       isLoading={isAdding}
                       data-testid="formule-add-button"
                     >

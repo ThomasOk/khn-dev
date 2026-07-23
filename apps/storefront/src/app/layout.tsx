@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang="fr" data-mode="light" className={`${inter.variable} ${lato.variable} ${playfair.variable} ${eduNswActHand.variable}`}>
+    <html lang="fr" data-mode="light" className={`${inter.variable} ${lato.variable} ${playfair.variable} ${eduNswActHand.variable} motion-safe:scroll-smooth`}>
       <body>
         <main className="relative">{props.children}</main>
       </body>

@@ -1,15 +1,19 @@
 import { HttpTypes } from "@medusajs/types"
+import { getCartFormuleSelections } from "@lib/data/formules"
+import { getCheckoutStep } from "@lib/util/get-checkout-step"
+import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
-import { Text } from "@modules/common/components/ui"
-import ItemsPreviewTemplate from "@modules/cart/templates/preview"
-import Summary from "@modules/cart/templates/summary"
+import { Button, Text } from "@modules/common/components/ui"
+import DiscountCode from "@modules/checkout/components/discount-code"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import CarteCartItemsList from "@modules/store/components/carte-cart-item/items-list"
 
 // Shared cart body for the Carte (docs/specs/commande-depuis-la-page-carte.md,
 // "Le panier latéral et la barre mobile ne créent aucun nouvel état"): the
 // desktop sticky column and the mobile fullscreen cart both render this, so
 // there is only one place deciding what "the cart" looks like on the Carte,
 // not a second version kept in sync with the first.
-export default function CarteCartContent({
+export default async function CarteCartContent({
   cart,
 }: {
   cart: HttpTypes.StoreCart | null
@@ -26,11 +30,42 @@ export default function CarteCartContent({
     )
   }
 
+  const formuleSelections = await getCartFormuleSelections(cart)
+  const items = [...cart.items].sort((a, b) =>
+    (a.created_at ?? "") > (b.created_at ?? "") ? -1 : 1
+  )
+
   return (
     <>
-      <ItemsPreviewTemplate cart={cart} showRemove />
-      <Divider />
-      {cart.region && <Summary cart={cart} />}
+      <CarteCartItemsList
+        items={items.map((item) => ({
+          item,
+          formuleSelection: formuleSelections[item.id],
+        }))}
+        currencyCode={cart.currency_code}
+      />
+
+      {cart.region && (
+        <>
+          <Divider />
+          <DiscountCode cart={cart} />
+          <div className="[&_[data-testid='cart-total']]:font-sans [&_[data-testid='cart-total']]:text-base">
+            <CartTotals totals={cart} />
+          </div>
+          <LocalizedClientLink
+            href={"/checkout?step=" + getCheckoutStep(cart)}
+            data-testid="checkout-button"
+          >
+            <Button
+              variant="accent"
+              size="large"
+              className="w-full !rounded-base"
+            >
+              Commander
+            </Button>
+          </LocalizedClientLink>
+        </>
+      )}
     </>
   )
 }

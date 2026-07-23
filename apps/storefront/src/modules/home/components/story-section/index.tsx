@@ -22,7 +22,7 @@ const StorySection = () => {
               </p>
               <LocalizedClientLink
                 href="/about"
-                className="self-start inline-flex items-center min-h-[44px] px-6 py-3 border border-white text-white text-xs tracking-[0.15em] uppercase transition-colors duration-200 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-khn-teal"
+                className="self-start inline-flex items-center min-h-[44px] px-6 py-3 border border-white text-white text-xs tracking-[0.15em] uppercase transition-[background-color,color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-khn-teal"
               >
                 Notre histoire
               </LocalizedClientLink>
