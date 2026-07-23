@@ -14,6 +14,7 @@ import DeleteButton from "@modules/common/components/delete-button"
 import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import FormuleThumbnail from "@modules/products/components/formule-thumbnail"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { usePathname } from "next/navigation"
 import { Fragment, useEffect, useRef, useState } from "react"
@@ -152,22 +153,26 @@ const CartDropdown = ({
                         : 1
                     })
                     .map((item) => {
-                      // A Formule has no image of its own — showing the
-                      // default placeholder thumbnail for it is noise, so
-                      // the mini cart skips the thumbnail column entirely
-                      // rather than rendering a fallback image.
+                      // A Formule has no image of its own (ADR 0001) — it
+                      // swaps the regular Thumbnail for a monogram tile
+                      // instead, so the row keeps its layout without a
+                      // misleading or generic placeholder photo.
                       const isFormule = hasFormuleSelection(item.metadata)
 
                       return (
                       <div
-                        className={clx("grid gap-x-4", {
-                          "grid-cols-[122px_1fr]": !isFormule,
-                          "grid-cols-1": isFormule,
-                        })}
+                        className="grid grid-cols-[122px_1fr] gap-x-4"
                         key={item.id}
                         data-testid="cart-item"
                       >
-                        {!isFormule && (
+                        {isFormule ? (
+                          <div className="w-24">
+                            <FormuleThumbnail
+                              title={item.product_title ?? item.title}
+                              data-testid="formule-thumbnail"
+                            />
+                          </div>
+                        ) : (
                           <LocalizedClientLink
                             href={`/products/${item.product_handle}`}
                             className="w-24"

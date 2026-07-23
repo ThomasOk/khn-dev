@@ -13,13 +13,14 @@ import {
   resolveVariantId,
 } from "@lib/util/formule-variant-group"
 import { HttpTypes } from "@medusajs/types"
+import { CheckCircleSolid } from "@medusajs/icons"
 import { Button, clx } from "@modules/common/components/ui"
 import NativeSelect from "@modules/common/components/native-select"
 import PlaceholderImage from "@modules/common/icons/placeholder-image"
 import X from "@modules/common/icons/x"
 import { useParams } from "next/navigation"
 import Image from "next/image"
-import { Fragment, useEffect, useMemo, useState } from "react"
+import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 
 type FormuleComposerModalProps = {
   product: HttpTypes.StoreProduct
@@ -46,6 +47,8 @@ export default function FormuleComposerModal({
     Record<string, string | undefined>
   >({})
   const [isAdding, setIsAdding] = useState(false)
+  const [showErrors, setShowErrors] = useState(false)
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const variant = product.variants?.[0]
 
@@ -55,7 +58,20 @@ export default function FormuleComposerModal({
   )
 
   const handleAddToCart = async () => {
-    if (!variant?.id || !isComplete) {
+    if (!isComplete) {
+      setShowErrors(true)
+      const firstMissing = composants.find(
+        (composant) => !selections[composant.key]
+      )
+      firstMissing &&
+        sectionRefs.current[firstMissing.key]?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
+      return
+    }
+
+    if (!variant?.id) {
       return
     }
 
@@ -79,6 +95,7 @@ export default function FormuleComposerModal({
 
     setIsAdding(false)
     setSelections({})
+    setShowErrors(false)
     close()
   }
 
@@ -139,18 +156,25 @@ export default function FormuleComposerModal({
 
                 <div className="flex-1 overflow-y-auto bg-[#F7F3F0] p-6 flex flex-col gap-y-8">
                   {composants.map((composant) => (
-                    <ComposantSection
+                    <div
                       key={composant.id}
-                      composant={composant}
-                      current={selections[composant.key]}
-                      onSelect={(variantId) =>
-                        setSelections((prev) => ({
-                          ...prev,
-                          [composant.key]: variantId,
-                        }))
-                      }
-                      disabled={isAdding}
-                    />
+                      ref={(el) => {
+                        sectionRefs.current[composant.key] = el
+                      }}
+                    >
+                      <ComposantSection
+                        composant={composant}
+                        current={selections[composant.key]}
+                        onSelect={(variantId) =>
+                          setSelections((prev) => ({
+                            ...prev,
+                            [composant.key]: variantId,
+                          }))
+                        }
+                        disabled={isAdding}
+                        showError={showErrors && !selections[composant.key]}
+                      />
+                    </div>
                   ))}
                 </div>
 
@@ -171,7 +195,7 @@ export default function FormuleComposerModal({
                   <div className="p-6 pt-4">
                     <Button
                       onClick={handleAddToCart}
-                      disabled={!isComplete || !variant || isAdding}
+                      disabled={!variant || isAdding}
                       variant="accent"
                       className="w-full h-11 uppercase text-xs tracking-[0.15em] rounded-base"
                       isLoading={isAdding}
@@ -195,22 +219,42 @@ function ComposantSection({
   current,
   onSelect,
   disabled,
+  showError,
 }: {
   composant: FormuleComposant
   current: string | undefined
   onSelect: (variantId: string | undefined) => void
   disabled: boolean
+  showError: boolean
 }) {
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex items-center gap-x-3">
-        <span className="font-display font-semibold text-sm uppercase tracking-widest text-stone-900">
+        <span className="font-display font-semibold text-sm uppercase tracking-widest text-stone-900 flex items-center gap-x-1.5">
           {composant.label}
+          {current && (
+            <CheckCircleSolid className="text-emerald-600" aria-hidden />
+          )}
         </span>
-        <span className="h-px flex-1 bg-orange-400" />
+        <span
+          className={clx(
+            "h-px flex-1",
+            showError ? "bg-red-400" : "bg-orange-400"
+          )}
+        />
       </div>
+      {showError && (
+        <p className="-mt-2 text-xs text-red-600" role="alert">
+          Sélectionnez une option pour continuer — si un produit propose
+          plusieurs choix, assurez-vous d'avoir renseigné toutes les options
+          nécessaires.
+        </p>
+      )}
       <div
-        className="flex flex-col gap-y-2"
+        className={clx(
+          "flex flex-col gap-y-2",
+          showError && "ring-2 ring-red-300 ring-offset-2 rounded-sm"
+        )}
         data-testid={`formule-composant-${composant.key}`}
       >
         {groupVariantsByProduct(composant.variants).map((group) =>
@@ -283,8 +327,10 @@ function ComposantOptionGroup({
   return (
     <div
       className={clx(
-        "flex items-center gap-x-4 p-3 border bg-white transition-colors",
-        currentVariant ? "border-orange-400 bg-orange-50" : "border-stone-200"
+        "flex items-center gap-x-4 p-3 border transition-colors",
+        currentVariant
+          ? "border-orange-400 bg-orange-50"
+          : "border-stone-200 bg-white"
       )}
       data-testid="composant-option-group"
     >
@@ -359,10 +405,10 @@ function ComposantOption({
       onClick={onSelect}
       disabled={disabled}
       className={clx(
-        "flex items-center gap-x-4 text-left p-3 border bg-white transition-colors disabled:opacity-50",
+        "flex items-center gap-x-4 text-left p-3 border transition-colors disabled:opacity-50",
         selected
           ? "border-orange-400 bg-orange-50"
-          : "border-stone-200 hover:border-stone-300"
+          : "border-stone-200 bg-white hover:border-stone-300"
       )}
       data-testid="composant-option-button"
     >
