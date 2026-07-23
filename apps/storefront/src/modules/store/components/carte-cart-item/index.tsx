@@ -9,6 +9,7 @@ import { Text } from "@modules/common/components/ui"
 import DeleteButton from "@modules/common/components/delete-button"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import LineItemOptions from "@modules/common/components/line-item-options"
+import FormuleThumbnail from "@modules/products/components/formule-thumbnail"
 import Thumbnail from "@modules/products/components/thumbnail"
 
 type CarteCartItemProps = {
@@ -56,12 +57,19 @@ export default function CarteCartItem({
   return (
     <div className="flex gap-x-4 py-5" data-testid="carte-cart-item">
       <div className="w-16 shrink-0">
-        <Thumbnail
-          thumbnail={item.thumbnail}
-          images={item.variant?.product?.images}
-          size="square"
-          data-testid="product-thumbnail"
-        />
+        {isFormule ? (
+          <FormuleThumbnail
+            title={item.product_title ?? item.title}
+            data-testid="formule-thumbnail"
+          />
+        ) : (
+          <Thumbnail
+            thumbnail={item.thumbnail}
+            images={item.variant?.product?.images}
+            size="square"
+            data-testid="product-thumbnail"
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-y-3 flex-1 min-w-0">

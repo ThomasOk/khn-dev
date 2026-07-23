@@ -15,6 +15,7 @@ import LineItemPrice from "@modules/common/components/line-item-price"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Spinner from "@modules/common/icons/spinner"
+import FormuleThumbnail from "@modules/products/components/formule-thumbnail"
 import Thumbnail from "@modules/products/components/thumbnail"
 import { useState } from "react"
 
@@ -56,15 +57,27 @@ const Item = ({
   const maxQtyFromInventory = 10
   const maxQuantity = item.variant?.manage_inventory ? 10 : maxQtyFromInventory
 
-  // A Formule has no image of its own — showing the default placeholder
-  // thumbnail for it is noise, so the cart skips the thumbnail entirely
-  // rather than rendering a fallback image.
+  // A Formule has no image of its own (ADR 0001) — it swaps the regular
+  // Thumbnail for a monogram tile instead, so the cart row keeps its layout
+  // without a misleading or generic placeholder photo.
   const isFormule = hasFormuleSelection(item.metadata)
 
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
-        {!isFormule && (
+        {isFormule ? (
+          <div
+            className={clx("flex", {
+              "w-16": type === "preview",
+              "small:w-24 w-12": type === "full",
+            })}
+          >
+            <FormuleThumbnail
+              title={item.product_title ?? item.title}
+              data-testid="formule-thumbnail"
+            />
+          </div>
+        ) : (
           <LocalizedClientLink
             href={`/products/${item.product_handle}`}
             className={clx("flex", {
