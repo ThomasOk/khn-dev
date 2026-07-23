@@ -248,8 +248,9 @@ const CartDropdown = ({
                   </div>
                   <LocalizedClientLink href="/cart" passHref>
                     <Button
-                      className="w-full"
+                      variant="accent"
                       size="large"
+                      className="w-full !rounded-base"
                       data-testid="go-to-cart-button"
                     >
                       Voir mon panier
@@ -268,7 +269,14 @@ const CartDropdown = ({
                     <LocalizedClientLink href="/store">
                       <>
                         <span className="sr-only">Voir tous les produits</span>
-                        <Button onClick={close}>Voir la carte</Button>
+                        <Button
+                          variant="accent"
+                          size="large"
+                          className="!rounded-base"
+                          onClick={close}
+                        >
+                          Voir la carte
+                        </Button>
                       </>
                     </LocalizedClientLink>
                   </div>
