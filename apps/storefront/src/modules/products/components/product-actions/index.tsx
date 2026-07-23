@@ -3,7 +3,7 @@
 import { addToCart } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
-import { Button } from "@modules/common/components/ui"
+import { Button, clx } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
@@ -29,6 +29,10 @@ type ProductActionsProps = {
   // Defaults to true. The Carte turns it off — the card shows the price
   // next to the product title instead (see CartePlatCard).
   showPrice?: boolean
+  // Extra classes merged onto the add-to-cart Button, after its own
+  // defaults — lets a caller like the Carte's cards adjust cosmetics
+  // (e.g. corner radius) without a second copy of this component.
+  buttonClassName?: string
 }
 
 const optionsAsKeymap = (
@@ -46,6 +50,7 @@ export default function ProductActions({
   syncVariantWithUrl = true,
   showMobileActions = true,
   showPrice = true,
+  buttonClassName,
 }: ProductActionsProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -218,7 +223,10 @@ export default function ProductActions({
             !isValidVariant
           }
           variant="accent"
-          className="w-full h-11 uppercase text-xs tracking-[0.15em] rounded-none"
+          className={clx(
+            "w-full h-11 uppercase text-xs tracking-[0.15em] rounded-none",
+            buttonClassName
+          )}
           isLoading={isAdding}
           data-testid="add-product-button"
         >

@@ -65,6 +65,7 @@ export default function CartePlatCard({
             syncVariantWithUrl={false}
             showMobileActions={false}
             showPrice={false}
+            buttonClassName="!rounded-base"
           />
         </div>
       </div>
