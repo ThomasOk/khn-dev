@@ -224,7 +224,7 @@ export default function ProductActions({
           }
           variant="accent"
           className={clx(
-            "w-full h-11 uppercase text-xs tracking-[0.15em] rounded-none",
+            "w-full h-11 uppercase text-xs tracking-[0.15em] !rounded-base",
             buttonClassName
           )}
           isLoading={isAdding}

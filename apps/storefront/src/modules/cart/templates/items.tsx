@@ -17,17 +17,19 @@ const ItemsTemplate = async ({ cart }: ItemsTemplateProps) => {
   return (
     <div>
       <div className="pb-3 flex items-center">
-        <Heading className="text-[2rem] leading-[2.75rem]">Cart</Heading>
+        <Heading className="font-display text-2xl uppercase tracking-[0.06em] text-neutral-900">
+          Panier
+        </Heading>
       </div>
       <FormuleSelectionError />
       <Table>
         <Table.Header className="border-t-0">
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">
-            <Table.HeaderCell className="!pl-0">Item</Table.HeaderCell>
+            <Table.HeaderCell className="!pl-0">Article</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
-            <Table.HeaderCell>Quantity</Table.HeaderCell>
+            <Table.HeaderCell>Quantité</Table.HeaderCell>
             <Table.HeaderCell className="hidden small:table-cell">
-              Price
+              Prix
             </Table.HeaderCell>
             <Table.HeaderCell className="!pr-0 text-right">
               Total

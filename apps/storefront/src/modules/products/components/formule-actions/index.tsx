@@ -8,7 +8,6 @@ import { Button } from "@modules/common/components/ui"
 import Divider from "@modules/common/components/divider"
 import { useParams } from "next/navigation"
 import { useMemo, useState } from "react"
-import ProductPrice from "../product-price"
 import ComposantSelect from "./composant-select"
 
 type FormuleActionsProps = {
@@ -90,17 +89,15 @@ export default function FormuleActions({
         <Divider />
       </div>
 
-      <ProductPrice product={product} variant={variant} />
-
       <Button
         onClick={handleAddToCart}
         disabled={!isComplete || !variant || !!disabled || isAdding}
-        variant="primary"
-        className="w-full h-10"
+        variant="accent"
+        className="w-full h-11 uppercase text-xs tracking-[0.15em] !rounded-base"
         isLoading={isAdding}
         data-testid="formule-add-button"
       >
-        Add to cart
+        Ajouter au panier
       </Button>
     </div>
   )

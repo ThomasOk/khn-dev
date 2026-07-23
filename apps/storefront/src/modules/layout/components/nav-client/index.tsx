@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { usePathname } from "next/navigation"
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -14,6 +15,13 @@ type NavClientProps = {
 
 export default function NavClient({ categories, children }: NavClientProps) {
   const [scrolled, setScrolled] = useState(false)
+  const pathname = usePathname()
+  // These pages have no dark hero behind the nav (unlike the Carte), so a
+  // transparent header either sits on white (illegible white-on-white logo)
+  // or directly over a product photo (illegible text-on-image). Force it
+  // solid from the start instead of waiting for scroll.
+  const forceSolidNav =
+    pathname?.includes("/cart") || pathname?.includes("/products")
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
@@ -26,7 +34,7 @@ export default function NavClient({ categories, children }: NavClientProps) {
   return (
     <div
       className={`fixed top-0 inset-x-0 z-50 transition-colors duration-300 ${
-        scrolled ? "bg-[#121212]" : "bg-transparent"
+        scrolled || forceSolidNav ? "bg-[#121212]" : "bg-transparent"
       }`}
     >
       <header className="relative h-16 mx-auto">

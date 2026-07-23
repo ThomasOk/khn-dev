@@ -39,5 +39,5 @@ export default async function ProductActionsWrapper({
     return <FormuleActions product={product} composants={formule.composants} />
   }
 
-  return <ProductActions product={product} region={region} />
+  return <ProductActions product={product} region={region} showPrice={false} />
 }
