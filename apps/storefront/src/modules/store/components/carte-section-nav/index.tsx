@@ -36,9 +36,9 @@ export default function CarteSectionNav({
   return (
     <nav
       aria-label="Sections de la carte"
-      className="sticky top-16 z-40 bg-white border-b border-neutral-200 py-3"
+      className="sticky top-16 z-40 bg-khn-teal py-4"
     >
-      <ul className="flex gap-2 overflow-x-auto pb-1">
+      <ul className="flex items-center justify-center gap-8 overflow-x-auto">
         {categories.map((category) => {
           const isActive = category.handle === activeId
 
@@ -47,10 +47,10 @@ export default function CarteSectionNav({
               <a
                 href={`#${category.handle}`}
                 aria-current={isActive ? "location" : undefined}
-                className={`inline-block px-4 py-1.5 rounded-full text-sm font-medium border transition-colors duration-150 ${
+                className={`inline-block pb-1 text-xs tracking-[0.15em] uppercase border-b transition-[color,border-color,transform] duration-150 motion-safe:active:scale-[0.97] ${
                   isActive
-                    ? "bg-orange-600 text-white border-orange-600"
-                    : "border-neutral-200 text-neutral-700 [@media(hover:hover)]:hover:border-orange-300 [@media(hover:hover)]:hover:text-orange-600"
+                    ? "text-orange-300 border-orange-300"
+                    : "text-white/70 border-transparent [@media(hover:hover)]:hover:text-orange-300"
                 }`}
               >
                 {category.name}

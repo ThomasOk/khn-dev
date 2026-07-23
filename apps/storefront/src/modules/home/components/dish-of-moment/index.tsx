@@ -67,7 +67,7 @@ const DishOfMoment = async ({ region }: { region: HttpTypes.StoreRegion }) => {
               )}
               <LocalizedClientLink
                 href={`/products/${product.handle}`}
-                className="self-start inline-flex items-center justify-center min-h-[44px] px-6 py-3 border border-white text-white text-sm font-medium transition-colors duration-200 [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-stone-900"
+                className="self-start inline-flex items-center justify-center min-h-[44px] px-6 py-3 border border-white text-white text-sm font-medium transition-[background-color,color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-stone-900"
               >
                 Commander ce plat
               </LocalizedClientLink>

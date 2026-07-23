@@ -68,7 +68,7 @@ export default function CarteFormuleCard({
       <button
         type="button"
         onClick={open}
-        className="mt-auto flex items-center justify-center w-full h-11 px-3 rounded-none bg-khn-teal hover:bg-khn-teal-panel transition-colors text-white font-medium uppercase text-xs tracking-[0.15em] whitespace-nowrap"
+        className="mt-auto flex items-center justify-center w-full h-11 px-3 rounded-base bg-khn-teal hover:bg-khn-teal-panel transition-[background-color,transform] duration-150 ease-out motion-safe:active:scale-[0.97] text-white font-medium uppercase text-xs tracking-[0.15em] whitespace-nowrap"
         data-testid="formule-compose-button"
       >
         Composer ma formule
