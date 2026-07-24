@@ -1,5 +1,6 @@
 import {
   deriveAvailability,
+  deriveOpenDays,
   deriveReservationAcceptance,
   ExistingReservationInput,
   ReservationClosureInput,
@@ -492,5 +493,65 @@ describe("deriveReservationAcceptance", () => {
       service_window_id: "sw_lunch",
       duration_minutes: 60,
     })
+  })
+})
+
+describe("deriveOpenDays", () => {
+  // now = 2026-07-14 (Tuesday), so offsets 0..8 span Tue 14 .. Wed 22 — the
+  // only two Tuesdays in range are offsets 0 and 7.
+  const now = new Date("2026-07-14T09:00:00Z")
+
+  it("returns only the days whose weekly Service actually offers a Heure", () => {
+    const result = deriveOpenDays({
+      party_size: 2,
+      services: [service()], // Tuesday, 12:00-13:00
+      reservationsByDate: new Map(),
+      closures: [],
+      config: { ...baseConfig, horizon_days: 8 },
+      now,
+    })
+
+    expect(result).toEqual(["2026-07-14", "2026-07-21"])
+  })
+
+  it("excludes a day whose Service is fully booked for this party_size", () => {
+    const result = deriveOpenDays({
+      party_size: 2,
+      services: [service({ capacity: 2 })],
+      reservationsByDate: new Map([
+        ["2026-07-14", [reservation({ time: "12:00", party_size: 2 })]],
+      ]),
+      closures: [],
+      config: { ...baseConfig, horizon_days: 8 },
+      now,
+    })
+
+    expect(result).toEqual(["2026-07-21"])
+  })
+
+  it("excludes a day covered by a Fermeture even though its weekly Service would otherwise offer a Heure", () => {
+    const result = deriveOpenDays({
+      party_size: 2,
+      services: [service()],
+      reservationsByDate: new Map(),
+      closures: [{ start_date: "2026-07-14", end_date: "2026-07-14" }],
+      config: { ...baseConfig, horizon_days: 8 },
+      now,
+    })
+
+    expect(result).toEqual(["2026-07-21"])
+  })
+
+  it("returns no open day at all once party_size exceeds the plafond, even on days with a Service", () => {
+    const result = deriveOpenDays({
+      party_size: 9,
+      services: [service()],
+      reservationsByDate: new Map(),
+      closures: [],
+      config: { ...baseConfig, horizon_days: 8, max_party_size: 8 },
+      now,
+    })
+
+    expect(result).toEqual([])
   })
 })

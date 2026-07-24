@@ -1,6 +1,7 @@
 import { Metadata } from "next"
 import RevealWrapper from "@modules/common/components/reveal-wrapper"
 import ReservationForm from "@modules/table-reservation/components/reservation-form"
+import ReservationHero from "@modules/table-reservation/components/reservation-hero"
 
 export const metadata: Metadata = {
   title: "Réserver une table — Kim-Hi Noodle",
@@ -11,20 +12,17 @@ export const metadata: Metadata = {
 export default function TableReservationsPage() {
   return (
     <div className="min-h-screen">
-      <div className="bg-stone-900 pt-32 pb-20 small:pt-40 small:pb-28">
-        <div className="content-container flex flex-col items-center text-center gap-4">
-          <p className="text-orange-500 text-sm font-medium uppercase tracking-widest">
-            Kim-Hi Noodle
-          </p>
-          <h1 className="font-display text-4xl small:text-6xl text-white leading-tight">
-            Réserver une table
-          </h1>
-        </div>
-      </div>
+      <ReservationHero />
 
       <div className="bg-khn-cream py-20 small:py-28">
         <div className="content-container max-w-3xl">
           <RevealWrapper direction="up">
+            <div className="flex items-center gap-4 mb-10 small:mb-14">
+              <h2 className="font-display text-3xl small:text-4xl uppercase tracking-wide text-stone-900">
+                Choisir un créneau
+              </h2>
+              <span className="h-0.5 flex-1 max-w-16 bg-orange-500" />
+            </div>
             <ReservationForm />
           </RevealWrapper>
         </div>

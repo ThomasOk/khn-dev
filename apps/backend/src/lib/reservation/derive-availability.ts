@@ -1,4 +1,5 @@
 import {
+  addDays,
   CivilDay,
   civilDayAt,
   civilDayKey,
@@ -342,4 +343,46 @@ export function deriveReservationAcceptance(
   }
 
   return { accepted: false, reason: "time_unavailable" }
+}
+
+// Every civil day in [today, today + horizon_days] that has at least one
+// offerable Heure for party_size — what a storefront date picker needs to
+// skip closed AND fully-booked-for-this-party_size days, rather than
+// discovering the gap only after the customer already picked one. Calls the
+// same deriveAvailability the single-day route uses, once per day, so the
+// two can never disagree about what "open" means.
+export type DeriveOpenDaysInput = {
+  party_size: number
+  services: ServiceWindowInput[]
+  // Existing reservations, grouped by their own civil day "YYYY-MM-DD" — the
+  // caller fetches the whole horizon in one ranged query, then buckets by
+  // date, so this loop never re-hits the database per day.
+  reservationsByDate: Map<string, ExistingReservationInput[]>
+  closures: ReservationClosureInput[]
+  config: TableReservationConfigInput
+  now: Date
+}
+
+export function deriveOpenDays(input: DeriveOpenDaysInput): string[] {
+  const { party_size, services, reservationsByDate, closures, config, now } =
+    input
+  const today = civilDayAt(now.getTime())
+
+  const openDates: string[] = []
+  for (let offset = 0; offset <= config.horizon_days; offset++) {
+    const date = civilDayKey(addDays(today, offset))
+    const { times } = deriveAvailability({
+      date,
+      party_size,
+      services,
+      reservations: reservationsByDate.get(date) ?? [],
+      closures,
+      config,
+      now,
+    })
+    if (times.length > 0) {
+      openDates.push(date)
+    }
+  }
+  return openDates
 }

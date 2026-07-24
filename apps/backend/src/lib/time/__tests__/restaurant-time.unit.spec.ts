@@ -1,4 +1,5 @@
 import {
+  addDays,
   civilDayAt,
   civilDayKey,
   dayOfWeek,
@@ -278,5 +279,47 @@ describe("civilDayKey", () => {
       "2026-02-10",
       "2026-10-02",
     ])
+  })
+})
+
+describe("addDays", () => {
+  it("advances within a month", () => {
+    expect(addDays({ year: 2026, month: 7, day: 14 }, 5)).toEqual({
+      year: 2026,
+      month: 7,
+      day: 19,
+    })
+  })
+
+  it("rolls over a month boundary", () => {
+    expect(addDays({ year: 2026, month: 7, day: 30 }, 3)).toEqual({
+      year: 2026,
+      month: 8,
+      day: 2,
+    })
+  })
+
+  it("rolls over a year boundary", () => {
+    expect(addDays({ year: 2026, month: 12, day: 30 }, 3)).toEqual({
+      year: 2027,
+      month: 1,
+      day: 2,
+    })
+  })
+
+  it("goes backward for a negative delta", () => {
+    expect(addDays({ year: 2026, month: 3, day: 1 }, -1)).toEqual({
+      year: 2026,
+      month: 2,
+      day: 28,
+    })
+  })
+
+  it("a zero delta returns the same day", () => {
+    expect(addDays({ year: 2026, month: 7, day: 14 }, 0)).toEqual({
+      year: 2026,
+      month: 7,
+      day: 14,
+    })
   })
 })
