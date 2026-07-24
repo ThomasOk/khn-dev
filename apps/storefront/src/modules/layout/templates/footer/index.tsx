@@ -1,5 +1,23 @@
 import Image from "next/image"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import BackToTop from "./back-to-top"
+
+const openingHours = [
+  {
+    label: "Sur place",
+    schedule: [
+      { days: "Lun – Jeu", hours: ["11h30 – 14h00", "18h30 – 21h30"] },
+      { days: "Ven – Sam", hours: ["11h30 – 14h00", "18h30 – 22h00"] },
+    ],
+  },
+  {
+    label: "À emporter",
+    schedule: [
+      { days: "Lun – Jeu", hours: ["11h00 – 14h00", "18h00 – 22h00"] },
+      { days: "Ven – Sam", hours: ["11h00 – 14h00", "18h00 – 22h30"] },
+    ],
+  },
+]
 
 export default function Footer() {
   return (
@@ -19,9 +37,9 @@ export default function Footer() {
             />
           </LocalizedClientLink>
 
-          <div className="grid grid-cols-2 small:grid-cols-3 gap-10 small:gap-16">
+          <div className="grid grid-cols-2 small:grid-cols-12 gap-10 small:gap-10">
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 small:col-span-2">
               <p className="text-white text-xs font-semibold uppercase tracking-widest">
                 Navigation
               </p>
@@ -44,9 +62,9 @@ export default function Footer() {
               </ul>
             </div>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 small:col-span-3">
               <p className="text-white text-xs font-semibold uppercase tracking-widest">
-                Le restaurant
+                Adresse & Contact
               </p>
               <address className="not-italic flex flex-col gap-3 text-stone-400 text-sm">
                 <span>
@@ -66,15 +84,36 @@ export default function Footer() {
                 >
                   contact@kim-hi-noodle.fr
                 </a>
-                <span>
-                  Lun – Sam 11h30
-                  <br />
-                  Dimanche fermé
-                </span>
               </address>
             </div>
 
-            <div className="col-span-2 small:col-span-1 flex flex-col gap-4">
+            <div className="col-span-2 small:col-span-4 flex flex-col gap-4">
+              <p className="text-white text-xs font-semibold uppercase tracking-widest">
+                Horaires
+              </p>
+              <div className="grid grid-cols-2 gap-8">
+                {openingHours.map(({ label, schedule }) => (
+                  <div key={label} className="flex flex-col gap-3">
+                    <p className="text-orange-500 text-xs font-semibold uppercase tracking-wider">
+                      {label}
+                    </p>
+                    <div className="flex flex-col gap-2.5 text-stone-400 text-sm">
+                      {schedule.map(({ days, hours }) => (
+                        <div key={days}>
+                          <p className="text-stone-300 font-medium">{days}</p>
+                          {hours.map((h) => (
+                            <p key={h}>{h}</p>
+                          ))}
+                        </div>
+                      ))}
+                      <p className="text-stone-500">Dimanche fermé</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="col-span-2 small:col-span-3 flex flex-col gap-4">
               <p className="text-white text-xs font-semibold uppercase tracking-widest">
                 Nous suivre
               </p>
@@ -100,10 +139,29 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-stone-800">
-          <p className="text-stone-500 text-sm">
-            © {new Date().getFullYear()} Kim-Hi Noodle. Tous droits réservés.
-          </p>
+        <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col small:flex-row items-start small:items-center justify-between gap-6">
+          <div className="flex flex-col small:flex-row items-start small:items-center gap-2 small:gap-6">
+            <p className="text-stone-500 text-sm">
+              © {new Date().getFullYear()} Kim-Hi Noodle. Tous droits réservés.
+            </p>
+            <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              {[
+                { label: "Mentions légales", href: "/legal-notice" },
+                { label: "CGV", href: "/terms-of-sale" },
+                { label: "Confidentialité", href: "/privacy-policy" },
+              ].map(({ label, href }) => (
+                <li key={label}>
+                  <LocalizedClientLink
+                    href={href}
+                    className="text-stone-500 text-sm transition-colors duration-200 [@media(hover:hover)]:hover:text-white"
+                  >
+                    {label}
+                  </LocalizedClientLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <BackToTop />
         </div>
 
       </div>
