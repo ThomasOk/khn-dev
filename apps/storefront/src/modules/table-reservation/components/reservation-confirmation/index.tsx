@@ -3,7 +3,6 @@ import {
   formatReservationDateLong,
   formatReservationTime,
 } from "@lib/util/reservation-format"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import PhoneLink from "@modules/table-reservation/components/phone-link"
 
 type Props = {
@@ -13,10 +12,6 @@ type Props = {
 }
 
 const ReservationConfirmation = ({ confirmation, customerName, phone }: Props) => {
-  const cancelHref = `/table-reservations/cancel?id=${encodeURIComponent(
-    confirmation.id
-  )}&token=${encodeURIComponent(confirmation.cancellation_token)}`
-
   return (
     <div
       className="flex flex-col gap-8 bg-white border border-stone-200 rounded-lg p-8 small:p-12"
@@ -63,25 +58,14 @@ const ReservationConfirmation = ({ confirmation, customerName, phone }: Props) =
 
       <div className="flex flex-col gap-2 bg-khn-cream p-5 rounded-md">
         <p className="text-sm text-stone-700 leading-relaxed">
-          Besoin de modifier votre réservation — en particulier{" "}
-          <strong>agrandir le groupe</strong> ? En ligne, on ne peut
-          qu&apos;annuler et refaire une demande, ce qui ne garantit pas de
-          retrouver le même horaire.{" "}
           {phone ? (
             <>
-              Le plus sûr est d&apos;appeler directement le restaurant au{" "}
-              <PhoneLink phone={phone} />.
+              Besoin particulier ? Appelez-nous au <PhoneLink phone={phone} />.
             </>
           ) : (
-            "Le plus sûr est d'appeler directement le restaurant."
+            "Besoin particulier ? Appelez le restaurant."
           )}
         </p>
-        <LocalizedClientLink
-          href={cancelHref}
-          className="text-sm text-stone-500 underline self-start"
-        >
-          Annuler cette réservation
-        </LocalizedClientLink>
       </div>
     </div>
   )

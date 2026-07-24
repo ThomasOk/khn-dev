@@ -56,6 +56,12 @@ medusaIntegrationTestRunner({
     const cancel = (id: string, token: string) =>
       api.post(`/store/table-reservations/${id}/cancel`, { token }, withKey())
 
+    const lookup = (id: string, token: string) =>
+      api.get(
+        `/store/table-reservations/${id}?token=${encodeURIComponent(token)}`,
+        withKey()
+      )
+
     // The runner truncates the database between tests, so everything a test
     // needs — the publishable key included — is (re)created here rather than
     // once in a beforeAll that only the first test would see.
@@ -224,6 +230,113 @@ medusaIntegrationTestRunner({
         // A second party can now take the Heure the cancellation freed.
         const rebooked = await reserve({ date, time, party_size: CAPACITY })
         expect(rebooked.status).toEqual(201)
+      })
+    })
+
+    // The read-only lookup the cancellation page calls BEFORE the customer
+    // confirms: it must show what's about to be cancelled without cancelling
+    // it — the whole point being that merely loading this page (e.g. an
+    // email client's automatic link-scanning) can no longer cancel anything.
+    describe("GET /store/table-reservations/:id", () => {
+      it("returns the Réservation for a valid id and token, without cancelling it", async () => {
+        const now = new Date()
+        const base = parisMinutesOfDay(now)
+        const start = Math.min(1200, base + 90)
+
+        await createConfig()
+        await tableReservation().createServiceWindows({
+          name: "Test service",
+          day_of_week: parisDayOfWeek(now),
+          start_time: hhmm(start),
+          end_time: hhmm(start + 120),
+          capacity: 10,
+          duration_minutes: 90,
+          active: true,
+        })
+
+        const date = parisDateKey(now)
+        const time = hhmm(start)
+
+        const created = await reserve({ date, time, party_size: 3 })
+        const { id, cancellation_token } = created.data
+
+        const response = await lookup(id, cancellation_token)
+
+        expect(response.status).toEqual(200)
+        expect(response.data).toMatchObject({
+          id,
+          date,
+          time,
+          party_size: 3,
+          status: "confirmed",
+        })
+
+        const [persisted] = await tableReservation().listTableReservations({ id })
+        expect(persisted.status).toEqual("confirmed")
+      })
+
+      it("returns 404 for a wrong token, identical to an unknown id", async () => {
+        const now = new Date()
+        const base = parisMinutesOfDay(now)
+        const start = Math.min(1200, base + 90)
+
+        await createConfig()
+        await tableReservation().createServiceWindows({
+          name: "Test service",
+          day_of_week: parisDayOfWeek(now),
+          start_time: hhmm(start),
+          end_time: hhmm(start + 120),
+          capacity: 10,
+          duration_minutes: 90,
+          active: true,
+        })
+
+        const date = parisDateKey(now)
+        const time = hhmm(start)
+
+        const created = await reserve({ date, time })
+        const { id } = created.data
+
+        const wrongTokenResponse = await lookup(id, "not-the-real-token").catch(
+          (e) => e.response
+        )
+        const unknownIdResponse = await lookup(
+          "unknown_id_123",
+          "not-the-real-token"
+        ).catch((e) => e.response)
+
+        expect(wrongTokenResponse.status).toEqual(404)
+        expect(unknownIdResponse.status).toEqual(404)
+        expect(wrongTokenResponse.data.type).toEqual(unknownIdResponse.data.type)
+      })
+
+      it("still returns the Réservation, with status cancelled, after it has been cancelled", async () => {
+        const now = new Date()
+        const base = parisMinutesOfDay(now)
+        const start = Math.min(1200, base + 90)
+
+        await createConfig()
+        await tableReservation().createServiceWindows({
+          name: "Test service",
+          day_of_week: parisDayOfWeek(now),
+          start_time: hhmm(start),
+          end_time: hhmm(start + 120),
+          capacity: 10,
+          duration_minutes: 90,
+          active: true,
+        })
+
+        const date = parisDateKey(now)
+        const time = hhmm(start)
+
+        const created = await reserve({ date, time })
+        const { id, cancellation_token } = created.data
+
+        await cancel(id, cancellation_token)
+
+        const response = await lookup(id, cancellation_token)
+        expect(response.status).toEqual(200)
+        expect(response.data).toMatchObject({ id, status: "cancelled" })
       })
     })
   },

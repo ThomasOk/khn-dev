@@ -78,8 +78,7 @@ export default function TableReservationConfirmationEmail({
           <Section style={section}>
             <Heading style={h2}>Besoin de changer</Heading>
             <Text style={bodyText}>
-              Le groupe s'agrandit ? Annulez cette réservation puis reprenez
-              un créneau — ou, plus simple, appelez-nous directement au{" "}
+              Besoin particulier ? Appelez-nous au{" "}
               <strong>{restaurant_phone}</strong>.
             </Text>
             <Button style={cancelButton} href={cancellation_url}>
