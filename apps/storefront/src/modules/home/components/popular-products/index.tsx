@@ -34,7 +34,7 @@ const PopularProducts = () => {
           {categories.map((category, i) => (
             <RevealWrapper key={category.handle} delay={i * 100}>
               <LocalizedClientLink
-                href={`/categories/${category.handle}`}
+                href={`/store#${category.handle}`}
                 className="group flex h-full flex-col bg-white"
               >
                 <div className="relative aspect-[5/3] overflow-hidden">
