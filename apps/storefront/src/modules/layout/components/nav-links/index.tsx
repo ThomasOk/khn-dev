@@ -86,6 +86,14 @@ export default function NavLinks() {
           </div>
         </div>
       </div>
+
+      <LocalizedClientLink
+        href="/table-reservations"
+        className={linkClass}
+        data-testid="nav-reservations-link"
+      >
+        Réserver
+      </LocalizedClientLink>
     </div>
   )
 }
