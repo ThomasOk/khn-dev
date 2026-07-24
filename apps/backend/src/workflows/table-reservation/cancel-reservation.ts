@@ -7,10 +7,10 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk"
 import { emitEventStep } from "@medusajs/medusa/core-flows"
-import { MedusaError } from "@medusajs/framework/utils"
 import { TABLE_RESERVATION_MODULE } from "../../modules/table-reservation"
 import TableReservationModuleService from "../../modules/table-reservation/service"
 import { TableReservationEvents } from "../../modules/table-reservation/events"
+import { findReservationByToken } from "../../lib/reservation/find-reservation-by-token"
 
 // The customer's only self-service action on a Réservation (ADR 0008: no
 // modification, no other lifecycle). No lock is needed here — unlike
@@ -39,18 +39,11 @@ const cancelReservationStep = createStep(
       TABLE_RESERVATION_MODULE
     )
 
-    const [reservation] = await tableReservation.listTableReservations({
-      id: input.id,
-    })
-
-    // Identical 404 for an unknown id and for a wrong token: nothing here
-    // may tell someone probing ids apart from someone guessing tokens.
-    if (!reservation || reservation.cancellation_token !== input.token) {
-      throw new MedusaError(
-        MedusaError.Types.NOT_FOUND,
-        "No Réservation found for this id and token."
-      )
-    }
+    const reservation = await findReservationByToken(
+      tableReservation,
+      input.id,
+      input.token
+    )
 
     // Idempotent: the customer's second click on the same link must return
     // 200, not an error, and must not overwrite the first cancellation's

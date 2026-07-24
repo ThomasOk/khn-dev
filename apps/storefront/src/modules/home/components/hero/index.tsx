@@ -30,12 +30,14 @@ const Hero = () => {
         </h1>
 
         <div className="flex items-center gap-4 mt-2">
-          <LocalizedClientLink
-            href="/table-reservations"
+          <a
+            href="/documents/KHN-carte-menu-boissons-allergenes-2026.pdf"
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center px-6 py-3 border border-white text-white text-xs tracking-[0.15em] uppercase transition-[background-color,color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-neutral-900"
           >
-            Réserver une table
-          </LocalizedClientLink>
+            Menu sur place
+          </a>
           <LocalizedClientLink
             href="/store"
             className="inline-flex items-center px-6 py-3 bg-white text-neutral-900 text-xs tracking-[0.15em] uppercase transition-[background-color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-orange-300"

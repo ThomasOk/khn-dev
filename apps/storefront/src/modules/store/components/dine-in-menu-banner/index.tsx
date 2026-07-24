@@ -8,7 +8,7 @@ const DineInMenuBanner = () => {
         Vous êtes sur place ? Notre carte du restaurant propose un choix plus
         large et des tarifs différents de la commande en ligne.{" "}
         <a
-          href="/documents/khn-carte-allergenes-2026.pdf"
+          href="/documents/KHN-carte-menu-boissons-allergenes-2026.pdf"
           target="_blank"
           rel="noopener noreferrer"
           className="font-medium text-orange-600 underline underline-offset-2 [@media(hover:hover)]:hover:text-orange-700"

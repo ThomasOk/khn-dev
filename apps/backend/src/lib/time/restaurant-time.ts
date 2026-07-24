@@ -127,3 +127,11 @@ export const hhmmToMinutes = (hhmm: string): number => {
 // plain strings, with no Date built to test membership.
 export const civilDayKey = ({ year, month, day }: CivilDay): string =>
   `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
+
+// `delta` civil days after `day` (or before, if negative) — pure calendar
+// arithmetic via Date.UTC, same technique as daysBetween's own Y/M/D roundtrip
+// in derive-availability.ts, so month/year rollovers are never handled by hand.
+export function addDays(day: CivilDay, delta: number): CivilDay {
+  const d = new Date(Date.UTC(day.year, day.month - 1, day.day + delta))
+  return { year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate() }
+}
