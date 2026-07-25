@@ -35,6 +35,9 @@ module.exports = defineConfig({
       resolve: "./src/modules/pickup",
     },
     {
+      resolve: "./src/modules/announcement",
+    },
+    {
       resolve: "./src/modules/table-reservation",
     },
     {
