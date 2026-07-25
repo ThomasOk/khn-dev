@@ -8,7 +8,7 @@ import CarteCartColumn from "@modules/store/components/carte-cart-column"
 import CarteHero from "@modules/store/components/carte-hero"
 import CarteSection from "@modules/store/components/carte-section"
 import CarteSectionNav from "@modules/store/components/carte-section-nav"
-import { CARTE_NAV_OFFSET_PX } from "@modules/store/components/carte-section-nav/constants"
+import { CARTE_NAV_OFFSET } from "@modules/store/components/carte-section-nav/constants"
 import DineInMenuBanner from "@modules/store/components/dine-in-menu-banner"
 
 const CarteCartColumnFallback = () => (
@@ -61,16 +61,17 @@ const StoreTemplate = ({
             ))}
           </div>
           <div className="hidden small:block">
-            {/* Stacked under the fixed main nav *and* CarteSectionNav's own
-                sticky bar (both already pinned by the time this scrolls into
-                view) — top and max-h share CARTE_NAV_OFFSET_PX with that
-                bar's scrollMarginTop so the cart starts right below it
-                instead of sliding underneath. */}
+            {/* Stacked under the fixed main nav, CarteSectionNav's own
+                sticky bar, and the announcement/cart-mismatch banner when
+                present (all already pinned by the time this scrolls into
+                view) — top and max-h share CARTE_NAV_OFFSET with that bar's
+                scrollMarginTop so the cart starts right below it instead of
+                sliding underneath. */}
             <div
               className="sticky overflow-y-auto mt-8 py-6 px-6 bg-white border border-neutral-200 shadow-sm"
               style={{
-                top: CARTE_NAV_OFFSET_PX,
-                maxHeight: `calc(100vh - ${CARTE_NAV_OFFSET_PX}px)`,
+                top: CARTE_NAV_OFFSET,
+                maxHeight: `calc(100vh - ${CARTE_NAV_OFFSET})`,
               }}
             >
               <Suspense fallback={<CarteCartColumnFallback />}>
