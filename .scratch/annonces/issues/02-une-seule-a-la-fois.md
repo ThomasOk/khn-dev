@@ -12,17 +12,17 @@ La modification n'existe pas sur `pickup/closures`, qui n'offre que création et
 
 **Blocked by:** 01 — L'Annonce, de l'API à la bannière.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] La création et la modification passent par un **workflow**, pas par de la logique enchaînée dans la route (`AGENTS.md`), sur le modèle de `createPickupClosureWorkflow`
-- [ ] Le test de chevauchement est une comparaison de chaînes `YYYY-MM-DD` : `existante.start_date <= candidate.end_date` **et** `existante.end_date >= candidate.start_date`. Aucun `Date` construit
-- [ ] La modification s'exclut elle-même du contrôle
-- [ ] Un conflit répond **409**, avec un message nommant la période en conflit
-- [ ] `POST /admin/announcements/:id` (modification) et `DELETE /admin/announcements/:id`
-- [ ] Test d'intégration HTTP : chevauchement partiel refusé
-- [ ] Test d'intégration HTTP : inclusion totale d'une période dans une autre refusée
-- [ ] Test d'intégration HTTP : périodes identiques refusées
-- [ ] Test d'intégration HTTP : **adjacence acceptée** — une Annonce finissant le 10, la suivante commençant le 11
-- [ ] Test d'intégration HTTP : modifier l'accroche d'une Annonce sans toucher à sa période est accepté
-- [ ] Test d'intégration HTTP : déplacer une Annonce sur la période d'une autre est refusé en 409
-- [ ] Test d'intégration HTTP : après suppression, l'Annonce n'est plus servie par la route store
+- [x] La création et la modification passent par un **workflow**, pas par de la logique enchaînée dans la route (`AGENTS.md`), sur le modèle de `createPickupClosureWorkflow`
+- [x] Le test de chevauchement est une comparaison de chaînes `YYYY-MM-DD` : `existante.start_date <= candidate.end_date` **et** `existante.end_date >= candidate.start_date`. Aucun `Date` construit
+- [x] La modification s'exclut elle-même du contrôle
+- [x] Un conflit répond **409**, avec un message nommant la période en conflit
+- [x] `POST /admin/announcements/:id` (modification) et `DELETE /admin/announcements/:id`
+- [x] Test d'intégration HTTP : chevauchement partiel refusé
+- [x] Test d'intégration HTTP : inclusion totale d'une période dans une autre refusée
+- [x] Test d'intégration HTTP : périodes identiques refusées
+- [x] Test d'intégration HTTP : **adjacence acceptée** — une Annonce finissant le 10, la suivante commençant le 11
+- [x] Test d'intégration HTTP : modifier l'accroche d'une Annonce sans toucher à sa période est accepté
+- [x] Test d'intégration HTTP : déplacer une Annonce sur la période d'une autre est refusé en 409
+- [x] Test d'intégration HTTP : après suppression, l'Annonce n'est plus servie par la route store

@@ -10,13 +10,13 @@ Un point que l'écran doit rendre évident, faute de quoi la feature rate sa cib
 
 **Blocked by:** 02 — Une seule à la fois : le chevauchement refusé.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Route de réglages admin `announcements`, à côté de celles de `pickup`, `closures` et `table-reservation`
-- [ ] Liste de toutes les Annonces avec leur état visible : passée, en cours, à venir
-- [ ] Création, modification et suppression depuis l'écran
-- [ ] Date de fin **pré-remplie à début + 14 jours** — un défaut de formulaire, pas une contrainte du modèle : rien n'interdit une période plus longue
-- [ ] Compteur de caractères de l'accroche affiché **pendant** la saisie, pas découvert au submit
-- [ ] Le 409 de chevauchement remonte en **erreur inline nommant la période en conflit**, pas en erreur générique
-- [ ] L'écran distingue visiblement la Période d'annonce de la période dont l'annonce parle — libellé, aide ou exemple, au choix de l'implémentation
-- [ ] Aucune référence, aucun lien, aucune lecture des Fermetures exceptionnelles depuis cet écran (ADR 0009)
+- [x] Route de réglages admin `announcements`, à côté de celles de `pickup`, `closures` et `table-reservation`
+- [x] Liste de toutes les Annonces avec leur état visible : passée, en cours, à venir
+- [x] Création, modification et suppression depuis l'écran
+- [x] Date de fin **pré-remplie à début + 14 jours** — un défaut de formulaire, pas une contrainte du modèle : rien n'interdit une période plus longue
+- [x] Compteur de caractères de l'accroche affiché **pendant** la saisie, pas découvert au submit
+- [x] Le 409 de chevauchement remonte en **erreur inline nommant la période en conflit**, pas en erreur générique
+- [x] L'écran distingue visiblement la Période d'annonce de la période dont l'annonce parle — libellé, aide ou exemple, au choix de l'implémentation
+- [x] Aucune référence, aucun lien, aucune lecture des Fermetures exceptionnelles depuis cet écran (ADR 0009)
