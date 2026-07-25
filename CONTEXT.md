@@ -145,6 +145,24 @@ The customer releasing their Réservation from the link in their confirmation em
 The dining room's production document: one day's Réservations by ascending Heure, with the nom, the number of Couverts and the téléphone. The counterpart of the Ticket cuisine — read standing up, carries no prices, and is a rendering of **the day**, never of a single Réservation.
 _Avoid_: Livre de réservations (that is the whole register, not one day's), plan de salle (that would be tables, which are not modelled)
 
+### L'annonce
+
+**Annonce**:
+A free message the restaurant shows to visitors on the storefront — an upcoming Fermeture exceptionnelle, a new dish, a recruitment notice. It is **written by a human and owes nothing to the rest of the system**: it derives from no Fermeture, no Produit and no Créneau, and when it happens to say something the system already knows, that is a coincidence, not a link. It changes nothing a client can do — an Annonce that says "fermé le 15 août" does not close anything, and the Fermeture exceptionnelle that actually does is entered separately.
+It **cannot be dismissed**: there is no close button, and a visitor who returns during the Période d'annonce sees it again every time. That is a deliberate trade of comfort for reach, and it is what makes a short Période d'annonce a requirement rather than a preference — an unremovable bandeau is only tolerable while it is brief.
+_Avoid_: Notification (that is the email sent to the restaurant when an order arrives), bannière (the placement, not the thing), actualité, news, promotion, popup
+
+**Accroche / Corps**:
+An Annonce is two pieces. The **accroche** is one short sentence, always displayed, and its length is capped by the domain rather than by the design: past two lines the eye reads a bandeau as a block of content and skips it, so a longer accroche does not communicate more, it communicates less. The **corps** is optional, of any length, and the client opens it only if the accroche earned the click. Most Annonces have no corps at all. A corps has **no address of its own** — it is not a page, cannot be linked to, and is not indexed: anything meant to be shared elsewhere is written again, for that channel.
+_Avoid_: Titre (an accroche is a sentence, not a label), article, contenu, "en savoir plus" as a concept (it is a control, not a term)
+
+**Période d'annonce**:
+The civil days, both bounds inclusive, during which an Annonce is displayed. **Both bounds are mandatory** — there is no Annonce without an end. The stale banner is the failure mode with teeth here: an Annonce left up past its moment does not merely stop being useful, it teaches every visitor that this bandeau never says anything worth reading, and the credibility it burns is spent on all the later ones. An Annonce that expires too early costs nothing by comparison — the site simply looks normal — so the asymmetry is settled in favour of expiry.
+It is **not** the period it talks about: an August closure running 10–20 is announced from the 1st and stays up through the closure itself, so its Période d'annonce is 1–20. The two never coincide, which is one more reason an Annonce cannot be derived from a Fermeture.
+
+**Une seule à la fois**:
+At most one Annonce is displayed, ever. Two stacked bandeaux each destroy the other's authority — two "important" messages side by side are zero important messages — and a rotating one loses its audience after the first slide. So overlapping Périodes d'annonce are **refused at entry**, in the admin, rather than silently resolved in favour of one of them: an Annonce that was published and never appeared is not diagnosable from the storefront.
+
 ### Not in the domain
 
 **Table (le meuble)**:
