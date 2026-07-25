@@ -5,11 +5,11 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import CartButton from "@modules/layout/components/cart-button"
 import NavClient from "@modules/layout/components/nav-client"
 
-export default async function Nav() {
+export default async function Nav({ opaque }: { opaque?: boolean }) {
   const categories = await listCategories()
 
   return (
-    <NavClient categories={categories}>
+    <NavClient categories={categories} opaque={opaque}>
       <Suspense
         fallback={
           <LocalizedClientLink

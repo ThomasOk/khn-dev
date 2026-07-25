@@ -11,9 +11,18 @@ import SideMenu from "@modules/layout/components/side-menu"
 type NavClientProps = {
   categories: HttpTypes.StoreProductCategory[]
   children: React.ReactNode
+  // An external reason to force the nav solid regardless of route — e.g. an
+  // Annonce banner sitting right under the (fixed, otherwise transparent)
+  // nav, which a transparent header would overlap illegibly. Callers that
+  // have no such reason simply omit it.
+  opaque?: boolean
 }
 
-export default function NavClient({ categories, children }: NavClientProps) {
+export default function NavClient({
+  categories,
+  children,
+  opaque = false,
+}: NavClientProps) {
   const [scrolled, setScrolled] = useState(false)
   const pathname = usePathname()
   // These pages have no dark hero behind the nav (unlike the Carte), so a
@@ -21,7 +30,7 @@ export default function NavClient({ categories, children }: NavClientProps) {
   // or directly over a product photo (illegible text-on-image). Force it
   // solid from the start instead of waiting for scroll.
   const forceSolidNav =
-    pathname?.includes("/cart") || pathname?.includes("/products")
+    opaque || pathname?.includes("/cart") || pathname?.includes("/products")
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)
