@@ -18,7 +18,7 @@ const ReservationConfirmation = ({ confirmation, customerName, phone }: Props) =
       data-testid="reservation-confirmation"
     >
       <div className="flex flex-col gap-2">
-        <p className="text-orange-600 text-xs font-semibold uppercase tracking-widest">
+        <p className="text-khn-gold text-xs font-semibold uppercase tracking-widest">
           Réservation confirmée
         </p>
         <h2 className="font-display text-3xl text-stone-900">

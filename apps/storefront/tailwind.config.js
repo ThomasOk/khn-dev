@@ -25,6 +25,8 @@ module.exports = {
           "cream-hover": "#F0EBE0",
           teal: "#0C3A3D",
           "teal-panel": "#0A2A2C",
+          gold: "#C89B15",
+          "gold-dark": "#68521A",
         },
         grey: {
           0: "#FFFFFF",

@@ -47,7 +47,7 @@ export default function LegalNoticePage() {
             <p className="font-medium text-stone-800">Téléphone</p>
             <a
               href="tel:0973896013"
-              className="transition-colors duration-200 [@media(hover:hover)]:hover:text-orange-600"
+              className="transition-colors duration-200 [@media(hover:hover)]:hover:text-khn-gold"
             >
               09 73 89 60 13
             </a>
@@ -56,7 +56,7 @@ export default function LegalNoticePage() {
             <p className="font-medium text-stone-800">Email</p>
             <a
               href="mailto:contact@kim-hi-noodle.fr"
-              className="transition-colors duration-200 [@media(hover:hover)]:hover:text-orange-600"
+              className="transition-colors duration-200 [@media(hover:hover)]:hover:text-khn-gold"
             >
               contact@kim-hi-noodle.fr
             </a>
@@ -99,7 +99,7 @@ export default function LegalNoticePage() {
           décrit dans la{" "}
           <LocalizedClientLink
             href="/privacy-policy"
-            className="text-orange-600 underline underline-offset-2"
+            className="text-khn-gold underline underline-offset-2"
           >
             politique de confidentialité
           </LocalizedClientLink>

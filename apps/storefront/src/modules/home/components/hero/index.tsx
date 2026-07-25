@@ -40,7 +40,7 @@ const Hero = () => {
           </a>
           <LocalizedClientLink
             href="/store"
-            className="inline-flex items-center px-6 py-3 bg-white text-neutral-900 text-xs tracking-[0.15em] uppercase transition-[background-color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-orange-300"
+            className="inline-flex items-center px-6 py-3 bg-white text-neutral-900 text-xs tracking-[0.15em] uppercase transition-[background-color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-khn-gold"
           >
             Commander
           </LocalizedClientLink>

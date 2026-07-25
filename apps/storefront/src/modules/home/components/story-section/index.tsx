@@ -12,7 +12,7 @@ const StorySection = () => {
               <h2 className="font-display uppercase text-4xl small:text-5xl leading-tight text-white">
                 Ici, les nouilles ont une histoire.
               </h2>
-              <span className="block h-1 w-16 bg-orange-500" />
+              <span className="block h-1 w-16 bg-khn-gold" />
               <p className="text-white/80 text-base leading-relaxed max-w-md">
                 Kim-Hi Noodle est née d&apos;une envie simple. Celle de partager
                 les saveurs du Cambodge avec sincérité et générosité. Des

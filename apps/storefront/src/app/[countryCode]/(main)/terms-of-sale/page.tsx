@@ -23,7 +23,7 @@ export default function TermsOfSalePage() {
           disponibles{" "}
           <LocalizedClientLink
             href="/legal-notice"
-            className="text-orange-600 underline underline-offset-2"
+            className="text-khn-gold underline underline-offset-2"
           >
             ici
           </LocalizedClientLink>
@@ -103,7 +103,7 @@ export default function TermsOfSalePage() {
           retrait, par email à{" "}
           <a
             href="mailto:contact@kim-hi-noodle.fr"
-            className="text-orange-600 underline underline-offset-2"
+            className="text-khn-gold underline underline-offset-2"
           >
             contact@kim-hi-noodle.fr
           </a>{" "}
@@ -126,7 +126,7 @@ export default function TermsOfSalePage() {
           la{" "}
           <LocalizedClientLink
             href="/privacy-policy"
-            className="text-orange-600 underline underline-offset-2"
+            className="text-khn-gold underline underline-offset-2"
           >
             politique de confidentialité
           </LocalizedClientLink>

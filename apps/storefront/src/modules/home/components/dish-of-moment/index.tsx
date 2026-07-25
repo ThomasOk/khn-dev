@@ -49,7 +49,7 @@ const DishOfMoment = async ({ region }: { region: HttpTypes.StoreRegion }) => {
 
           <RevealWrapper direction="right" delay={150}>
             <div className="flex flex-col gap-6">
-              <p className="text-orange-500 text-sm font-medium uppercase tracking-widest">
+              <p className="text-khn-gold text-sm font-medium uppercase tracking-widest">
                 Plat du Moment
               </p>
               <h2 className="font-display text-4xl small:text-5xl leading-tight text-white">

@@ -30,7 +30,7 @@ const ReservationHero = () => {
           Réserver une table
         </h1>
 
-        <span className="h-0.5 w-14 bg-orange-500" />
+        <span className="h-0.5 w-14 bg-khn-gold" />
 
         <p className="text-sm small:text-base text-white/80 max-w-md [text-wrap:balance]">
           Choisissez votre date et votre créneau pour vivre une expérience
