@@ -26,20 +26,20 @@ export default function Footer() {
 
         <div className="flex flex-col gap-12 small:flex-row small:justify-between small:items-start">
 
-          <LocalizedClientLink href="/" className="shrink-0">
+          <LocalizedClientLink href="/" className="shrink-0 self-center small:self-auto">
             <Image
               src="/images/khn_logo.png"
               alt="Kim-Hi Noodle"
               width={0}
               height={0}
               sizes="160px"
-              className="h-10 w-auto brightness-0 invert"
+              className="h-8 small:h-10 w-auto"
             />
           </LocalizedClientLink>
 
-          <div className="grid grid-cols-2 small:grid-cols-12 gap-10 small:gap-10">
+          <div className="grid grid-cols-1 small:grid-cols-12 gap-10 small:gap-10">
 
-            <div className="flex flex-col gap-4 small:col-span-2">
+            <div className="flex flex-col items-center text-center small:items-start small:text-left gap-4 small:col-span-2">
               <p className="text-white text-xs font-semibold uppercase tracking-widest">
                 Navigation
               </p>
@@ -62,7 +62,7 @@ export default function Footer() {
               </ul>
             </div>
 
-            <div className="flex flex-col gap-4 small:col-span-3">
+            <div className="flex flex-col items-center text-center small:items-start small:text-left gap-4 small:col-span-3">
               <p className="text-white text-xs font-semibold uppercase tracking-widest">
                 Adresse & Contact
               </p>
@@ -87,11 +87,11 @@ export default function Footer() {
               </address>
             </div>
 
-            <div className="col-span-2 small:col-span-4 flex flex-col gap-4">
+            <div className="small:col-span-4 flex flex-col items-center text-center small:items-start small:text-left gap-4">
               <p className="text-white text-xs font-semibold uppercase tracking-widest">
                 Horaires
               </p>
-              <div className="grid grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 small:grid-cols-2 gap-8">
                 {openingHours.map(({ label, schedule }) => (
                   <div key={label} className="flex flex-col gap-3">
                     <p className="text-khn-gold text-xs font-semibold uppercase tracking-wider">
@@ -113,38 +113,57 @@ export default function Footer() {
               </div>
             </div>
 
-            <div className="col-span-2 small:col-span-3 flex flex-col gap-4">
+            <div className="small:col-span-3 flex flex-col items-center text-center small:items-start small:text-left gap-4">
               <p className="text-white text-xs font-semibold uppercase tracking-widest">
                 Nous suivre
               </p>
-              <ul className="flex flex-col gap-3">
-                {[
-                  { label: "Instagram", href: "https://www.instagram.com/kimhi.noodle/" },
-                  { label: "Facebook", href: "https://www.facebook.com/profile.php?id=100087027908126" },
-                ].map(({ label, href }) => (
-                  <li key={label}>
-                    <a
-                      href={href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-stone-400 text-sm transition-colors duration-200 [@media(hover:hover)]:hover:text-white"
-                    >
-                      {label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://www.facebook.com/profile.php?id=100087027908126"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-stone-700 text-stone-400 transition-colors duration-200 [@media(hover:hover)]:hover:border-white [@media(hover:hover)]:hover:text-white"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                  </svg>
+                </a>
+                <a
+                  href="https://www.instagram.com/kimhi.noodle/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-full border border-stone-700 text-stone-400 transition-colors duration-200 [@media(hover:hover)]:hover:border-white [@media(hover:hover)]:hover:text-white"
+                >
+                  <svg
+                    width="15"
+                    height="15"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                  </svg>
+                </a>
+              </div>
             </div>
 
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col small:flex-row items-start small:items-center justify-between gap-6">
-          <div className="flex flex-col small:flex-row items-start small:items-center gap-2 small:gap-6">
+        <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col items-center text-center small:flex-row small:items-center small:text-left justify-between gap-6">
+          <div className="flex flex-col items-center small:flex-row small:items-center gap-2 small:gap-6">
             <p className="text-stone-500 text-sm">
               © {new Date().getFullYear()} Kim-Hi Noodle. Tous droits réservés.
             </p>
-            <ul className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <ul className="flex flex-wrap items-center justify-center small:justify-start gap-x-6 gap-y-2">
               {[
                 { label: "Mentions légales", href: "/legal-notice" },
                 { label: "CGV", href: "/terms-of-sale" },

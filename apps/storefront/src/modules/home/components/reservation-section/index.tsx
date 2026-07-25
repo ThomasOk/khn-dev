@@ -11,9 +11,13 @@ const ReservationSection = () => {
         <div className="pt-20 small:pt-28 pb-16 small:pb-20 flex flex-col items-center text-center gap-8">
 
           <RevealWrapper direction="up">
-            <h2 className="font-display uppercase tracking-wide text-5xl small:text-6xl leading-[1.1] text-stone-900 [text-wrap:balance] max-w-3xl">
+            <h2 className="font-display uppercase tracking-wide text-4xl small:text-6xl leading-[1.1] text-stone-900 [text-wrap:balance] max-w-3xl">
               Réservez votre table chez nous
             </h2>
+          </RevealWrapper>
+
+          <RevealWrapper direction="up" delay={40}>
+            <span className="block h-1 w-16 bg-khn-gold" />
           </RevealWrapper>
 
           <RevealWrapper direction="up" delay={80}>
@@ -22,10 +26,10 @@ const ReservationSection = () => {
             </p>
           </RevealWrapper>
 
-          <RevealWrapper direction="up" delay={160}>
+          <RevealWrapper direction="up" delay={160} className="w-full small:w-auto">
             <LocalizedClientLink
               href="/table-reservations"
-              className="inline-flex items-center justify-center min-h-[44px] px-10 py-3 bg-stone-900 text-white text-sm font-medium uppercase tracking-widest transition-colors duration-200 active:scale-[0.97] [@media(hover:hover)]:hover:bg-stone-700"
+              className="flex small:inline-flex w-full small:w-auto items-center justify-center min-h-[44px] px-10 py-3 rounded-base bg-khn-teal text-white text-sm font-medium uppercase tracking-widest transition-colors duration-200 active:scale-[0.97] [@media(hover:hover)]:hover:bg-khn-teal-panel"
             >
               Réservez une table
             </LocalizedClientLink>
@@ -42,7 +46,7 @@ const ReservationSection = () => {
 
           {/* IMAGE — DOM 1, visual 2 */}
           <RevealWrapper direction="up" delay={80} className="small:order-2 small:w-1/3">
-            <div className="relative aspect-[3/2] small:aspect-auto small:h-full overflow-hidden">
+            <div className="relative aspect-[3/2] small:aspect-auto small:h-full overflow-hidden rounded-base">
               <Image
                 src="/images/reservation-tables.png"
                 alt="Salle du restaurant Kim-Hi Noodle"
@@ -55,7 +59,7 @@ const ReservationSection = () => {
 
           {/* HORAIRES — DOM 2, visual 1 */}
           <RevealWrapper direction="left" className="small:order-1 small:w-[27%]">
-            <div className="flex flex-col gap-6 py-10 small:py-16 small:px-16">
+            <div className="flex flex-col items-center text-center small:items-start small:text-left gap-6 py-10 small:py-16 small:px-16">
 
               <p className="text-xs font-semibold uppercase tracking-widest text-stone-900 pb-3 border-b border-stone-200">
                 Horaires d&apos;ouverture
@@ -100,7 +104,7 @@ const ReservationSection = () => {
 
           {/* OÙ NOUS TROUVER — DOM 3, visual 3 */}
           <RevealWrapper direction="right" delay={160} className="small:order-3 small:w-[27%]">
-            <div className="flex flex-col gap-6 py-10 small:py-16 small:px-16">
+            <div className="flex flex-col items-center text-center small:items-start small:text-left gap-6 py-10 small:py-16 small:px-16">
 
               <p className="text-xs font-semibold uppercase tracking-widest text-stone-900 pb-3 border-b border-stone-200">
                 Où nous trouver
@@ -132,7 +136,7 @@ const ReservationSection = () => {
                   <p className="text-xs font-semibold uppercase tracking-wider text-stone-500">
                     Réseaux sociaux
                   </p>
-                  <div className="flex gap-3">
+                  <div className="flex justify-center small:justify-start gap-3">
                     <a
                       href="https://www.facebook.com/profile.php?id=100087027908126"
                       target="_blank"
