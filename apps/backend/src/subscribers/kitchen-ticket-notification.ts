@@ -127,6 +127,9 @@ export default async function sendKitchenTicketNotification({
         customer_name: customerName,
         pickup_slot_start: slotStart,
         pickup_slot_end: slotEnd,
+        // Same items the PDF ticket is built from — the email recap mirrors
+        // the ticket's own content rather than resolving anything twice.
+        items,
       },
       attachments: [
         {
