@@ -36,16 +36,25 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
         Passer au contenu
       </a>
       <Nav opaque={!!announcement} />
-      {announcement && (
-        <AnnouncementBanner
-          headline={announcement.headline}
-          body={announcement.body}
-          linkLabel={announcement.link_label}
-          linkUrl={announcement.link_url}
-        />
-      )}
-      {customer && cart && (
-        <CartMismatchBanner customer={customer} cart={cart} />
+      {/* Nav is `fixed`, so it takes up no flow space of its own — without
+          this offset, whatever renders here sits at y:0 and disappears
+          behind the nav's z-50. pt-16 matches Nav's own h-16. Applied once
+          on the wrapper (not per-banner) so headline + cart-mismatch don't
+          stack two offsets when both are showing. */}
+      {(announcement || (customer && cart)) && (
+        <div className="pt-16">
+          {announcement && (
+            <AnnouncementBanner
+              headline={announcement.headline}
+              body={announcement.body}
+              linkLabel={announcement.link_label}
+              linkUrl={announcement.link_url}
+            />
+          )}
+          {customer && cart && (
+            <CartMismatchBanner customer={customer} cart={cart} />
+          )}
+        </div>
       )}
       {cart && (
         <FreeShippingPriceNudge
