@@ -24,20 +24,52 @@ import AnnouncementModuleService from "../../modules/announcement/service"
 
 type Period = { start_date: string; end_date: string }
 
+// The corps and the lien: both nullable, and the label/url pair is
+// enforced (both present or both absent) by the zod schemas — the create
+// schema checks it outright, the update schema only when both are given on
+// the same request; updateAnnouncementStep below re-checks the merge for
+// the case where only one of the two is touched.
+type LinkFields = {
+  body?: string | null
+  link_label?: string | null
+  link_url?: string | null
+}
+
+// An internal path ("/carte") or an absolute http(s) URL — never a
+// protocol-relative "//host", which is neither. Exported so the zod schemas
+// (which run before this workflow, and need the exact same shape) don't
+// carry their own copy that could drift from it.
+export const LINK_URL_PATTERN = /^(\/(?!\/)|https?:\/\/)/
+
+// Both present or both absent — a link without a label isn't renderable, a
+// label without a link is a dead button. Shared between the zod schemas'
+// refine() calls and updateAnnouncementStep's merge-onto-current check below,
+// so the rule is written once.
+export function hasConsistentLink(
+  label: string | null | undefined,
+  url: string | null | undefined
+): boolean {
+  return !!label === !!url
+}
+
 export type CreateAnnouncementInput = {
   headline: string
-} & Period
+} & Period &
+  LinkFields
 
 export type UpdateAnnouncementInput = {
   id: string
   headline?: string
   start_date?: string
   end_date?: string
-}
+} & LinkFields
 
 type Announcement = {
   id: string
   headline: string
+  body: string | null
+  link_label: string | null
+  link_url: string | null
 } & Period
 
 type OverlapOutcome = {
@@ -158,6 +190,22 @@ const updateAnnouncementStep = createStep<
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,
       "end_date must be on or after start_date"
+    )
+  }
+
+  // Same reasoning as the date check above, for the label/url pair: the
+  // update schema only refuses a mismatch when both fields are present on
+  // THIS request, so a request touching just one of the two — say, editing
+  // link_label while link_url stays whatever it already was — is re-checked
+  // here against the merged row.
+  const candidateLinkLabel =
+    input.link_label !== undefined ? input.link_label : current.link_label
+  const candidateLinkUrl =
+    input.link_url !== undefined ? input.link_url : current.link_url
+  if (!hasConsistentLink(candidateLinkLabel, candidateLinkUrl)) {
+    throw new MedusaError(
+      MedusaError.Types.INVALID_DATA,
+      "link_label and link_url must both be present or both be absent"
     )
   }
 

@@ -12,6 +12,7 @@ import {
   Input,
   Label,
   Text,
+  Textarea,
   toast,
   usePrompt,
 } from "@medusajs/ui"
@@ -22,17 +23,28 @@ import {
   announcementStatus,
   formatAnnouncementPeriod,
   HEADLINE_MAX_LENGTH,
+  isValidLinkUrl,
   type Announcement,
   type AnnouncementStatus,
 } from "../../lib/announcement"
 
 type FormState = {
   headline: string
+  body: string
+  link_label: string
+  link_url: string
   start_date: string
   end_date: string
 }
 
-const EMPTY_FORM: FormState = { headline: "", start_date: "", end_date: "" }
+const EMPTY_FORM: FormState = {
+  headline: "",
+  body: "",
+  link_label: "",
+  link_url: "",
+  start_date: "",
+  end_date: "",
+}
 
 const STATUS_META: Record<
   AnnouncementStatus,
@@ -62,8 +74,27 @@ const formError = (form: FormState): string | undefined => {
   if (form.end_date < form.start_date) {
     return "End date must be on or after the start date"
   }
+  const label = form.link_label.trim()
+  const url = form.link_url.trim()
+  if (!!label !== !!url) {
+    return "A link needs both a label and a URL — fill in the other one, or clear both"
+  }
+  if (url && !isValidLinkUrl(url)) {
+    return "Link URL must start with / (internal) or http(s):// (external)"
+  }
   return undefined
 }
+
+// Blank optional fields go over the wire as `null`, matching the nullable
+// columns — an empty string would fail the schema's `min(1)`.
+const toRequestBody = (form: FormState) => ({
+  headline: form.headline.trim(),
+  body: form.body.trim() || null,
+  link_label: form.link_label.trim() || null,
+  link_url: form.link_url.trim() || null,
+  start_date: form.start_date,
+  end_date: form.end_date,
+})
 
 // Annonces: free text a human writes for the storefront banner, over a civil-
 // day Période d'annonce. Never derived from Fermetures, Créneaux or Produits
@@ -245,14 +276,10 @@ const CreateAnnouncementModal = ({
   }, [open])
 
   const create = useMutation({
-    mutationFn: (body: FormState) =>
+    mutationFn: (form: FormState) =>
       sdk.client.fetch("/admin/announcements", {
         method: "POST",
-        body: {
-          headline: body.headline.trim(),
-          start_date: body.start_date,
-          end_date: body.end_date,
-        },
+        body: toRequestBody(form),
       }),
     onSuccess: () => {
       onSaved()
@@ -342,6 +369,9 @@ const EditAnnouncementDrawer = ({
     if (announcement) {
       setForm({
         headline: announcement.headline,
+        body: announcement.body ?? "",
+        link_label: announcement.link_label ?? "",
+        link_url: announcement.link_url ?? "",
         start_date: announcement.start_date,
         end_date: announcement.end_date,
       })
@@ -350,14 +380,10 @@ const EditAnnouncementDrawer = ({
   }, [announcement])
 
   const update = useMutation({
-    mutationFn: (body: FormState) =>
+    mutationFn: (form: FormState) =>
       sdk.client.fetch(`/admin/announcements/${announcement!.id}`, {
         method: "POST",
-        body: {
-          headline: body.headline.trim(),
-          start_date: body.start_date,
-          end_date: body.end_date,
-        },
+        body: toRequestBody(form),
       }),
     onSuccess: () => {
       onSaved()
@@ -459,6 +485,52 @@ const AnnouncementFields = ({
         <Text size="small" className="text-ui-fg-subtle">
           One short sentence — this is all the banner shows unless a visitor
           opens it for more.
+        </Text>
+      </div>
+
+      <div className="flex flex-col gap-y-2">
+        <Label size="small" weight="plus">
+          Body (optional)
+        </Label>
+        <Textarea
+          value={form.body}
+          onChange={(e) => {
+            setForm((f) => ({ ...f, body: e.target.value }))
+            clearError()
+          }}
+          placeholder="Whatever the headline didn't have room for."
+        />
+        <Text size="small" className="text-ui-fg-subtle">
+          Shown in the panel a visitor opens from the banner. Most
+          announcements don't need one.
+        </Text>
+      </div>
+
+      <div className="flex flex-col gap-y-2">
+        <Label size="small" weight="plus">
+          Link (optional)
+        </Label>
+        <div className="grid grid-cols-2 gap-x-3">
+          <Input
+            value={form.link_label}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, link_label: e.target.value }))
+              clearError()
+            }}
+            placeholder="Label — See the dish"
+          />
+          <Input
+            value={form.link_url}
+            onChange={(e) => {
+              setForm((f) => ({ ...f, link_url: e.target.value }))
+              clearError()
+            }}
+            placeholder="/carte or https://…"
+          />
+        </div>
+        <Text size="small" className="text-ui-fg-subtle">
+          A label and a URL, or neither — an internal path starting with /,
+          or a full http(s):// address.
         </Text>
       </div>
 

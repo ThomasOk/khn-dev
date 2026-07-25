@@ -3,7 +3,12 @@
 import { sdk } from "@lib/config"
 
 export type AnnouncementResponse = {
-  announcement: { headline: string } | null
+  announcement: {
+    headline: string
+    body: string | null
+    link_label: string | null
+    link_url: string | null
+  } | null
 }
 
 // Reads the current Annonce through the SDK, which sends the publishable key

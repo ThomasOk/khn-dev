@@ -10,21 +10,21 @@ Ticket volontairement vertical de bout en bout : les trois colonnes, leur valida
 
 **Blocked by:** 03 — L'écran de réglages admin.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Ajout de `body`, `link_label` et `link_url` au modèle, avec leur migration
-- [ ] `body` : trimmé, nullable, **aucun plafond de longueur** — c'est l'accroche qui est contrainte, pas lui
-- [ ] `link_label` et `link_url` : **les deux présents ou les deux absents**, jamais un seul. Un lien sans libellé n'est pas rendable, un libellé sans lien est un bouton mort
-- [ ] `link_url` : soit un chemin interne commençant par `/`, soit une URL absolue `http(s)://`. Rien d'autre
-- [ ] Les trois champs sont ajoutés au contrat de `GET /store/announcement`
-- [ ] Champs correspondants dans le formulaire admin, corps et lien tous deux facultatifs
-- [ ] La bannière est cliquable **si et seulement si** `body` ou `link_url` est présent ; sinon aucune affordance
-- [ ] La bannière ne navigue jamais — elle ouvre le panneau, point
-- [ ] Le panneau réutilise la primitive modale existante du storefront : rien de nouveau à écrire pour le focus trap, Échap et la restitution du focus au déclencheur
-- [ ] Le corps est rendu en **texte brut**, sauts de paragraphe préservés. Jamais de `dangerouslySetInnerHTML`
-- [ ] Le lien est rendu en bouton : chemin interne via `LocalizedClientLink`, URL absolue via une ancre avec `target="_blank"` et `rel="noopener noreferrer"`
-- [ ] Fermer le panneau rend la page intacte, panier compris
-- [ ] Test d'intégration HTTP : `link_url` sans `link_label` refusé, et `link_label` sans `link_url` refusé
-- [ ] Test d'intégration HTTP : `link_url` ni relatif ni `http(s)` refusé
-- [ ] Test d'intégration HTTP : une Annonce sans corps ni lien reste valide — c'est le cas courant
-- [ ] Test d'intégration HTTP : corps et lien sont servis par la route store quand ils sont présents
+- [x] Ajout de `body`, `link_label` et `link_url` au modèle, avec leur migration
+- [x] `body` : trimmé, nullable, **aucun plafond de longueur** — c'est l'accroche qui est contrainte, pas lui
+- [x] `link_label` et `link_url` : **les deux présents ou les deux absents**, jamais un seul. Un lien sans libellé n'est pas rendable, un libellé sans lien est un bouton mort
+- [x] `link_url` : soit un chemin interne commençant par `/`, soit une URL absolue `http(s)://`. Rien d'autre
+- [x] Les trois champs sont ajoutés au contrat de `GET /store/announcement`
+- [x] Champs correspondants dans le formulaire admin, corps et lien tous deux facultatifs
+- [x] La bannière est cliquable **si et seulement si** `body` ou `link_url` est présent ; sinon aucune affordance
+- [x] La bannière ne navigue jamais — elle ouvre le panneau, point
+- [x] Le panneau réutilise la primitive modale existante du storefront : rien de nouveau à écrire pour le focus trap, Échap et la restitution du focus au déclencheur
+- [x] Le corps est rendu en **texte brut**, sauts de paragraphe préservés. Jamais de `dangerouslySetInnerHTML`
+- [x] Le lien est rendu en bouton : chemin interne via `LocalizedClientLink`, URL absolue via une ancre avec `target="_blank"` et `rel="noopener noreferrer"`
+- [x] Fermer le panneau rend la page intacte, panier compris
+- [x] Test d'intégration HTTP : `link_url` sans `link_label` refusé, et `link_label` sans `link_url` refusé
+- [x] Test d'intégration HTTP : `link_url` ni relatif ni `http(s)` refusé
+- [x] Test d'intégration HTTP : une Annonce sans corps ni lien reste valide — c'est le cas courant
+- [x] Test d'intégration HTTP : corps et lien sont servis par la route store quand ils sont présents

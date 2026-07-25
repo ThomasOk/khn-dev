@@ -36,7 +36,14 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
         Passer au contenu
       </a>
       <Nav opaque={!!announcement} />
-      {announcement && <AnnouncementBanner headline={announcement.headline} />}
+      {announcement && (
+        <AnnouncementBanner
+          headline={announcement.headline}
+          body={announcement.body}
+          linkLabel={announcement.link_label}
+          linkUrl={announcement.link_url}
+        />
+      )}
       {customer && cart && (
         <CartMismatchBanner customer={customer} cart={cart} />
       )}
