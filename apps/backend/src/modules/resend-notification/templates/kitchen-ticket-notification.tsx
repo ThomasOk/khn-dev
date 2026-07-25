@@ -1,16 +1,20 @@
 import {
   Body,
+  Column,
   Container,
   Head,
   Heading,
   Hr,
   Html,
   Preview,
+  Row,
   Section,
   Text,
 } from "@react-email/components";
 import * as React from "react";
 import { RESTAURANT_TIMEZONE } from "../../../lib/time/timezone";
+import { KitchenTicketLineItem, lineItemLabel } from "../../../lib/pdf/kitchen-ticket";
+import { resolveFormuleSelectionEntries } from "../../../lib/formule/resolve-selection-entries";
 
 export type KitchenTicketNotificationEmailProps = {
   order_id: string | number;
@@ -18,7 +22,18 @@ export type KitchenTicketNotificationEmailProps = {
   // ISO 8601 with offset — order.metadata.creneau_debut / creneau_fin (ADR 0004).
   pickup_slot_start: string;
   pickup_slot_end: string;
+  // Same shape the PDF ticket builds from (src/lib/pdf/kitchen-ticket.ts) —
+  // the email recap mirrors the ticket's own Produit/Qté/Total content, not
+  // the Facture-style breakdown of order-confirmation.tsx (no subtotal, no
+  // TVA: those stay specific to the Facture, CONTEXT.md's "Facture" entry).
+  items: KitchenTicketLineItem[];
 };
+
+const amountFormatter = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
+
+function formatAmount(value: number): string {
+  return amountFormatter.format(value);
+}
 
 const slotDayFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeZone: RESTAURANT_TIMEZONE,
@@ -48,7 +63,10 @@ export default function KitchenTicketNotificationEmail({
   customer_name,
   pickup_slot_start,
   pickup_slot_end,
+  items = [],
 }: KitchenTicketNotificationEmailProps) {
+  const orderTotal = items.reduce((sum, item) => sum + item.line_total, 0);
+
   return (
     <Html lang="fr" dir="ltr">
       <Head />
@@ -89,6 +107,64 @@ export default function KitchenTicketNotificationEmail({
             <Text style={valueEmphasis}>
               {formatPickupSlot(pickup_slot_start, pickup_slot_end)}
             </Text>
+          </Section>
+
+          <Hr style={divider} />
+
+          <Section style={section}>
+            <Heading style={h2}>Contenu de la commande</Heading>
+            {/* A real <table>, not a Row per item — react-email's Row/Column
+                each compile to their own standalone <table>, so per-item
+                Columns only align to their own row's content width, never to
+                the row above or below. A single shared table is what makes
+                Qté and Total actually line up, the same table the PDF ticket
+                itself renders (src/lib/pdf/kitchen-ticket.ts). */}
+            <table role="presentation" width="100%" cellPadding={0} cellSpacing={0} style={itemsTable}>
+              <thead>
+                <tr>
+                  <th style={theCell}>Produit</th>
+                  <th style={{ ...theCell, ...alignRight, width: "40px" }}>Qté</th>
+                  <th style={{ ...theCell, ...alignRight, width: "90px" }}>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, index) => {
+                  const selections = resolveFormuleSelectionEntries(
+                    item.metadata,
+                    item.curation,
+                  );
+                  return (
+                    <tr key={index}>
+                      <td style={tdCell}>
+                        <Text style={itemTitle}>{lineItemLabel(item)}</Text>
+                        {selections.map((entry) => (
+                          <Text key={entry.composantKey} style={itemSelection}>
+                            {entry.label} — {entry.variantLabel}
+                          </Text>
+                        ))}
+                      </td>
+                      <td style={{ ...tdCell, ...alignRight }}>
+                        <Text style={itemQty}>{item.quantity}</Text>
+                      </td>
+                      <td style={{ ...tdCell, ...alignRight }}>
+                        <Text style={itemTotalValue}>
+                          {formatAmount(item.line_total)}
+                        </Text>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <Hr style={totalDivider} />
+            <Row>
+              <Column>
+                <Text style={grandTotalLabel}>Total payé</Text>
+              </Column>
+              <Column style={itemTotalCell}>
+                <Text style={grandTotalValue}>{formatAmount(orderTotal)}</Text>
+              </Column>
+            </Row>
           </Section>
         </Container>
 
@@ -162,6 +238,93 @@ const heroText: React.CSSProperties = {
 const divider: React.CSSProperties = {
   borderColor: "#e5e7eb",
   margin: "0 40px",
+};
+
+const h2: React.CSSProperties = {
+  fontSize: "16px",
+  fontWeight: "600",
+  color: "#111827",
+  margin: "0 0 16px",
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+};
+
+const itemsTable: React.CSSProperties = {
+  width: "100%",
+  borderCollapse: "collapse",
+};
+
+const alignRight: React.CSSProperties = {
+  textAlign: "right",
+};
+
+const theCell: React.CSSProperties = {
+  fontSize: "11px",
+  color: "#9ca3af",
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  fontWeight: 600,
+  textAlign: "left",
+  padding: "0 0 8px",
+  borderBottom: "2px solid #111827",
+};
+
+const tdCell: React.CSSProperties = {
+  verticalAlign: "top",
+  padding: "12px 0",
+  borderBottom: "1px solid #e5e7eb",
+};
+
+const itemTitle: React.CSSProperties = {
+  fontSize: "14px",
+  fontWeight: "600",
+  color: "#111827",
+  margin: 0,
+};
+
+const itemSelection: React.CSSProperties = {
+  fontSize: "13px",
+  color: "#6b7280",
+  margin: "2px 0 0",
+};
+
+const itemQty: React.CSSProperties = {
+  fontSize: "13px",
+  color: "#4b5563",
+  margin: 0,
+  whiteSpace: "nowrap",
+};
+
+const itemTotalCell: React.CSSProperties = {
+  textAlign: "right",
+  verticalAlign: "top",
+  whiteSpace: "nowrap",
+};
+
+const itemTotalValue: React.CSSProperties = {
+  fontSize: "14px",
+  fontWeight: "600",
+  color: "#111827",
+  margin: 0,
+};
+
+const totalDivider: React.CSSProperties = {
+  borderColor: "#e5e7eb",
+  margin: "8px 0 12px",
+};
+
+const grandTotalLabel: React.CSSProperties = {
+  fontSize: "16px",
+  fontWeight: "700",
+  color: "#111827",
+  margin: 0,
+};
+
+const grandTotalValue: React.CSSProperties = {
+  fontSize: "16px",
+  fontWeight: "700",
+  color: "#111827",
+  margin: 0,
 };
 
 const section: React.CSSProperties = {

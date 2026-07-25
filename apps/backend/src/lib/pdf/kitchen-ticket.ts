@@ -84,7 +84,7 @@ const DEFAULT_VARIANT_TITLE = "Default variant"
 // than a sibling content block, is what keeps the two on one page-break-proof
 // block (User Stories 6, 13). Quantity lives in its own table column, not in
 // this label, now that the ticket is a Produit/Qté/Total table.
-function lineItemLabel(item: KitchenTicketLineItem): string {
+export function lineItemLabel(item: KitchenTicketLineItem): string {
   const hasMeaningfulVariant =
     item.variant_title && item.variant_title !== DEFAULT_VARIANT_TITLE
   const detail = hasMeaningfulVariant ? ` — ${item.variant_title}` : ""
