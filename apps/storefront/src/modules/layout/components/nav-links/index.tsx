@@ -37,14 +37,6 @@ export default function NavLinks() {
         La carte
       </LocalizedClientLink>
 
-      <LocalizedClientLink href="/about" className={linkClass}>
-        Notre histoire
-      </LocalizedClientLink>
-
-      <LocalizedClientLink href="/contact" className={linkClass}>
-        Contact
-      </LocalizedClientLink>
-
       <div
         className="relative h-full flex items-center"
         onMouseEnter={handleMouseEnter}
@@ -71,7 +63,7 @@ export default function NavLinks() {
               : "opacity-0 scale-95 pointer-events-none"
           }`}
         >
-          <div className="bg-white rounded-lg shadow-md border border-khn-gold/25 py-1.5 min-w-[160px]">
+          <div className="bg-white shadow-md border border-gray-200 py-1.5 min-w-[160px]">
             {DELIVERY_PLATFORMS.map((platform) => (
               <a
                 key={platform.name}
@@ -93,6 +85,14 @@ export default function NavLinks() {
         data-testid="nav-reservations-link"
       >
         Réserver
+      </LocalizedClientLink>
+
+      <LocalizedClientLink href="/about" className={linkClass}>
+        Notre histoire
+      </LocalizedClientLink>
+
+      <LocalizedClientLink href="/contact" className={linkClass}>
+        Contact
       </LocalizedClientLink>
     </div>
   )

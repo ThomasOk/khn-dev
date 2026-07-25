@@ -3,13 +3,11 @@
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import Image from "next/image"
-import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import NavLinks from "@modules/layout/components/nav-links"
 import SideMenu from "@modules/layout/components/side-menu"
 
 type NavClientProps = {
-  categories: HttpTypes.StoreProductCategory[]
   children: React.ReactNode
   // An external reason to force the nav solid regardless of route — e.g. an
   // Annonce banner sitting right under the (fixed, otherwise transparent)
@@ -19,7 +17,6 @@ type NavClientProps = {
 }
 
 export default function NavClient({
-  categories,
   children,
   opaque = false,
 }: NavClientProps) {
@@ -50,7 +47,7 @@ export default function NavClient({
         <nav className={`content-container flex items-center justify-between w-full h-full transition-colors duration-300 ${textClass}`}>
           <div className="flex-1 flex items-center gap-x-4">
             <div className="small:hidden">
-              <SideMenu categories={categories} />
+              <SideMenu />
             </div>
             <LocalizedClientLink
               href="/"

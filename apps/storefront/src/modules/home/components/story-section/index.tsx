@@ -8,7 +8,7 @@ const StorySection = () => {
       <div className="content-container">
         <div className="grid grid-cols-1 small:grid-cols-2 items-stretch max-w-5xl mx-auto">
           <RevealWrapper direction="left">
-            <div className="flex flex-col justify-center gap-6 h-full bg-khn-teal-panel p-8 small:p-10">
+            <div className="flex flex-col items-center text-center small:items-start small:text-left justify-center gap-6 h-full bg-khn-teal-panel p-8 small:p-10">
               <h2 className="font-display uppercase text-4xl small:text-5xl leading-tight text-white">
                 Ici, les nouilles ont une histoire.
               </h2>
@@ -22,7 +22,7 @@ const StorySection = () => {
               </p>
               <LocalizedClientLink
                 href="/about"
-                className="self-start inline-flex items-center min-h-[44px] px-6 py-3 border border-white text-white text-xs tracking-[0.15em] uppercase transition-[background-color,color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-khn-teal"
+                className="self-stretch small:self-start inline-flex items-center justify-center small:justify-start min-h-[44px] px-6 py-3 rounded-base small:rounded-none border border-white text-white text-xs tracking-[0.15em] uppercase transition-[background-color,color,transform] duration-200 motion-safe:active:scale-[0.97] [@media(hover:hover)]:hover:bg-white [@media(hover:hover)]:hover:text-khn-teal"
               >
                 Notre histoire
               </LocalizedClientLink>

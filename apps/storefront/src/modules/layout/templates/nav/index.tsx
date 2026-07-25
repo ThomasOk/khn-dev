@@ -1,23 +1,34 @@
 import { Suspense } from "react"
 
-import { listCategories } from "@lib/data/categories"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import NavClient from "@modules/layout/components/nav-client"
 
-export default async function Nav({ opaque }: { opaque?: boolean }) {
-  const categories = await listCategories()
-
+export default function Nav({ opaque }: { opaque?: boolean }) {
   return (
-    <NavClient categories={categories} opaque={opaque}>
+    <NavClient opaque={opaque}>
       <Suspense
         fallback={
           <LocalizedClientLink
-            className="text-xs tracking-[0.15em] uppercase text-white tabular-nums transition-colors duration-200 [@media(hover:hover)]:hover:text-khn-gold"
+            className="inline-flex items-center text-white transition-colors duration-200 [@media(hover:hover)]:hover:text-khn-gold"
             href="/cart"
             data-testid="nav-cart-link"
+            aria-label="Panier (0)"
           >
-            Panier (0)
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M7 8 L5 8 L3.6 20.2 A2 2 0 0 0 5.6 22.4 H18.4 A2 2 0 0 0 20.4 20.2 L19 8 H17" />
+              <path d="M7 8 A5 5 0 0 1 17 8" />
+            </svg>
           </LocalizedClientLink>
         }
       >
