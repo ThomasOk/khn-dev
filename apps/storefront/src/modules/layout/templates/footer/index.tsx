@@ -94,7 +94,7 @@ export default function Footer() {
               <div className="grid grid-cols-2 gap-8">
                 {openingHours.map(({ label, schedule }) => (
                   <div key={label} className="flex flex-col gap-3">
-                    <p className="text-orange-500 text-xs font-semibold uppercase tracking-wider">
+                    <p className="text-khn-gold text-xs font-semibold uppercase tracking-wider">
                       {label}
                     </p>
                     <div className="flex flex-col gap-2.5 text-stone-400 text-sm">
@@ -119,8 +119,8 @@ export default function Footer() {
               </p>
               <ul className="flex flex-col gap-3">
                 {[
-                  { label: "Instagram", href: "https://instagram.com/kimhinoodle" },
-                  { label: "Facebook", href: "https://facebook.com/kimhinoodle" },
+                  { label: "Instagram", href: "https://www.instagram.com/kimhi.noodle/" },
+                  { label: "Facebook", href: "https://www.facebook.com/profile.php?id=100087027908126" },
                 ].map(({ label, href }) => (
                   <li key={label}>
                     <a

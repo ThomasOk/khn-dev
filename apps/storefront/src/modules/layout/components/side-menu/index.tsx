@@ -35,7 +35,7 @@ const SideMenu = ({ categories }: SideMenuProps) => {
                 <Popover.Button
                   data-testid="nav-menu-button"
                   aria-label="Ouvrir le menu"
-                  className="relative h-full flex items-center transition-colors duration-200 focus:outline-none [@media(hover:hover)]:hover:text-orange-600"
+                  className="relative h-full flex items-center transition-colors duration-200 focus:outline-none [@media(hover:hover)]:hover:text-khn-gold"
                 >
                   <svg
                     width="20"

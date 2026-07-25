@@ -47,14 +47,14 @@ export default function PrivacyPolicyPage() {
           CHOUR, 652 Avenue de l&apos;Europe, 34170 Castelnau-le-Lez —{" "}
           <a
             href="mailto:contact@kim-hi-noodle.fr"
-            className="text-orange-600 underline underline-offset-2"
+            className="text-khn-gold underline underline-offset-2"
           >
             contact@kim-hi-noodle.fr
           </a>
           . Voir les{" "}
           <LocalizedClientLink
             href="/legal-notice"
-            className="text-orange-600 underline underline-offset-2"
+            className="text-khn-gold underline underline-offset-2"
           >
             mentions légales
           </LocalizedClientLink>{" "}
@@ -153,7 +153,7 @@ export default function PrivacyPolicyPage() {
           (cnil.fr). Pour exercer ces droits, contactez{" "}
           <a
             href="mailto:contact@kim-hi-noodle.fr"
-            className="text-orange-600 underline underline-offset-2"
+            className="text-khn-gold underline underline-offset-2"
           >
             contact@kim-hi-noodle.fr
           </a>

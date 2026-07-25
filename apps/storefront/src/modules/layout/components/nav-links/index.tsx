@@ -16,7 +16,7 @@ const DELIVERY_PLATFORMS = [
 ]
 
 const linkClass =
-  "text-xs tracking-[0.15em] uppercase text-white transition-colors duration-200 [@media(hover:hover)]:hover:text-orange-300"
+  "text-xs tracking-[0.15em] uppercase text-white transition-colors duration-200 [@media(hover:hover)]:hover:text-khn-gold"
 
 export default function NavLinks() {
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -71,14 +71,14 @@ export default function NavLinks() {
               : "opacity-0 scale-95 pointer-events-none"
           }`}
         >
-          <div className="bg-white rounded-lg shadow-md border border-orange-100 py-1.5 min-w-[160px]">
+          <div className="bg-white rounded-lg shadow-md border border-khn-gold/25 py-1.5 min-w-[160px]">
             {DELIVERY_PLATFORMS.map((platform) => (
               <a
                 key={platform.name}
                 href={platform.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block px-4 py-2 text-sm text-neutral-700 transition-colors duration-150 [@media(hover:hover)]:hover:text-orange-600 [@media(hover:hover)]:hover:bg-orange-50"
+                className="block px-4 py-2 text-sm text-neutral-700 transition-colors duration-150 [@media(hover:hover)]:hover:text-khn-gold [@media(hover:hover)]:hover:bg-khn-gold/10"
               >
                 {platform.name}
               </a>

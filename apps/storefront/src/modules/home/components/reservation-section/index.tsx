@@ -134,7 +134,7 @@ const ReservationSection = () => {
                   </p>
                   <div className="flex gap-3">
                     <a
-                      href="https://facebook.com/kimhinoodle"
+                      href="https://www.facebook.com/profile.php?id=100087027908126"
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="Facebook"
@@ -145,7 +145,7 @@ const ReservationSection = () => {
                       </svg>
                     </a>
                     <a
-                      href="https://instagram.com/kimhinoodle"
+                      href="https://www.instagram.com/kimhi.noodle/"
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="Instagram"

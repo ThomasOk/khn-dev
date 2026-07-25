@@ -239,7 +239,7 @@ function ComposantSection({
         <span
           className={clx(
             "h-px flex-1",
-            showError ? "bg-red-400" : "bg-orange-400"
+            showError ? "bg-red-400" : "bg-khn-gold"
           )}
         />
       </div>
@@ -329,7 +329,7 @@ function ComposantOptionGroup({
       className={clx(
         "flex items-center gap-x-4 p-3 border transition-colors",
         currentVariant
-          ? "border-orange-400 bg-orange-50"
+          ? "border-khn-gold bg-khn-gold/10"
           : "border-stone-200 bg-white"
       )}
       data-testid="composant-option-group"
@@ -407,7 +407,7 @@ function ComposantOption({
       className={clx(
         "flex items-center gap-x-4 text-left p-3 border transition-colors disabled:opacity-50",
         selected
-          ? "border-orange-400 bg-orange-50"
+          ? "border-khn-gold bg-khn-gold/10"
           : "border-stone-200 bg-white hover:border-stone-300"
       )}
       data-testid="composant-option-button"

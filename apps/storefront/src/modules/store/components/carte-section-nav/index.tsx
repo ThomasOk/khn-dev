@@ -49,8 +49,8 @@ export default function CarteSectionNav({
                 aria-current={isActive ? "location" : undefined}
                 className={`inline-block pb-1 text-xs tracking-[0.15em] uppercase border-b transition-[color,border-color,transform] duration-150 motion-safe:active:scale-[0.97] ${
                   isActive
-                    ? "text-orange-300 border-orange-300"
-                    : "text-white/70 border-transparent [@media(hover:hover)]:hover:text-orange-300"
+                    ? "text-khn-gold border-khn-gold"
+                    : "text-white/70 border-transparent [@media(hover:hover)]:hover:text-khn-gold"
                 }`}
               >
                 {category.name}

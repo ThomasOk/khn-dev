@@ -20,7 +20,7 @@ export default async function CancelReservationPage(props: Props) {
     <div className="min-h-screen">
       <div className="bg-stone-900 pt-32 pb-20 small:pt-40 small:pb-28">
         <div className="content-container flex flex-col items-center text-center gap-4">
-          <p className="text-orange-500 text-sm font-medium uppercase tracking-widest">
+          <p className="text-khn-gold text-sm font-medium uppercase tracking-widest">
             Kim-Hi Noodle
           </p>
           <h1 className="font-display text-4xl small:text-6xl text-white leading-tight">

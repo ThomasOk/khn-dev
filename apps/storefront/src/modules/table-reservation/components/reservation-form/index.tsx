@@ -297,7 +297,7 @@ const ReservationForm = () => {
                 </legend>
                 {groupReservationTimesByService(availability.times).map((group) => (
                   <div key={group.label} className="flex flex-col gap-3">
-                    <span className="text-xs font-semibold uppercase tracking-widest text-orange-600">
+                    <span className="text-xs font-semibold uppercase tracking-widest text-khn-gold">
                       {group.label}
                     </span>
                     <div
@@ -358,7 +358,7 @@ const ReservationForm = () => {
               onChange={(e) => setName(e.target.value)}
               required
               data-testid="reservation-name-input"
-              className="h-11 px-3 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="h-11 px-3 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-khn-gold"
             />
           </label>
           <label className="flex flex-col gap-2">
@@ -371,7 +371,7 @@ const ReservationForm = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               data-testid="reservation-email-input"
-              className="h-11 px-3 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="h-11 px-3 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-khn-gold"
             />
           </label>
           <label className="flex flex-col gap-2">
@@ -384,7 +384,7 @@ const ReservationForm = () => {
               onChange={(e) => setCustomerPhone(e.target.value)}
               required
               data-testid="reservation-phone-input"
-              className="h-11 px-3 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="h-11 px-3 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-khn-gold"
             />
           </label>
           <label className="flex flex-col gap-2">
@@ -396,7 +396,7 @@ const ReservationForm = () => {
               onChange={(e) => setNote(e.target.value)}
               rows={2}
               data-testid="reservation-note-input"
-              className="px-3 py-2 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="px-3 py-2 border border-stone-300 rounded-md text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-khn-gold"
             />
           </label>
 

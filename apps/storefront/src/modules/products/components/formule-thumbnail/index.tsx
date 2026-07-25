@@ -17,7 +17,7 @@ type FormuleThumbnailProps = {
 // identically. Adding a width class here directly would tie against that
 // `w-full` at equal specificity, and the loser depends on Tailwind's
 // generated stylesheet order, not JSX order (the same class of bug fixed in
-// formule-composer-modal.tsx's bg-white/bg-orange-50 conflict).
+// formule-composer-modal.tsx's bg-white/bg-khn-gold conflict).
 const FormuleThumbnail: React.FC<FormuleThumbnailProps> = ({
   title,
   "data-testid": dataTestid,

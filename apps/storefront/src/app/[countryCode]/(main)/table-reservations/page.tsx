@@ -21,7 +21,7 @@ export default function TableReservationsPage() {
               <h2 className="font-display text-3xl small:text-4xl uppercase tracking-wide text-stone-900">
                 Choisir un créneau
               </h2>
-              <span className="h-0.5 flex-1 max-w-16 bg-orange-500" />
+              <span className="h-0.5 flex-1 max-w-16 bg-khn-gold" />
             </div>
             <ReservationForm />
           </RevealWrapper>

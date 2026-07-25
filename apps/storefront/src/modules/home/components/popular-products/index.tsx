@@ -23,7 +23,7 @@ const PopularProducts = () => {
             <h2 className="font-display uppercase text-4xl small:text-5xl leading-tight text-stone-900">
               Explorez notre univers culinaire
             </h2>
-            <span className="block h-1 w-16 bg-orange-500" />
+            <span className="block h-1 w-16 bg-khn-gold" />
             <p className="text-stone-600 text-base">
               Laissez-vous guider à travers nos spécialités traditionnelles.
             </p>
@@ -52,7 +52,7 @@ const PopularProducts = () => {
                       {category.name}
                     </h3>
                   </div>
-                  <span className="text-stone-400 text-xs font-medium tracking-[0.2em] uppercase transition-colors duration-200 [@media(hover:hover)]:group-hover:text-orange-600 [@media(hover:hover)]:group-hover:underline">
+                  <span className="text-stone-400 text-xs font-medium tracking-[0.2em] uppercase transition-colors duration-200 [@media(hover:hover)]:group-hover:text-khn-gold [@media(hover:hover)]:group-hover:underline">
                     Voir la carte
                   </span>
                 </div>

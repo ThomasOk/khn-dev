@@ -59,7 +59,7 @@ export default function CategoryTemplate({
         <div className="flex gap-2 mb-8 overflow-x-auto pb-1">
           <LocalizedClientLink
             href="/store"
-            className="shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border border-neutral-200 text-neutral-700 transition-colors duration-150 [@media(hover:hover)]:hover:border-orange-300 [@media(hover:hover)]:hover:text-orange-600"
+            className="shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border border-neutral-200 text-neutral-700 transition-colors duration-150 [@media(hover:hover)]:hover:border-khn-gold [@media(hover:hover)]:hover:text-khn-gold"
           >
             Tous
           </LocalizedClientLink>
@@ -73,8 +73,8 @@ export default function CategoryTemplate({
                 href={`/categories/${cat.handle}`}
                 className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-150 ${
                   isActive
-                    ? "bg-orange-600 text-white pointer-events-none"
-                    : "border border-neutral-200 text-neutral-700 [@media(hover:hover)]:hover:border-orange-300 [@media(hover:hover)]:hover:text-orange-600"
+                    ? "bg-khn-gold text-stone-900 pointer-events-none"
+                    : "border border-neutral-200 text-neutral-700 [@media(hover:hover)]:hover:border-khn-gold [@media(hover:hover)]:hover:text-khn-gold"
                 }`}
               >
                 {cat.name}
@@ -90,7 +90,7 @@ export default function CategoryTemplate({
             <LocalizedClientLink
               key={c.id}
               href={`/categories/${c.handle}`}
-              className="text-sm text-neutral-500 transition-colors duration-150 [@media(hover:hover)]:hover:text-orange-600"
+              className="text-sm text-neutral-500 transition-colors duration-150 [@media(hover:hover)]:hover:text-khn-gold"
             >
               {c.name}
             </LocalizedClientLink>
