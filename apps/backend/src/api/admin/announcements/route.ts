@@ -1,7 +1,10 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { ANNOUNCEMENT_MODULE } from "../../../modules/announcement"
 import AnnouncementModuleService from "../../../modules/announcement/service"
-import { createAnnouncementWorkflow } from "../../../workflows/announcement/create-announcement"
+import {
+  createAnnouncementWorkflow,
+  respondToOverlap,
+} from "../../../workflows/announcement/manage-announcements"
 import { CreateAnnouncementSchema } from "./middlewares"
 
 // GET /admin/announcements — every Annonce, période la plus proche d'abord.
@@ -18,8 +21,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   res.json({ announcements })
 }
 
-// POST /admin/announcements — write a new Annonce. Reduced scope for this
-// ticket: no overlap refusal yet.
+// POST /admin/announcements — write a new Annonce. Refused with 409 if its
+// period overlaps an existing Annonce's, naming the conflicting period.
 export async function POST(
   req: MedusaRequest<CreateAnnouncementSchema>,
   res: MedusaResponse
@@ -28,5 +31,9 @@ export async function POST(
     input: req.validatedBody,
   })
 
-  res.status(201).json({ announcement: result })
+  if (result.outcome === "overlap") {
+    return respondToOverlap(result, res)
+  }
+
+  res.status(201).json({ announcement: result.announcement })
 }
