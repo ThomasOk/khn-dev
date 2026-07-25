@@ -7,6 +7,7 @@ import { getBaseURL } from "@lib/util/env"
 import { StoreCartShippingOption } from "@medusajs/types"
 import AnnouncementBanner from "@modules/announcement/components/announcement-banner"
 import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
+import { STICKY_BANNER_ID } from "@modules/layout/constants"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
 import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
@@ -44,9 +45,12 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
           ordinary content. Applied once on the wrapper (not per-banner) so
           headline + cart-mismatch stick together as one unit. z-40 keeps it
           above ordinary page content once scrolled content passes under it,
-          while staying below Nav's z-50. */}
+          while staying below Nav's z-50. The id is STICKY_BANNER_ID: pages
+          with their own sticky elements below this one (e.g. the Carte's
+          section nav) measure this wrapper's live height off that id, since
+          it varies with content and this block can be absent entirely. */}
       {(announcement || (customer && cart)) && (
-        <div className="sticky top-16 z-40">
+        <div id={STICKY_BANNER_ID} className="sticky top-16 z-40">
           {announcement && (
             <AnnouncementBanner
               headline={announcement.headline}

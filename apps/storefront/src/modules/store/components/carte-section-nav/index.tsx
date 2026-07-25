@@ -1,11 +1,12 @@
 "use client"
 
-import { useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 
 import { useActiveSection } from "@lib/hooks/use-active-section"
+import { STICKY_BANNER_ID, STICKY_BANNER_OFFSET_VAR } from "@modules/layout/constants"
 
-import { CARTE_NAV_OFFSET_PX } from "./constants"
+import { NAV_HEIGHT_PX, SECTION_NAV_HEIGHT_PX } from "./constants"
 
 // Sticky anchor bar for the Carte (docs/specs/commande-depuis-la-page-carte.md,
 // "Une page unique pour toute la Carte, les sections en ancres"). Entries are
@@ -24,10 +25,50 @@ export default function CarteSectionNav({
     () => categories.map((category) => category.handle),
     [categories]
   )
+
+  // The announcement/cart-mismatch banner ((main)/layout.tsx) renders above
+  // this bar when present, with a height that varies with its content — a
+  // long headline can wrap, cart-mismatch can appear or disappear. Measure
+  // it live off its DOM id rather than assuming a fixed size, and publish it
+  // as a CSS variable so the Carte's other offset-dependent elements (the
+  // desktop cart column, each section's scrollMarginTop), which render as
+  // Server Components and can't run this effect themselves, can stack under
+  // it too (see CARTE_NAV_OFFSET in ./constants).
+  const [bannerOffsetPx, setBannerOffsetPx] = useState(0)
+
+  useEffect(() => {
+    const bannerEl = document.getElementById(STICKY_BANNER_ID)
+
+    if (!bannerEl) {
+      document.documentElement.style.setProperty(STICKY_BANNER_OFFSET_VAR, "0px")
+      return
+    }
+
+    const observer = new ResizeObserver(([entry]) => {
+      const height = entry.contentRect.height
+      setBannerOffsetPx(height)
+      document.documentElement.style.setProperty(
+        STICKY_BANNER_OFFSET_VAR,
+        `${height}px`
+      )
+    })
+    observer.observe(bannerEl)
+
+    return () => {
+      observer.disconnect()
+      document.documentElement.style.setProperty(STICKY_BANNER_OFFSET_VAR, "0px")
+    }
+  }, [])
+
   // rootMargin shrinks the observed viewport to below the fixed nav + this
-  // sticky bar (top) and to the upper half of the screen (bottom), so the
-  // section highlighted is the one actually readable under the bars.
-  const activeId = useActiveSection(ids, `-${CARTE_NAV_OFFSET_PX}px 0px -50% 0px`)
+  // sticky bar + the banner (top) and to the upper half of the screen
+  // (bottom), so the section highlighted is the one actually readable under
+  // the bars. IntersectionObserver's rootMargin doesn't resolve CSS
+  // var()/calc(), so this needs the plain pixel total, not CARTE_NAV_OFFSET.
+  const activeId = useActiveSection(
+    ids,
+    `-${NAV_HEIGHT_PX + SECTION_NAV_HEIGHT_PX + bannerOffsetPx}px 0px -50% 0px`
+  )
 
   if (categories.length === 0) {
     return null
@@ -36,7 +77,8 @@ export default function CarteSectionNav({
   return (
     <nav
       aria-label="Sections de la carte"
-      className="sticky top-16 z-40 bg-khn-teal py-4"
+      style={{ top: NAV_HEIGHT_PX + bannerOffsetPx }}
+      className="sticky z-40 bg-khn-teal py-4"
     >
       <ul className="flex items-center justify-center gap-8 overflow-x-auto">
         {categories.map((category) => {
