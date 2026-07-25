@@ -5,11 +5,27 @@
 export type Announcement = {
   id: string
   headline: string
+  body: string | null
+  link_label: string | null
+  link_url: string | null
   start_date: string
   end_date: string
 }
 
 export const HEADLINE_MAX_LENGTH = 90
+
+// Same shape the backend's zod schema enforces (LINK_URL_PATTERN in
+// workflows/announcement/manage-announcements.ts): an internal path or an
+// absolute http(s) URL, never a protocol-relative "//host". Duplicated
+// rather than imported — this file ships in the admin dashboard's browser
+// bundle, which can't reach across into server-only workflow code. Checked
+// here too so the restaurateur finds out while typing, not after a 400 from
+// Publish/Save.
+const LINK_URL = /^(\/(?!\/)|https?:\/\/)/
+
+export function isValidLinkUrl(url: string): boolean {
+  return LINK_URL.test(url)
+}
 
 // A civil-day period, compared as "YYYY-MM-DD" strings — never a constructed
 // Date — same rule the backend workflow uses for the overlap check.

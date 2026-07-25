@@ -117,6 +117,84 @@ medusaIntegrationTestRunner({
           )
         ).rejects.toMatchObject({ response: { status: 400 } })
       })
+
+      it("accepts an Annonce with neither a body nor a link — the common case", async () => {
+        const today = parisDateKey(new Date())
+        const { data } = await api.post(
+          "/admin/announcements",
+          { headline: "Sans corps ni lien", start_date: today, end_date: today },
+          await admin()
+        )
+        expect(data.announcement.body).toBeNull()
+        expect(data.announcement.link_label).toBeNull()
+        expect(data.announcement.link_url).toBeNull()
+      })
+
+      it("refuses a link_url without a link_label", async () => {
+        const today = parisDateKey(new Date())
+        await expect(
+          api.post(
+            "/admin/announcements",
+            {
+              headline: "Test",
+              start_date: today,
+              end_date: today,
+              link_url: "/carte",
+            },
+            await admin()
+          )
+        ).rejects.toMatchObject({ response: { status: 400 } })
+      })
+
+      it("refuses a link_label without a link_url", async () => {
+        const today = parisDateKey(new Date())
+        await expect(
+          api.post(
+            "/admin/announcements",
+            {
+              headline: "Test",
+              start_date: today,
+              end_date: today,
+              link_label: "Voir la carte",
+            },
+            await admin()
+          )
+        ).rejects.toMatchObject({ response: { status: 400 } })
+      })
+
+      it("refuses a link_url that is neither a relative path nor an http(s) URL", async () => {
+        const today = parisDateKey(new Date())
+        await expect(
+          api.post(
+            "/admin/announcements",
+            {
+              headline: "Test",
+              start_date: today,
+              end_date: today,
+              link_label: "Voir la carte",
+              link_url: "carte",
+            },
+            await admin()
+          )
+        ).rejects.toMatchObject({ response: { status: 400 } })
+      })
+
+      it("refuses a protocol-relative link_url — it is neither an internal path nor an absolute http(s) URL", async () => {
+        const today = parisDateKey(new Date())
+        await expect(
+          api.post(
+            "/admin/announcements",
+            {
+              headline: "Test",
+              start_date: today,
+              end_date: today,
+              link_label: "Voir la carte",
+              link_url: "//evil.example.com",
+            },
+            await admin()
+          )
+        ).rejects.toMatchObject({ response: { status: 400 } })
+      })
     })
 
     // Une seule Annonce à la fois: overlap is refused at write time, with a
@@ -268,6 +346,56 @@ medusaIntegrationTestRunner({
           )
         ).rejects.toMatchObject({ response: { status: 400 } })
       })
+
+      it("refuses a partial edit that would leave link_url without link_label", async () => {
+        const today = parisDateKey(new Date())
+        const session = await admin()
+
+        const { data: created } = await api.post(
+          "/admin/announcements",
+          {
+            headline: "Avec lien",
+            start_date: today,
+            end_date: today,
+            link_label: "Voir la carte",
+            link_url: "/carte",
+          },
+          session
+        )
+
+        await expect(
+          api.post(
+            `/admin/announcements/${created.announcement.id}`,
+            { link_label: null },
+            session
+          )
+        ).rejects.toMatchObject({ response: { status: 400 } })
+      })
+
+      it("accepts editing just the link_label, keeping the existing link_url", async () => {
+        const today = parisDateKey(new Date())
+        const session = await admin()
+
+        const { data: created } = await api.post(
+          "/admin/announcements",
+          {
+            headline: "Avec lien",
+            start_date: today,
+            end_date: today,
+            link_label: "Voir la carte",
+            link_url: "/carte",
+          },
+          session
+        )
+
+        const { data } = await api.post(
+          `/admin/announcements/${created.announcement.id}`,
+          { link_label: "Découvrir la carte" },
+          session
+        )
+        expect(data.announcement.link_label).toEqual("Découvrir la carte")
+        expect(data.announcement.link_url).toEqual("/carte")
+      })
     })
 
     describe("DELETE /admin/announcements/:id", () => {
@@ -284,7 +412,12 @@ medusaIntegrationTestRunner({
         )
 
         const before = await api.get("/store/announcement", withKey())
-        expect(before.data.announcement).toEqual({ headline: "Éphémère" })
+        expect(before.data.announcement).toEqual({
+          headline: "Éphémère",
+          body: null,
+          link_label: null,
+          link_url: null,
+        })
 
         await api.delete(`/admin/announcements/${created.announcement.id}`, session)
 
@@ -308,8 +441,15 @@ medusaIntegrationTestRunner({
         const response = await api.get("/store/announcement", withKey())
 
         expect(response.status).toEqual(200)
-        expect(response.data.announcement).toEqual({ headline: "Fermé le 15 août" })
-        expect(Object.keys(response.data.announcement)).toEqual(["headline"])
+        expect(response.data.announcement).toEqual({
+          headline: "Fermé le 15 août",
+          body: null,
+          link_label: null,
+          link_url: null,
+        })
+        expect(Object.keys(response.data.announcement).sort()).toEqual(
+          ["body", "headline", "link_label", "link_url"].sort()
+        )
       })
 
       it("shows an Annonce whose start_date and end_date both equal today (inclusive bounds)", async () => {
@@ -324,7 +464,12 @@ medusaIntegrationTestRunner({
         const response = await api.get("/store/announcement", withKey())
 
         expect(response.status).toEqual(200)
-        expect(response.data.announcement).toEqual({ headline: "Bornes incluses" })
+        expect(response.data.announcement).toEqual({
+          headline: "Bornes incluses",
+          body: null,
+          link_label: null,
+          link_url: null,
+        })
       })
 
       it("returns null when the only period is entirely in the past", async () => {
@@ -366,6 +511,29 @@ medusaIntegrationTestRunner({
 
         expect(response.status).toEqual(200)
         expect(response.data.announcement).toBeNull()
+      })
+
+      it("serves body, link_label and link_url when present", async () => {
+        const today = parisDateKey(new Date())
+
+        await announcement().createAnnouncements({
+          headline: "Fermeture exceptionnelle",
+          body: "Nous serons fermés du 1er au 20 août.\n\nÀ bientôt !",
+          link_label: "Voir la carte",
+          link_url: "/carte",
+          start_date: today,
+          end_date: today,
+        })
+
+        const response = await api.get("/store/announcement", withKey())
+
+        expect(response.status).toEqual(200)
+        expect(response.data.announcement).toEqual({
+          headline: "Fermeture exceptionnelle",
+          body: "Nous serons fermés du 1er au 20 août.\n\nÀ bientôt !",
+          link_label: "Voir la carte",
+          link_url: "/carte",
+        })
       })
     })
   },

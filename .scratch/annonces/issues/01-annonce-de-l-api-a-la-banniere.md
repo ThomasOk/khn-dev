@@ -12,30 +12,30 @@ Rappel de l'ADR 0009 : ce module ne lit **ni** les Fermetures exceptionnelles, *
 
 **Blocked by:** None — can start immediately.
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Prefactor : la décision « nav opaque » est passée en prop à `nav-client` au lieu d'être déduite de `pathname` en interne, comportement actuel inchangé
-- [ ] Module Medusa custom `announcement`, avec son modèle et sa migration — jamais logé dans `pickup` (ADR 0009)
-- [ ] Modèle réduit à `id`, `headline`, `start_date`, `end_date`. Les autres champs arrivent en 04
-- [ ] `start_date` / `end_date` sont du **texte** `YYYY-MM-DD`, pas des `dateTime` — même choix et même raison que `pickup_closure`
-- [ ] Validation zod : accroche trimmée de 1 à 90 caractères, dates au format `YYYY-MM-DD`, `end_date >= start_date` par comparaison de chaînes
-- [ ] `GET /admin/announcements` (liste, période la plus proche d'abord) et `POST /admin/announcements`
-- [ ] `GET /store/announcement` renvoie `{ announcement: { headline } | null }` — ni `id`, ni dates sur le fil
-- [ ] La route store est le **seul lecteur d'horloge** : elle calcule le jour civil parisien courant puis fait une requête. Aucune fonction de dérivation n'est introduite
-- [ ] `null` est une réponse normale, pas une erreur — c'est le cas courant
-- [ ] Si plusieurs Annonces couvraient aujourd'hui (données hors API), la route en retourne une de façon déterministe et n'échoue pas
-- [ ] Storefront : lecture via le SDK Medusa, jamais un `fetch` brut, avec `next: { revalidate: 60 }` — divergence assumée avec `listPickupSlots` qui est en `no-store`, justifiée dans la spec
-- [ ] Nouveau dossier de feature `announcement` côté storefront, suivant le découpage existant
-- [ ] Bannière rendue **côté serveur** dans le layout de `(main)`, en flux normal sous le nav, au même emplacement que `CartMismatchBanner`
-- [ ] La bannière n'apparaît **pas** dans `(checkout)`
-- [ ] Quand une Annonce est présente, le nav est forcé opaque via le prefactor ci-dessus
-- [ ] La bannière est une région `role="status"`, pas `alert`
-- [ ] Aucun bouton de fermeture, aucun `localStorage`, aucune persistance côté client
-- [ ] Pas de saut de mise en page au chargement : la bannière est dans le HTML initial
-- [ ] Test d'intégration HTTP : création acceptée et relue par la liste admin
-- [ ] Test d'intégration HTTP : l'Annonce dont la période couvre aujourd'hui est servie, avec les seuls champs du contrat
-- [ ] Test d'intégration HTTP : bornes **incluses** — `start_date === end_date === aujourd'hui` s'affiche
-- [ ] Test d'intégration HTTP : `null` sur période entièrement passée, entièrement future, et sur base vide
-- [ ] Test d'intégration HTTP : refus de validation sur accroche vide, accroche au-delà du plafond, `end_date` avant `start_date`, date malformée
-- [ ] Les périodes des tests sont semées **relativement à aujourd'hui** via le helper `paris-time`, comme `pickup-slots.spec.ts` sème son horaire relativement à maintenant
-- [ ] Aucun seam unitaire ajouté : il n'y a pas de dérivation pure à isoler, et le passage instant → jour civil parisien est déjà couvert par les tests de `restaurant-time`
+- [x] Prefactor : la décision « nav opaque » est passée en prop à `nav-client` au lieu d'être déduite de `pathname` en interne, comportement actuel inchangé
+- [x] Module Medusa custom `announcement`, avec son modèle et sa migration — jamais logé dans `pickup` (ADR 0009)
+- [x] Modèle réduit à `id`, `headline`, `start_date`, `end_date`. Les autres champs arrivent en 04
+- [x] `start_date` / `end_date` sont du **texte** `YYYY-MM-DD`, pas des `dateTime` — même choix et même raison que `pickup_closure`
+- [x] Validation zod : accroche trimmée de 1 à 90 caractères, dates au format `YYYY-MM-DD`, `end_date >= start_date` par comparaison de chaînes
+- [x] `GET /admin/announcements` (liste, période la plus proche d'abord) et `POST /admin/announcements`
+- [x] `GET /store/announcement` renvoie `{ announcement: { headline } | null }` — ni `id`, ni dates sur le fil
+- [x] La route store est le **seul lecteur d'horloge** : elle calcule le jour civil parisien courant puis fait une requête. Aucune fonction de dérivation n'est introduite
+- [x] `null` est une réponse normale, pas une erreur — c'est le cas courant
+- [x] Si plusieurs Annonces couvraient aujourd'hui (données hors API), la route en retourne une de façon déterministe et n'échoue pas
+- [x] Storefront : lecture via le SDK Medusa, jamais un `fetch` brut, avec `next: { revalidate: 60 }` — divergence assumée avec `listPickupSlots` qui est en `no-store`, justifiée dans la spec
+- [x] Nouveau dossier de feature `announcement` côté storefront, suivant le découpage existant
+- [x] Bannière rendue **côté serveur** dans le layout de `(main)`, en flux normal sous le nav, au même emplacement que `CartMismatchBanner`
+- [x] La bannière n'apparaît **pas** dans `(checkout)`
+- [x] Quand une Annonce est présente, le nav est forcé opaque via le prefactor ci-dessus
+- [x] La bannière est une région `role="status"`, pas `alert`
+- [x] Aucun bouton de fermeture, aucun `localStorage`, aucune persistance côté client
+- [x] Pas de saut de mise en page au chargement : la bannière est dans le HTML initial
+- [x] Test d'intégration HTTP : création acceptée et relue par la liste admin
+- [x] Test d'intégration HTTP : l'Annonce dont la période couvre aujourd'hui est servie, avec les seuls champs du contrat
+- [x] Test d'intégration HTTP : bornes **incluses** — `start_date === end_date === aujourd'hui` s'affiche
+- [x] Test d'intégration HTTP : `null` sur période entièrement passée, entièrement future, et sur base vide
+- [x] Test d'intégration HTTP : refus de validation sur accroche vide, accroche au-delà du plafond, `end_date` avant `start_date`, date malformée
+- [x] Les périodes des tests sont semées **relativement à aujourd'hui** via le helper `paris-time`, comme `pickup-slots.spec.ts` sème son horaire relativement à maintenant
+- [x] Aucun seam unitaire ajouté : il n'y a pas de dérivation pure à isoler, et le passage instant → jour civil parisien est déjà couvert par les tests de `restaurant-time`

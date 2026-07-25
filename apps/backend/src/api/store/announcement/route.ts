@@ -9,8 +9,9 @@ import { civilDayAt, civilDayKey } from "../../../lib/time/restaurant-time"
 // introduced — `start_date <= today <= end_date` is a database filter, not a
 // pure calculation to isolate.
 //
-// Only `headline` crosses the wire (ADR: the storefront has no use for `id` or
-// dates — there is nothing to dismiss, so nothing to key by).
+// `headline`, `body`, `link_label` and `link_url` cross the wire — never `id`
+// or the dates (ADR: the storefront has no use for those — there is nothing
+// to dismiss, so nothing to key by).
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const service: AnnouncementModuleService = req.scope.resolve(
     ANNOUNCEMENT_MODULE
@@ -34,6 +35,13 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
   const current = announcements[0]
 
   res.json({
-    announcement: current ? { headline: current.headline } : null,
+    announcement: current
+      ? {
+          headline: current.headline,
+          body: current.body,
+          link_label: current.link_label,
+          link_url: current.link_url,
+        }
+      : null,
   })
 }

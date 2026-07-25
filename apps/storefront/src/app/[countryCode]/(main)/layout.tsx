@@ -36,9 +36,29 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
         Passer au contenu
       </a>
       <Nav opaque={!!announcement} />
-      {announcement && <AnnouncementBanner headline={announcement.headline} />}
-      {customer && cart && (
-        <CartMismatchBanner customer={customer} cart={cart} />
+      {/* Nav is `fixed`, so it takes up no flow space of its own — without
+          this offset, whatever renders here sits at y:0 and disappears
+          behind the nav's z-50. `sticky top-16` (top-16 matches Nav's own
+          h-16) both places it right below Nav on load AND keeps it pinned
+          there while scrolling, rather than letting it scroll away with
+          ordinary content. Applied once on the wrapper (not per-banner) so
+          headline + cart-mismatch stick together as one unit. z-40 keeps it
+          above ordinary page content once scrolled content passes under it,
+          while staying below Nav's z-50. */}
+      {(announcement || (customer && cart)) && (
+        <div className="sticky top-16 z-40">
+          {announcement && (
+            <AnnouncementBanner
+              headline={announcement.headline}
+              body={announcement.body}
+              linkLabel={announcement.link_label}
+              linkUrl={announcement.link_url}
+            />
+          )}
+          {customer && cart && (
+            <CartMismatchBanner customer={customer} cart={cart} />
+          )}
+        </div>
       )}
       {cart && (
         <FreeShippingPriceNudge
