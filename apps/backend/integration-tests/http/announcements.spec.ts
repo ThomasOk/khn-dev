@@ -119,6 +119,180 @@ medusaIntegrationTestRunner({
       })
     })
 
+    // Une seule Annonce à la fois: overlap is refused at write time, with a
+    // 409 naming the conflicting period, so a publication that would never
+    // show never gets committed in the first place.
+    describe("POST /admin/announcements — overlap refusal", () => {
+      const dateAt = (now: Date, days: number) =>
+        parisDateKey(new Date(now.getTime() + days * DAY_MS))
+
+      it("refuses a partial overlap", async () => {
+        const now = new Date()
+        const session = await admin()
+        await api.post(
+          "/admin/announcements",
+          { headline: "Existante", start_date: dateAt(now, 0), end_date: dateAt(now, 10) },
+          session
+        )
+
+        const attempt = api.post(
+          "/admin/announcements",
+          { headline: "Candidate", start_date: dateAt(now, 5), end_date: dateAt(now, 15) },
+          session
+        )
+        await expect(attempt).rejects.toMatchObject({ response: { status: 409 } })
+
+        const error = await attempt.catch((e) => e)
+        expect(error.response.data.message).toContain(dateAt(now, 0))
+        expect(error.response.data.message).toContain(dateAt(now, 10))
+      })
+
+      it("refuses a total inclusion of one period inside another", async () => {
+        const now = new Date()
+        const session = await admin()
+        await api.post(
+          "/admin/announcements",
+          { headline: "Existante", start_date: dateAt(now, 0), end_date: dateAt(now, 20) },
+          session
+        )
+
+        await expect(
+          api.post(
+            "/admin/announcements",
+            { headline: "Incluse", start_date: dateAt(now, 5), end_date: dateAt(now, 10) },
+            session
+          )
+        ).rejects.toMatchObject({ response: { status: 409 } })
+      })
+
+      it("refuses identical periods", async () => {
+        const now = new Date()
+        const session = await admin()
+        await api.post(
+          "/admin/announcements",
+          { headline: "Existante", start_date: dateAt(now, 0), end_date: dateAt(now, 10) },
+          session
+        )
+
+        await expect(
+          api.post(
+            "/admin/announcements",
+            { headline: "Doublon", start_date: dateAt(now, 0), end_date: dateAt(now, 10) },
+            session
+          )
+        ).rejects.toMatchObject({ response: { status: 409 } })
+      })
+
+      it("accepts adjacent periods — one ending the 10th, the next starting the 11th", async () => {
+        const now = new Date()
+        const session = await admin()
+        await api.post(
+          "/admin/announcements",
+          { headline: "Première", start_date: dateAt(now, 0), end_date: dateAt(now, 10) },
+          session
+        )
+
+        const { data } = await api.post(
+          "/admin/announcements",
+          { headline: "Suivante", start_date: dateAt(now, 11), end_date: dateAt(now, 20) },
+          session
+        )
+        expect(data.announcement.headline).toEqual("Suivante")
+      })
+    })
+
+    describe("POST /admin/announcements/:id — edit", () => {
+      it("accepts editing the headline without touching its period", async () => {
+        const now = new Date()
+        const session = await admin()
+        const { data: created } = await api.post(
+          "/admin/announcements",
+          { headline: "Avant", start_date: parisDateKey(now), end_date: parisDateKey(new Date(now.getTime() + 10 * DAY_MS)) },
+          session
+        )
+
+        const { data } = await api.post(
+          `/admin/announcements/${created.announcement.id}`,
+          { headline: "Après" },
+          session
+        )
+
+        expect(data.announcement.headline).toEqual("Après")
+        expect(data.announcement.start_date).toEqual(created.announcement.start_date)
+        expect(data.announcement.end_date).toEqual(created.announcement.end_date)
+      })
+
+      it("refuses moving an Annonce onto another's period with 409", async () => {
+        const now = new Date()
+        const at = (days: number) =>
+          parisDateKey(new Date(now.getTime() + days * DAY_MS))
+        const session = await admin()
+
+        await api.post(
+          "/admin/announcements",
+          { headline: "Fixe", start_date: at(0), end_date: at(10) },
+          session
+        )
+        const { data: moving } = await api.post(
+          "/admin/announcements",
+          { headline: "Mobile", start_date: at(20), end_date: at(30) },
+          session
+        )
+
+        await expect(
+          api.post(
+            `/admin/announcements/${moving.announcement.id}`,
+            { start_date: at(5), end_date: at(15) },
+            session
+          )
+        ).rejects.toMatchObject({ response: { status: 409 } })
+      })
+
+      it("refuses a partial edit that would push start_date past the existing end_date", async () => {
+        const now = new Date()
+        const at = (days: number) =>
+          parisDateKey(new Date(now.getTime() + days * DAY_MS))
+        const session = await admin()
+
+        const { data: created } = await api.post(
+          "/admin/announcements",
+          { headline: "Existante", start_date: at(0), end_date: at(10) },
+          session
+        )
+
+        await expect(
+          api.post(
+            `/admin/announcements/${created.announcement.id}`,
+            { start_date: at(15) },
+            session
+          )
+        ).rejects.toMatchObject({ response: { status: 400 } })
+      })
+    })
+
+    describe("DELETE /admin/announcements/:id", () => {
+      it("stops being served by the store route after deletion", async () => {
+        const now = new Date()
+        const yesterday = parisDateKey(new Date(now.getTime() - DAY_MS))
+        const tomorrow = parisDateKey(new Date(now.getTime() + DAY_MS))
+        const session = await admin()
+
+        const { data: created } = await api.post(
+          "/admin/announcements",
+          { headline: "Éphémère", start_date: yesterday, end_date: tomorrow },
+          session
+        )
+
+        const before = await api.get("/store/announcement", withKey())
+        expect(before.data.announcement).toEqual({ headline: "Éphémère" })
+
+        await api.delete(`/admin/announcements/${created.announcement.id}`, session)
+
+        const after = await api.get("/store/announcement", withKey())
+        expect(after.data.announcement).toBeNull()
+      })
+    })
+
     describe("GET /store/announcement", () => {
       it("serves the Annonce whose period covers today, with only the contract's fields", async () => {
         const now = new Date()
