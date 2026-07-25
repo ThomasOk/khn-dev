@@ -29,7 +29,10 @@ export default function AnnouncementBanner({
   const clickable = !!body || !!linkUrl
 
   return (
-    <div role="status" className="bg-[#121212] text-white">
+    <div
+      role="status"
+      className="border-t border-white/10 bg-[#121212] text-white"
+    >
       <div className="content-container py-2 text-center text-sm">
         {clickable ? (
           <button
