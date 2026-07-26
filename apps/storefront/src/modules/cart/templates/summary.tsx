@@ -11,9 +11,10 @@ import { HttpTypes } from "@medusajs/types"
 
 type SummaryProps = {
   cart: HttpTypes.StoreCart
+  orderPossible: boolean
 }
 
-const Summary = ({ cart }: SummaryProps) => {
+const Summary = ({ cart, orderPossible }: SummaryProps) => {
   const step = getCheckoutStep(cart)
 
   return (
@@ -27,14 +28,20 @@ const Summary = ({ cart }: SummaryProps) => {
       <DiscountCode cart={cart} />
       <Divider />
       <CartTotals totals={cart} />
-      <LocalizedClientLink
-        href={"/checkout?step=" + step}
-        data-testid="checkout-button"
-      >
-        <Button variant="accent" size="large" className="w-full !rounded-base">
-          Commander
-        </Button>
-      </LocalizedClientLink>
+      {orderPossible && (
+        <LocalizedClientLink
+          href={"/checkout?step=" + step}
+          data-testid="checkout-button"
+        >
+          <Button
+            variant="accent"
+            size="large"
+            className="w-full !rounded-base"
+          >
+            Commander
+          </Button>
+        </LocalizedClientLink>
+      )}
     </div>
   )
 }

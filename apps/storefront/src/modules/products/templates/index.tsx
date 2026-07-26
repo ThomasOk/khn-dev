@@ -5,6 +5,7 @@ import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
+import ShowcaseNotice from "@modules/showcase/components/showcase-notice"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
@@ -16,6 +17,8 @@ type ProductTemplateProps = {
   region: HttpTypes.StoreRegion
   countryCode: string
   images: HttpTypes.StoreProductImage[]
+  orderPossible: boolean
+  showcaseNote: string | null
 }
 
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
@@ -23,6 +26,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   region,
   countryCode,
   images,
+  orderPossible,
+  showcaseNote,
 }) => {
   if (!product || !product.id) {
     return notFound()
@@ -40,18 +45,21 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         <div className="flex flex-col gap-y-6 w-full small:max-w-[420px]">
           <ProductInfo product={product} />
           <ProductOnboardingCta />
-          <Suspense
-            fallback={
-              <ProductActions
-                disabled={true}
-                product={product}
-                region={region}
-                showPrice={false}
-              />
-            }
-          >
-            <ProductActionsWrapper id={product.id} region={region} />
-          </Suspense>
+          {showcaseNote && <ShowcaseNotice note={showcaseNote} />}
+          {orderPossible && (
+            <Suspense
+              fallback={
+                <ProductActions
+                  disabled={true}
+                  product={product}
+                  region={region}
+                  showPrice={false}
+                />
+              }
+            >
+              <ProductActionsWrapper id={product.id} region={region} />
+            </Suspense>
+          )}
         </div>
       </div>
       <div
