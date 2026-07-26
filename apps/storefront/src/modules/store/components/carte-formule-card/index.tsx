@@ -18,9 +18,11 @@ import FormuleComposerModal from "./formule-composer-modal"
 export default function CarteFormuleCard({
   product,
   composants,
+  orderPossible,
 }: {
   product: HttpTypes.StoreProduct
   composants: FormuleComposant[]
+  orderPossible: boolean
 }) {
   const { cheapestPrice } = getProductPrice({ product })
   const { state: isOpen, open, close } = useToggleState()
@@ -65,20 +67,24 @@ export default function CarteFormuleCard({
           {product.description}
         </Text>
       </div>
-      <button
-        type="button"
-        onClick={open}
-        className="mt-auto flex items-center justify-center w-full h-11 px-3 rounded-base bg-khn-teal hover:bg-khn-teal-panel transition-[background-color,transform] duration-150 ease-out motion-safe:active:scale-[0.97] text-white font-medium uppercase text-xs tracking-[0.15em] whitespace-nowrap"
-        data-testid="formule-compose-button"
-      >
-        Composer ma formule
-      </button>
-      <FormuleComposerModal
-        product={product}
-        composants={composants}
-        isOpen={isOpen}
-        close={close}
-      />
+      {orderPossible && (
+        <>
+          <button
+            type="button"
+            onClick={open}
+            className="mt-auto flex items-center justify-center w-full h-11 px-3 rounded-base bg-khn-teal hover:bg-khn-teal-panel transition-[background-color,transform] duration-150 ease-out motion-safe:active:scale-[0.97] text-white font-medium uppercase text-xs tracking-[0.15em] whitespace-nowrap"
+            data-testid="formule-compose-button"
+          >
+            Composer ma formule
+          </button>
+          <FormuleComposerModal
+            product={product}
+            composants={composants}
+            isOpen={isOpen}
+            close={close}
+          />
+        </>
+      )}
     </div>
   )
 }

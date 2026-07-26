@@ -15,8 +15,10 @@ import CarteCartItemsList from "@modules/store/components/carte-cart-item/items-
 // not a second version kept in sync with the first.
 export default async function CarteCartContent({
   cart,
+  orderPossible,
 }: {
   cart: HttpTypes.StoreCart | null
+  orderPossible: boolean
 }) {
   if (!cart?.items?.length) {
     return (
@@ -52,18 +54,20 @@ export default async function CarteCartContent({
           <div className="[&_[data-testid='cart-total']]:font-sans [&_[data-testid='cart-total']]:text-base">
             <CartTotals totals={cart} />
           </div>
-          <LocalizedClientLink
-            href={"/checkout?step=" + getCheckoutStep(cart)}
-            data-testid="checkout-button"
-          >
-            <Button
-              variant="accent"
-              size="large"
-              className="w-full !rounded-base"
+          {orderPossible && (
+            <LocalizedClientLink
+              href={"/checkout?step=" + getCheckoutStep(cart)}
+              data-testid="checkout-button"
             >
-              Commander
-            </Button>
-          </LocalizedClientLink>
+              <Button
+                variant="accent"
+                size="large"
+                className="w-full !rounded-base"
+              >
+                Commander
+              </Button>
+            </LocalizedClientLink>
+          )}
         </>
       )}
     </>

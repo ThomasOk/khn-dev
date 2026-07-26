@@ -11,8 +11,10 @@ import CarteCartBarClient from "./carte-cart-bar-client"
 // CarteCartColumn renders on desktop, not a second version of it.
 export default async function CarteCartBar({
   countryCode,
+  orderPossible,
 }: {
   countryCode: string
+  orderPossible: boolean
 }) {
   const cart = await retrieveCart().catch(() => null)
 
@@ -34,7 +36,7 @@ export default async function CarteCartBar({
       subtotal={subtotal}
       currencyCode={currencyCode}
     >
-      <CarteCartContent cart={cart} />
+      <CarteCartContent cart={cart} orderPossible={orderPossible} />
     </CarteCartBarClient>
   )
 }

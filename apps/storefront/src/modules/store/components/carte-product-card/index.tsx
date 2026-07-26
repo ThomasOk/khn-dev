@@ -15,13 +15,19 @@ import SkeletonCarteCard from "@modules/skeletons/components/skeleton-carte-card
 export default function CarteProductCard({
   product,
   region,
+  orderPossible,
 }: {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
+  orderPossible: boolean
 }) {
   return (
     <Suspense fallback={<SkeletonCarteCard />}>
-      <CarteProductCardContent product={product} region={region} />
+      <CarteProductCardContent
+        product={product}
+        region={region}
+        orderPossible={orderPossible}
+      />
     </Suspense>
   )
 }
@@ -29,15 +35,29 @@ export default function CarteProductCard({
 async function CarteProductCardContent({
   product,
   region,
+  orderPossible,
 }: {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
+  orderPossible: boolean
 }) {
   const formule = await getFormule(product.id, region.id)
 
   if (formule) {
-    return <CarteFormuleCard product={product} composants={formule.composants} />
+    return (
+      <CarteFormuleCard
+        product={product}
+        composants={formule.composants}
+        orderPossible={orderPossible}
+      />
+    )
   }
 
-  return <CartePlatCard product={product} region={region} />
+  return (
+    <CartePlatCard
+      product={product}
+      region={region}
+      orderPossible={orderPossible}
+    />
+  )
 }
