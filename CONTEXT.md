@@ -100,11 +100,15 @@ Cancelling the Commande **in the Medusa admin** — which refunds the captured p
 ### Le client
 
 **Client**:
-The person collecting the order. May order as a guest — no account is ever required, because a hungry person at 11h50 abandons a signup form. An account is offered, never imposed.
+The person collecting the order. May order as a guest — no account is ever required, because a hungry person at 11h50 abandons a signup form. An account is offered, never imposed, and it is offered **after the payment**, never as a step before it (ADR 0011).
 _Avoid_: Utilisateur, compte (an account is optional and is not the client)
 
+**Compte**:
+The optional durable identity a Client may create, holding their nom, téléphone and Adresse de facturation so the next Commande does not have to retype them, plus the list of their past Commandes. Its whole worth is the retyping it spares: it carries no fidélité, no one-gesture reorder and no saved card — the three things that would make it worth a password on a restaurant site, and none of them exists here (ADR 0011).
+_Avoid_: Espace client, profil (that is one page of a Compte, not the thing), utilisateur
+
 **Adresse de facturation**:
-The client's postal address, collected for the Facture — some clients are professionals reclaiming VAT. **It is never shipped to.** Medusa's `shipping_address` field holds it, because Medusa's model assumes delivery and this one has none. No address in this system is ever a delivery address.
+The client's postal address, collected for the Facture — some clients are professionals reclaiming VAT. **It is never shipped to.** Medusa's `shipping_address` field holds it, because Medusa's model assumes delivery and this one has none. No address in this system is ever a delivery address. A Client has exactly **one** — there is no address book, and nothing ever asks a client to pick between two (ADR 0011).
 _Avoid_: Adresse de livraison, shipping address (the field is named that; the concept is not)
 
 **Nom / Email / Téléphone**:
