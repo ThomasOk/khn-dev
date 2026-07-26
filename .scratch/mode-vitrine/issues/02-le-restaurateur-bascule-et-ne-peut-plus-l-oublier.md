@@ -12,17 +12,17 @@ Placé avant les deux tickets storefront exprès : ils se vérifient à la main 
 
 **Status:** ready-for-agent
 
-- [ ] Route de réglages `settings/showcase`, à côté de `pickup`, `closures`, `announcements` et `table-reservation`
-- [ ] L'écran porte l'interrupteur, le champ note et l'enregistrement, en tapant les routes admin livrées en 01
-- [ ] Compteur de caractères affiché **pendant** la saisie, pas découvert au submit — comme le compteur d'accroche de l'écran Annonces
-- [ ] Quand la note enregistrée est vide, le champ est **pré-rempli** de la phrase suggérée « La commande en ligne est momentanément suspendue. »
-- [ ] Cette phrase est effaçable : enregistrer un champ vidé enregistre bien « pas de note », et ne réécrit pas la suggestion
-- [ ] La phrase suggérée vit **uniquement dans le formulaire admin**, jamais dans le rendu du storefront. Ce que le client lit vient toujours de la base, donc toujours de quelqu'un qui a cliqué « enregistrer »
-- [ ] La note est éditable que le mode soit actif ou non — on peut préparer le texte à froid, et corriger le texte sans rouvrir les commandes
-- [ ] Le refus de validation du backend (note trop longue) remonte en erreur inline sur le champ
-- [ ] Widget admin injecté sur la liste des commandes — art antérieur : `order-pickup-slot.tsx`, `formule-curation.tsx`
-- [ ] Le widget ne s'affiche **que** lorsque le mode est actif, et il est rouge : il doit être impossible à ne pas voir
-- [ ] Il porte un unique bouton « Réactiver les commandes », qui éteint le mode sans quitter la page
-- [ ] Il **n'allume pas** : allumer est un geste délibéré qui passe par l'écran de réglages. C'est le coût connu de cette décision — l'extinction est à un clic depuis n'importe où, l'allumage demande une navigation
-- [ ] Après extinction depuis le widget, l'état affiché est à jour sans rechargement manuel
-- [ ] Aucun test automatisé ajouté pour l'admin : l'admin Medusa n'a pas de seam de test dans ce repo, et les routes qui portent la logique sont déjà couvertes par 01
+- [x] Route de réglages `settings/showcase`, à côté de `pickup`, `closures`, `announcements` et `table-reservation`
+- [x] L'écran porte l'interrupteur, le champ note et l'enregistrement, en tapant les routes admin livrées en 01
+- [x] Compteur de caractères affiché **pendant** la saisie, pas découvert au submit — comme le compteur d'accroche de l'écran Annonces
+- [x] Quand la note enregistrée est vide, le champ est **pré-rempli** de la phrase suggérée « La commande en ligne est momentanément suspendue. »
+- [x] Cette phrase est effaçable : enregistrer un champ vidé enregistre bien « pas de note », et ne réécrit pas la suggestion
+- [x] La phrase suggérée vit **uniquement dans le formulaire admin**, jamais dans le rendu du storefront. Ce que le client lit vient toujours de la base, donc toujours de quelqu'un qui a cliqué « enregistrer »
+- [x] La note est éditable que le mode soit actif ou non — on peut préparer le texte à froid, et corriger le texte sans rouvrir les commandes
+- [x] Le refus de validation du backend (note trop longue) remonte en erreur inline sur le champ
+- [x] Widget admin injecté sur la liste des commandes — art antérieur : `order-pickup-slot.tsx`, `formule-curation.tsx`
+- [x] Le widget ne s'affiche **que** lorsque le mode est actif, et il est rouge : il doit être impossible à ne pas voir
+- [x] Il porte un unique bouton « Réactiver les commandes », qui éteint le mode sans quitter la page
+- [x] Il **n'allume pas** : allumer est un geste délibéré qui passe par l'écran de réglages. C'est le coût connu de cette décision — l'extinction est à un clic depuis n'importe où, l'allumage demande une navigation
+- [x] Après extinction depuis le widget, l'état affiché est à jour sans rechargement manuel
+- [x] Aucun test automatisé ajouté pour l'admin : l'admin Medusa n'a pas de seam de test dans ce repo, et les routes qui portent la logique sont déjà couvertes par 01
