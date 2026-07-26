@@ -14,9 +14,11 @@ import ProductImageZoom from "./product-image-zoom"
 export default function CartePlatCard({
   product,
   region,
+  orderPossible,
 }: {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
+  orderPossible: boolean
 }) {
   const { cheapestPrice } = getProductPrice({ product })
 
@@ -58,16 +60,18 @@ export default function CartePlatCard({
             {product.description}
           </Text>
         )}
-        <div className="mt-auto pt-1">
-          <ProductActions
-            product={product}
-            region={region}
-            syncVariantWithUrl={false}
-            showMobileActions={false}
-            showPrice={false}
-            buttonClassName="!rounded-base"
-          />
-        </div>
+        {orderPossible && (
+          <div className="mt-auto pt-1">
+            <ProductActions
+              product={product}
+              region={region}
+              syncVariantWithUrl={false}
+              showMobileActions={false}
+              showPrice={false}
+              buttonClassName="!rounded-base"
+            />
+          </div>
+        )}
       </div>
     </div>
   )

@@ -16,10 +16,12 @@ export default async function CarteSection({
   category,
   categories,
   countryCode,
+  orderPossible,
 }: {
   category: HttpTypes.StoreProductCategory
   categories: HttpTypes.StoreProductCategory[]
   countryCode: string
+  orderPossible: boolean
 }) {
   const region = await getRegion(countryCode)
 
@@ -65,7 +67,11 @@ export default async function CarteSection({
       >
         {products.map((product) => (
           <li key={product.id}>
-            <CarteProductCard product={product} region={region} />
+            <CarteProductCard
+              product={product}
+              region={region}
+              orderPossible={orderPossible}
+            />
           </li>
         ))}
       </ul>

@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import { HttpTypes } from "@medusajs/types"
 
 import { Heading } from "@modules/common/components/ui"
+import ShowcaseNotice from "@modules/showcase/components/showcase-notice"
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
 import CarteCartBar from "@modules/store/components/carte-cart-bar"
 import CarteCartColumn from "@modules/store/components/carte-cart-column"
@@ -31,9 +32,13 @@ const CarteCartBarFallback = () => (
 const StoreTemplate = ({
   countryCode,
   categories,
+  orderPossible,
+  showcaseNote,
 }: {
   countryCode: string
   categories?: HttpTypes.StoreProductCategory[]
+  orderPossible: boolean
+  showcaseNote: string | null
 }) => {
   const rootCategories = (categories ?? [])
     .filter((c) => !c.parent_category_id)
@@ -47,6 +52,7 @@ const StoreTemplate = ({
         data-testid="category-container"
       >
         <DineInMenuBanner />
+        {showcaseNote && <ShowcaseNotice note={showcaseNote} />}
         <CarteSectionNav categories={rootCategories} />
         <div className="grid grid-cols-1 small:grid-cols-[1fr_360px] gap-x-10">
           <div className="flex flex-col gap-16 mt-8 pb-20 small:pb-0">
@@ -56,6 +62,7 @@ const StoreTemplate = ({
                   category={category}
                   categories={categories ?? []}
                   countryCode={countryCode}
+                  orderPossible={orderPossible}
                 />
               </Suspense>
             ))}
@@ -75,13 +82,16 @@ const StoreTemplate = ({
               }}
             >
               <Suspense fallback={<CarteCartColumnFallback />}>
-                <CarteCartColumn />
+                <CarteCartColumn orderPossible={orderPossible} />
               </Suspense>
             </div>
           </div>
         </div>
         <Suspense fallback={<CarteCartBarFallback />}>
-          <CarteCartBar countryCode={countryCode} />
+          <CarteCartBar
+            countryCode={countryCode}
+            orderPossible={orderPossible}
+          />
         </Suspense>
       </div>
     </div>
