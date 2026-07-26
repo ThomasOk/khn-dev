@@ -8,7 +8,7 @@ The restaurant's public website: it presents the dishes on offer and lets custom
 
 **Carte**:
 The set of dishes orderable online for pickup. This is the only catalogue the system knows about, and every dish in it is purchasable by definition — though not necessarily *right now* (see Commandes fermées).
-_Avoid_: Menu (in English it means the whole carte, in French a Formule — too ambiguous to use for either), catalogue, boutique, store
+_Avoid_: Menu (in English it means the whole carte, in French a Formule — too ambiguous to use for either), catalogue (and never "mode catalogue" for the state in which ordering is switched off — that is the Mode vitrine), boutique, store
 
 **Carte sur place**:
 The dine-in menu, a hand-made PDF served as a static file. It is not modelled, not stored in the database, and shares no data with the Carte — dishes that exist only for dine-in service (wine, for instance) have no representation in the system at all. The two can drift apart; keeping them consistent is a human habit, not a system guarantee.
@@ -65,6 +65,7 @@ _Avoid_: Lead time, temps de préparation
 
 **Commandes fermées**:
 The state in which the Carte is browsable but nothing can be ordered, because no créneau remains today — late at night, or on a Fermeture exceptionnelle. Orders are same-day only: a customer can never order for tomorrow, which is what keeps the carte they ordered from identical to the carte the kitchen is cooking.
+It is **derived, never decided**: nobody switches it on, it is what the absence of créneaux *is*. The customer meets it at checkout, where the créneaux are chosen — the Carte itself keeps its ordering controls. The state a human switches on is the Mode vitrine, and the two are deliberately not the same thing.
 
 ### La commande et ses documents
 
@@ -162,6 +163,18 @@ It is **not** the period it talks about: an August closure running 10–20 is an
 
 **Une seule à la fois**:
 At most one Annonce is displayed, ever. Two stacked bandeaux each destroy the other's authority — two "important" messages side by side are zero important messages — and a rotating one loses its audience after the first slide. So overlapping Périodes d'annonce are **refused at entry**, in the admin, rather than silently resolved in favour of one of them: an Annonce that was published and never appeared is not diagnosable from the storefront.
+
+### La vitrine
+
+**Mode vitrine**:
+The state a human switches on to stop taking orders **immediately**, whatever the Horaires de retrait and the Créneaux would otherwise allow — a broken fryer, a cook who did not come in, a delivery that never arrived. The Carte stays entirely browsable, prices included; every way of ordering disappears, and no payment can go through, not even from a page that was already open. It suspends **the click & collect and nothing else**: the dining room keeps taking Réservations, and closing it is a Fermeture de réservation, a separate gesture (ADR 0007).
+It is **decided, never derived** — it reads no Créneau, no Fermeture and no Annonce — and it neither switches itself on nor off (ADR 0010).
+_Avoid_: Mode catalogue (catalogue is a banned word — see Carte; ADR 0009 used it before the term was settled), mode maintenance, boutique fermée, and Commandes fermées, which is the *derived* state and a different thing
+
+**Note de vitrine**:
+The optional sentence the restaurant writes to explain a Mode vitrine — "Les commandes ne sont pas possibles pour le moment". It is shown only while the mode is on, in the page and next to the ordering it replaces, and it dies with the switch.
+It is **not an Annonce**: no period, no corps, no link, never sitewide, and it speaks about one thing only — the ordering that just disappeared. A restaurant with something else to say writes an Annonce, which the Mode vitrine neither reads nor writes. Nothing forces the note to exist: a Mode vitrine with no note is a Carte with no ordering and no explanation, which is allowed and is the reason the admin form offers a sentence rather than demanding one.
+_Avoid_: Annonce, bandeau, message
 
 ### Not in the domain
 
