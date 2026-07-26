@@ -2,6 +2,8 @@ import { completeCartWorkflow } from "@medusajs/medusa/core-flows"
 import { MedusaError } from "@medusajs/framework/utils"
 import { getOfferableSlots } from "../../lib/slots/get-offerable-slots"
 import { assertValidFormuleSelection } from "../../lib/formule/assert-valid-selection"
+import { SHOWCASE_MODULE } from "../../modules/showcase"
+import ShowcaseModuleService from "../../modules/showcase/service"
 
 // cart.metadata is written by the client through a public route (POST
 // /store/carts/:id): an unvalidated créneau is just a field the customer
@@ -18,6 +20,22 @@ import { assertValidFormuleSelection } from "../../lib/formule/assert-valid-sele
 // because the Curation may have changed while the customer sat on the
 // payment page, the same reasoning as the créneau re-derivation above.
 completeCartWorkflow.hooks.validate(async ({ cart }, { container }) => {
+  // Mode vitrine runs FIRST, before the créneau re-check: when both would
+  // fail (mode active AND a stale créneau), the client must read that
+  // orders are suspended, not a message that would send them to pick
+  // another slot (spec §"Refus au paiement"). A deliberate refusal by the
+  // restaurant, not invalid data from the client — CONFLICT (409), not
+  // INVALID_DATA (400).
+  const showcase: ShowcaseModuleService = container.resolve(SHOWCASE_MODULE)
+  const [showcaseConfig] = await showcase.listShowcaseConfigs()
+
+  if (showcaseConfig?.enabled) {
+    throw new MedusaError(
+      MedusaError.Types.CONFLICT,
+      "Online ordering is currently suspended."
+    )
+  }
+
   const slotStart = cart.metadata?.creneau_debut as string | undefined
   const slotEnd = cart.metadata?.creneau_fin as string | undefined
 
