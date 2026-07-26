@@ -1,5 +1,6 @@
 import { retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
+import { retrieveShowcaseFresh } from "@lib/data/showcase"
 import CartTemplate from "@modules/cart/templates"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
@@ -16,6 +17,14 @@ export default async function Cart() {
   })
 
   const customer = await retrieveCustomer()
+  const showcase = await retrieveShowcaseFresh()
 
-  return <CartTemplate cart={cart} customer={customer} />
+  return (
+    <CartTemplate
+      cart={cart}
+      customer={customer}
+      orderPossible={!showcase.showcase_mode}
+      showcaseNote={showcase.note}
+    />
+  )
 }

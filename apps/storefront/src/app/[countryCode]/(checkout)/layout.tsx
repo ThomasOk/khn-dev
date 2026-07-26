@@ -1,12 +1,30 @@
+import { redirect } from "next/navigation"
+
+import { retrieveShowcaseFresh } from "@lib/data/showcase"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ChevronDown from "@modules/common/icons/chevron-down"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
 
-export default function CheckoutLayout({
+export default async function CheckoutLayout({
   children,
+  params,
 }: {
   children: React.ReactNode
+  params: Promise<{ countryCode: string }>
 }) {
+  const { countryCode } = await params
+
+  // Checked fresh at the entry of the whole (checkout) route group, not
+  // neutralized step by step: a client already mid-tunnel when the switch
+  // flips is sent back to the cart page, the one surface that both explains
+  // the suspension and still holds their cart intact (docs/specs/mode-vitrine.md,
+  // "Storefront — rendu").
+  const showcase = await retrieveShowcaseFresh()
+
+  if (showcase.showcase_mode) {
+    redirect(`/${countryCode}/cart`)
+  }
+
   return (
     <div className="w-full bg-white relative small:min-h-screen">
       <div className="h-16 bg-white border-b ">

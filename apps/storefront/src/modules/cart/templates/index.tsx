@@ -3,14 +3,19 @@ import Summary from "./summary"
 import EmptyCartMessage from "../components/empty-cart-message"
 import SignInPrompt from "../components/sign-in-prompt"
 import Divider from "@modules/common/components/divider"
+import ShowcaseNotice from "@modules/showcase/components/showcase-notice"
 import { HttpTypes } from "@medusajs/types"
 
 const CartTemplate = ({
   cart,
   customer,
+  orderPossible,
+  showcaseNote,
 }: {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
+  orderPossible: boolean
+  showcaseNote: string | null
 }) => {
   return (
     <div className="bg-[#F7F3F0] py-12">
@@ -28,10 +33,11 @@ const CartTemplate = ({
             </div>
             <div className="relative">
               <div className="flex flex-col gap-y-8 sticky top-12">
+                {showcaseNote && <ShowcaseNotice note={showcaseNote} />}
                 {cart && cart.region && (
                   <>
                     <div className="bg-white border border-neutral-200 shadow-sm px-6 py-6">
-                      <Summary cart={cart} />
+                      <Summary cart={cart} orderPossible={orderPossible} />
                     </div>
                   </>
                 )}
