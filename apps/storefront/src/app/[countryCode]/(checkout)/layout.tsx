@@ -30,16 +30,16 @@ export default async function CheckoutLayout({
       <div className="h-16 bg-white border-b ">
         <nav className="flex h-full items-center content-container justify-between">
           <LocalizedClientLink
-            href="/cart"
+            href="/store"
             className="text-small-semi text-ui-fg-base flex items-center gap-x-2 uppercase flex-1 basis-0"
             data-testid="back-to-cart-link"
           >
             <ChevronDown className="rotate-90" size={16} />
             <span className="mt-px hidden small:block txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base ">
-              Back to shopping cart
+              Retour à la carte
             </span>
             <span className="mt-px block small:hidden txt-compact-plus text-ui-fg-subtle hover:text-ui-fg-base">
-              Back
+              Retour
             </span>
           </LocalizedClientLink>
           <LocalizedClientLink
