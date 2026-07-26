@@ -27,3 +27,7 @@ Three independent mechanisms can now say "you cannot order": the **Fermeture exc
 This is the same shape of cost as ADR 0007, taken knowingly for the same reason: each mechanism stays readable, testable and removable on its own. And as in ADR 0007, it is mitigated **in the admin UI rather than in the domain** — one screen showing the three states together, so a human can see the disagreement — not by making one of them derive from another.
 
 The failure is silent from the storefront's side, which is why it is written down here.
+
+---
+
+> **Note (2026-07-26)** — the *Mode catalogue* named above is now called the **Mode vitrine**: "catalogue" is a banned synonym for Carte in the glossary, and the term was settled after this ADR was accepted. See [ADR 0010](./0010-mode-vitrine-is-switched-by-a-human-only.md). The reasoning above is unaffected.
