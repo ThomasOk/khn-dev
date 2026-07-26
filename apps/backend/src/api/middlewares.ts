@@ -4,6 +4,7 @@ import { formuleAdminMiddlewares } from "./admin/formules/middlewares"
 import { tableReservationAdminMiddlewares } from "./admin/table-reservation/middlewares"
 import { tableReservationStoreMiddlewares } from "./store/table-reservations/middlewares"
 import { announcementAdminMiddlewares } from "./admin/announcements/middlewares"
+import { showcaseAdminMiddlewares } from "./admin/showcase/middlewares"
 
 export default defineMiddlewares({
   routes: [
@@ -12,5 +13,6 @@ export default defineMiddlewares({
     ...tableReservationAdminMiddlewares,
     ...tableReservationStoreMiddlewares,
     ...announcementAdminMiddlewares,
+    ...showcaseAdminMiddlewares,
   ],
 })
