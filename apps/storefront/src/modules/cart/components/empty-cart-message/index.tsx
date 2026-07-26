@@ -2,7 +2,11 @@ import { Heading, Text } from "@modules/common/components/ui"
 
 import InteractiveLink from "@modules/common/components/interactive-link"
 
-const EmptyCartMessage = () => {
+const EmptyCartMessage = ({
+  orderPossible,
+}: {
+  orderPossible: boolean
+}) => {
   return (
     <div className="py-48 px-2 flex flex-col justify-center items-start" data-testid="empty-cart-message">
       <Heading
@@ -12,8 +16,9 @@ const EmptyCartMessage = () => {
         Panier
       </Heading>
       <Text className="text-neutral-600 mt-4 mb-6 max-w-[32rem]">
-        Votre panier est vide. Ajoutez un plat depuis la carte pour commencer
-        votre commande.
+        Votre panier est vide.
+        {orderPossible &&
+          " Ajoutez un plat depuis la carte pour commencer votre commande."}
       </Text>
       <div>
         <InteractiveLink href="/store">Découvrir la carte</InteractiveLink>
