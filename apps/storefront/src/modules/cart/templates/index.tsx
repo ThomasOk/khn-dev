@@ -45,8 +45,9 @@ const CartTemplate = ({
             </div>
           </div>
         ) : (
-          <div>
-            <EmptyCartMessage />
+          <div className="flex flex-col gap-y-8">
+            {showcaseNote && <ShowcaseNotice note={showcaseNote} />}
+            <EmptyCartMessage orderPossible={orderPossible} />
           </div>
         )}
       </div>
