@@ -383,7 +383,7 @@ export async function transferCart() {
 
 export type CreateAccountFromOrderState =
   | { state: "success" }
-  | { state: "partial"; error: string }
+  | { state: "partial"; error: string; transferRequested: boolean }
   | { state: "error"; error: string }
   | null
 
@@ -491,6 +491,11 @@ export async function createAccountFromOrder(
   await setAuthToken(token)
   revalidateTag(await getCacheTag("customers"))
 
+  // Ticket 07 and 08 are two independent functions of the account (spec:
+  // "les deux fonctions du Compte doivent tomber en panne indépendamment"),
+  // so a failure on one never skips the other: both are always attempted.
+  let addressWarning: string | null = null
+
   if (address) {
     try {
       await sdk.store.customer.createAddress(
@@ -510,15 +515,50 @@ export async function createAccountFromOrder(
         {},
         { authorization: `Bearer ${token}` }
       )
+      revalidateTag(await getCacheTag("customers"))
     } catch {
-      return {
-        state: "partial",
-        error:
-          "Votre compte est créé et vous êtes connecté, mais votre adresse n'a pas pu être enregistrée. Vous pourrez l'ajouter depuis votre profil.",
-      }
+      addressWarning =
+        "votre adresse n'a pas pu être enregistrée : vous pourrez l'ajouter depuis votre profil"
     }
+  }
 
-    revalidateTag(await getCacheTag("customers"))
+  // Ticket 08 ("Rattacher la première commande"): the order that just paid
+  // was placed as a guest and belongs to no one yet. Requesting its transfer
+  // here is what triggers the rattachement email (ADR 0011) — without this
+  // call the mechanism built in ticket 06 has nothing to react to. Failure
+  // here costs only the order history, never the account or address already
+  // acquired above.
+  let transferRequested = true
+
+  try {
+    await sdk.store.order.requestTransfer(
+      order.id,
+      {},
+      { fields: "id" },
+      { authorization: `Bearer ${token}` }
+    )
+  } catch {
+    transferRequested = false
+  }
+
+  if (!transferRequested) {
+    const transferWarning =
+      "la demande pour retrouver cette commande dans votre historique n'a pas pu être envoyée : vous pouvez réessayer depuis la page « Commandes », avec le numéro de commande"
+    return {
+      state: "partial",
+      error: addressWarning
+        ? `Votre compte est créé et vous êtes connecté, mais ${addressWarning}, et ${transferWarning}.`
+        : `Votre compte est créé et vous êtes connecté, mais ${transferWarning}.`,
+      transferRequested: false,
+    }
+  }
+
+  if (addressWarning) {
+    return {
+      state: "partial",
+      error: `Votre compte est créé et vous êtes connecté, mais ${addressWarning}.`,
+      transferRequested: true,
+    }
   }
 
   return { state: "success" }
