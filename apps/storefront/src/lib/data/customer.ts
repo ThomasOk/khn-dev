@@ -154,7 +154,7 @@ async function completeLogin(
   if (typeof result === "object" && "location" in result) {
     return {
       state: "error",
-      error: "This login method isn't supported by the storefront.",
+      error: "Ce mode de connexion n'est pas pris en charge par le site.",
     }
   }
 
@@ -176,7 +176,7 @@ async function completeLogin(
   if (typeof result !== "string") {
     return {
       state: "error",
-      error: "Authentication requires additional steps that aren't supported.",
+      error: "La connexion nécessite une étape supplémentaire qui n'est pas prise en charge.",
     }
   }
 
@@ -343,7 +343,7 @@ export const updateCustomerAddress = async (
     (currentState.addressId as string) || (formData.get("addressId") as string)
 
   if (!addressId) {
-    return { success: false, error: "Address ID is required" }
+    return { success: false, error: "L'identifiant de l'adresse est requis" }
   }
 
   const address = {

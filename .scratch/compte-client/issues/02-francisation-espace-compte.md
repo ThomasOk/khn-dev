@@ -2,7 +2,7 @@
 
 **Spec :** [docs/specs/compte-client.md](../../../docs/specs/compte-client.md) — User Story 26 ; § « Storefront — la déconnexion, la francisation »
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Blocked by:** aucun — peut démarrer immédiatement.
 
@@ -20,10 +20,17 @@ Aucun comportement ne change. C'est un ticket de texte, et le seul risque est d'
 
 ## Acceptance criteria
 
-- [ ] Plus aucune occurrence de « Medusa Store » sur une page atteignable par un client
-- [ ] Connexion, inscription, accueil du compte, profil, liste des commandes et détail d'une commande sont entièrement en français
-- [ ] La navigation interne du compte est en français, y compris ses libellés accessibles
-- [ ] Les titres et métadonnées de page sont en français
-- [ ] Les messages d'erreur et les états vides sont en français — notamment celui affiché quand aucune commande n'est rattachée
-- [ ] Le vocabulaire suit le glossaire : Commande, Adresse de facturation ; jamais « livraison » ni « expédition »
-- [ ] Aucun comportement, route ou appel de données n'est modifié
+- [x] Plus aucune occurrence de « Medusa Store » sur une page atteignable par un client
+- [x] Connexion, inscription, accueil du compte, profil, liste des commandes et détail d'une commande sont entièrement en français
+- [x] La navigation interne du compte est en français, y compris ses libellés accessibles
+- [x] Les titres et métadonnées de page sont en français
+- [x] Les messages d'erreur et les états vides sont en français — notamment celui affiché quand aucune commande n'est rattachée
+- [x] Le vocabulaire suit le glossaire : Commande, Adresse de facturation ; jamais « livraison » ni « expédition »
+- [x] Aucun comportement, route ou appel de données n'est modifié
+
+## Notes de mise en œuvre
+
+- Les composants de commande partagés avec la confirmation de paiement (`Help`, `Items`, `OrderDetails`, `ShippingDetails`, `PaymentDetails`, `OrderCompletedTemplate`) ont été francisés en même temps que le détail de commande du compte, pour éviter une page moitié française moitié anglaise — hors de la liste explicite du ticket mais nécessaire par ricochet.
+- `Help` : le lien « Returns & Exchanges » (doublon du lien Contact, promettant une fonctionnalité de retour qui n'existe pas pour du click & collect) a été retiré plutôt que traduit littéralement.
+- Les messages d'erreur codés en dur dans `lib/data/customer.ts` (connexion/inscription) sont francisés. Les erreurs renvoyées telles quelles par le backend (`medusa-error.ts` → `String(error)`) restent en anglais : les traduire demanderait un catalogue de correspondance, hors périmètre d'un ticket de texte.
+- `order.fulfillment_status` / `order.payment_status` (détail de commande) : les libellés (« Statut de la commande », « Statut du paiement ») sont en français, mais les valeurs brutes de Medusa (`not_fulfilled`, `shipped`, `captured`…) restent non traduites — les traduire introduirait du vocabulaire de livraison que le glossaire interdit, et le suivi de statut de commande est explicitement hors scope (cf. spec, § Out of Scope).
