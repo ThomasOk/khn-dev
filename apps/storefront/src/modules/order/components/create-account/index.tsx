@@ -40,12 +40,23 @@ const CreateAccountFromOrder = ({ order, alreadyLoggedIn }: Props) => {
             Votre compte est créé, vous êtes connecté.
           </Text>
           {state.state === "partial" ? (
-            <Text className="text-ui-fg-subtle text-small-regular">
-              {state.error}
-            </Text>
+            <>
+              <Text className="text-ui-fg-subtle text-small-regular">
+                {state.error}
+              </Text>
+              {state.transferRequested ? (
+                <Text className="text-ui-fg-subtle text-small-regular">
+                  Un email vous a été envoyé pour retrouver cette commande
+                  dans votre historique : il vous suffira d&apos;y cliquer
+                  une fois.
+                </Text>
+              ) : null}
+            </>
           ) : (
             <Text className="text-ui-fg-subtle text-small-regular">
-              La prochaine fois, votre adresse sera déjà remplie.
+              Un email vous a été envoyé pour retrouver cette commande dans
+              votre historique : il vous suffira d&apos;y cliquer une fois. La
+              prochaine fois, votre adresse sera déjà remplie.
             </Text>
           )}
         </div>
