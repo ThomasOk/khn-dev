@@ -299,6 +299,57 @@ export async function resetPassword(
   return { state: "success" }
 }
 
+// Changes the password of the logged-in customer, authenticated by their
+// session — unlike resetPassword/updateProvider above, no token from an
+// email is involved (spec §"Storefront — le mot de passe": "Il ne partage
+// rien avec le ticket 04 [...] ici, c'est la session").
+//
+// Goes through a custom store route, not the native
+// `/auth/customer/emailpass/update`: that native route only accepts a
+// reset-purpose token (Medusa 2.16.0 hardened it to reject plain session
+// bearer tokens), and the only native way to mint one delivers it
+// exclusively by email — which this flow must not send. See
+// `apps/backend/src/workflows/customer/change-password.ts` for the backend
+// side, including the old-password check.
+export const updateCustomerPassword = async (
+  _currentState: Record<string, unknown>,
+  formData: FormData
+): Promise<{ success: boolean; error: string | null }> => {
+  const oldPassword = formData.get("old_password") as string
+  const newPassword = formData.get("new_password") as string
+  const confirmPassword = formData.get("confirm_password") as string
+
+  if (newPassword !== confirmPassword) {
+    return {
+      success: false,
+      error: "Le nouveau mot de passe et sa confirmation ne correspondent pas.",
+    }
+  }
+
+  const headers = await getAuthHeaders()
+
+  try {
+    await sdk.client.fetch(`/store/customers/me/password`, {
+      method: "POST",
+      body: { old_password: oldPassword, new_password: newPassword },
+      headers,
+    })
+  } catch (error) {
+    const fetchError = error as FetchError
+
+    if (fetchError.statusText === "Unauthorized") {
+      return { success: false, error: "L'ancien mot de passe est incorrect." }
+    }
+
+    return {
+      success: false,
+      error: "Une erreur est survenue, veuillez réessayer.",
+    }
+  }
+
+  return { success: true, error: null }
+}
+
 export async function signout(countryCode: string) {
   await sdk.auth.logout()
 
