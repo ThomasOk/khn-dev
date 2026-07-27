@@ -25,6 +25,11 @@ export type CustomerAuthState =
   | { state: "success" }
   | null
 
+export type ResetPasswordState =
+  | { state: "error"; error: string }
+  | { state: "success" }
+  | null
+
 // Requests a verification email for the given customer. The request must be
 // authenticated with a token tied to the auth identity (the token returned by
 // register or by a login that requires verification).
@@ -245,6 +250,53 @@ export async function confirmEmailVerification(
   } catch (error) {
     return { success: false, error: String(error) }
   }
+}
+
+// Requests a password reset email for the given address. The native route
+// responds identically whether or not an account exists for that address, so
+// this never reveals which — the storefront must show the same message
+// either way (spec §"Aucune énumération").
+export async function requestPasswordReset(
+  _currentState: unknown,
+  formData: FormData
+): Promise<ResetPasswordState> {
+  const email = formData.get("email") as string
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", { identifier: email })
+  } catch (error) {
+    return { state: "error", error: String(error) }
+  }
+
+  return { state: "success" }
+}
+
+// Sets a new password using the token from the reset-password email link.
+// Authenticated by that one-time token alone, not by a session cookie, so
+// this works logged out, on any device (spec §"Storefront — le mot de
+// passe").
+export async function resetPassword(
+  _currentState: unknown,
+  formData: FormData
+): Promise<ResetPasswordState> {
+  const token = formData.get("token") as string
+  const password = formData.get("password") as string
+
+  try {
+    await sdk.auth.updateProvider("customer", "emailpass", { password }, token)
+  } catch {
+    // The only realistic failure here is a false, expired, or already-used
+    // token (native auth module) — a fixed, French message beats surfacing
+    // the backend's raw "Invalid token" (AC: "un message compréhensible, pas
+    // une erreur brute").
+    return {
+      state: "error",
+      error:
+        "Ce lien de réinitialisation est invalide ou a expiré. Demandez-en un nouveau.",
+    }
+  }
+
+  return { state: "success" }
 }
 
 export async function signout(countryCode: string) {
