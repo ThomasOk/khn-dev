@@ -3,7 +3,7 @@
 **Spec :** [docs/specs/compte-client.md](../../../docs/specs/compte-client.md) — User Stories 10, 11, 12, 13, 27, 31, 32, 33, 34 ; §§ « Backend — l'adresse suit la Commande », « Testing Decisions »
 **ADR :** [0011](../../../docs/adr/0011-compte-offered-after-the-payment.md) — « Why the Adresse de facturation is written silently »
 
-**Status:** ready-for-agent
+**Status:** done
 
 **Blocked by:** aucun — peut démarrer immédiatement.
 
@@ -25,12 +25,19 @@ Le lecteur, lui, existe déjà : le checkout pré-remplit depuis l'adresse de fa
 
 ## Acceptance criteria
 
-- [ ] Finaliser un panier en étant authentifié pose l'adresse de la Commande en adresse de facturation par défaut du Client
-- [ ] Une seconde commande avec une autre adresse **remplace** la première : le Client n'a jamais deux adresses de facturation par défaut
-- [ ] Une commande passée en invité n'écrit sur aucun Client
-- [ ] Une adresse renseignée à la main sur le profil est remplacée par celle de la commande suivante — comportement délibéré, couvert par un test
-- [ ] Le nom et le téléphone portés par la Commande arrivent aussi sur le Client
-- [ ] La logique est dans un Workflow appelé par le souscripteur, pas dans le souscripteur
-- [ ] Le checkout d'un client connecté qui a déjà commandé arrive pré-rempli, sans qu'aucun code de lecture n'ait été ajouté
-- [ ] Test d'intégration HTTP sur `medusaIntegrationTestRunner`, en attendant l'effet asynchrone comme le font déjà les specs de facture et de ticket cuisine
-- [ ] **Contrôle qui ne se voit pas à l'écran** : le Ticket cuisine, la Notification de commande et la Facture sont strictement inchangés
+- [x] Finaliser un panier en étant authentifié pose l'adresse de la Commande en adresse de facturation par défaut du Client
+- [x] Une seconde commande avec une autre adresse **remplace** la première : le Client n'a jamais deux adresses de facturation par défaut
+- [x] Une commande passée en invité n'écrit sur aucun Client
+- [x] Une adresse renseignée à la main sur le profil est remplacée par celle de la commande suivante — comportement délibéré, couvert par un test
+- [x] Le nom et le téléphone portés par la Commande arrivent aussi sur le Client
+- [x] La logique est dans un Workflow appelé par le souscripteur, pas dans le souscripteur
+- [x] Le checkout d'un client connecté qui a déjà commandé arrive pré-rempli, sans qu'aucun code de lecture n'ait été ajouté
+- [x] Test d'intégration HTTP sur `medusaIntegrationTestRunner`, en attendant l'effet asynchrone comme le font déjà les specs de facture et de ticket cuisine
+- [x] **Contrôle qui ne se voit pas à l'écran** : le Ticket cuisine, la Notification de commande et la Facture sont strictement inchangés
+
+## Notes de mise en œuvre
+
+- **Découverte non documentée dans la spec :** `createCartWorkflow` de Medusa attache *toujours* un `customer_id` à la commande, même en invité — `findOrCreateCustomerStep` crée silencieusement un Client fantôme (`has_account: false`) à partir de l'email du panier dès qu'aucun acteur authentifié n'est présent. Un simple test « la Commande a un `customer_id` » aurait donc écrit l'adresse sur ce fantôme à chaque commande invité, exactement ce que ce ticket interdit. Le workflow teste `customer.has_account`, pas la seule présence de `customer_id` — c'est ce champ, pas `customer_id`, qui distingue un Client du glossaire d'un fantôme technique.
+- Le souscripteur (`customer-billing-address-sync.ts`) est le quatrième sur `order.placed`, aux côtés de `order-confirmation`, `kitchen-ticket-notification` et `auto-capture-payment` — mêmes disciplines try/catch + `logger.error`, jamais de throw.
+- Le Workflow (`workflows/customer/sync-billing-address-from-order.ts`) lit puis met à jour ou crée en une seule étape (`upsertCustomerBillingAddressStep`) — jamais les workflows natifs `createCustomerAddressesWorkflow` / `updateCustomerAddressesWorkflow`, qui ne font que désactiver l'ancien indicateur `is_default_billing` sans supprimer la ligne, ce qui aurait fait grossir la table à chaque commande.
+- Test d'intégration : `integration-tests/http/customer-billing-address-sync.spec.ts`, avec son aide d'attente dédiée `wait-for-billing-address-sync.ts` (aucune notification à observer ici, contrairement à la Facture ou au Ticket cuisine — on interroge directement l'adresse par défaut du Client).
