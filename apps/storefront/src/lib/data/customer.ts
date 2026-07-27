@@ -381,6 +381,149 @@ export async function transferCart() {
   revalidateTag(cartCacheTag)
 }
 
+export type CreateAccountFromOrderState =
+  | { state: "success" }
+  | { state: "partial"; error: string }
+  | { state: "error"; error: string }
+  | null
+
+const GENERIC_CREATE_ACCOUNT_ERROR: CreateAccountFromOrderState = {
+  state: "error",
+  error: "La création du compte a échoué. Vous pouvez réessayer.",
+}
+
+// Ticket 07 ("Créer son compte après le paiement"): the only account-creation
+// path that starts from a paid, guest order rather than a blank form. The
+// email, name, phone and billing address all come from the order already on
+// screen — the customer only chooses a password. Deliberately not reusing
+// `signup`/`completeLogin`: those are wired to FormData fields and the
+// pending-customer cookie built for the anonymous registration form, whereas
+// every field here is already known from `order`.
+//
+// ADR 0011 ("Why nothing is offered inside the checkout" /
+// "Why the Adresse de facturation is written silently"): the address write
+// happens here, directly from the order, rather than through ticket 03's
+// `sync-billing-address-from-order` workflow — that workflow reacts to
+// `order.placed` for an already-logged-in customer, which this guest order
+// never was.
+//
+// Each step after registration builds on session state already committed
+// (the customer is logged in as soon as the token is set), so a later
+// failure — e.g. the address write — must not be presented as if nothing
+// happened: it's reported as "partial", not "error" (spec: "ce qui a réussi
+// reste acquis").
+export async function createAccountFromOrder(
+  order: HttpTypes.StoreOrder,
+  _currentState: CreateAccountFromOrderState,
+  formData: FormData
+): Promise<CreateAccountFromOrderState> {
+  const password = formData.get("password") as string
+  const email = order.email
+  const address = order.shipping_address
+
+  if (!email) {
+    return {
+      state: "error",
+      error: "Cette commande n'a pas d'adresse email : impossible de créer un compte.",
+    }
+  }
+
+  try {
+    await sdk.auth.register("customer", "emailpass", { email, password })
+  } catch (error) {
+    const fetchError = error as FetchError
+    if (
+      fetchError.statusText === "Unauthorized" &&
+      fetchError.message === "Identity with email already exists"
+    ) {
+      return {
+        state: "error",
+        error:
+          "Un compte existe déjà pour cet email. Connectez-vous pour retrouver vos informations.",
+      }
+    }
+    return GENERIC_CREATE_ACCOUNT_ERROR
+  }
+
+  let token: string
+
+  try {
+    const result = await sdk.auth.login("customer", "emailpass", {
+      email,
+      password,
+    })
+
+    if (typeof result !== "string") {
+      return GENERIC_CREATE_ACCOUNT_ERROR
+    }
+
+    token = result
+  } catch {
+    return GENERIC_CREATE_ACCOUNT_ERROR
+  }
+
+  try {
+    await sdk.store.customer.create(
+      {
+        email,
+        first_name: address?.first_name ?? undefined,
+        last_name: address?.last_name ?? undefined,
+        phone: address?.phone ?? undefined,
+      },
+      {},
+      { authorization: `Bearer ${token}` }
+    )
+
+    // The registration token isn't bound to the new customer record yet
+    // (same reconciliation as `completeLogin`) — logging in again exchanges
+    // it for one that is.
+    token = (await sdk.auth.login("customer", "emailpass", {
+      email,
+      password,
+    })) as string
+  } catch {
+    return GENERIC_CREATE_ACCOUNT_ERROR
+  }
+
+  // The account exists and this token proves it — persist the session before
+  // attempting the address write, so a failure past this point never costs
+  // the login the customer already earned.
+  await setAuthToken(token)
+  revalidateTag(await getCacheTag("customers"))
+
+  if (address) {
+    try {
+      await sdk.store.customer.createAddress(
+        {
+          first_name: address.first_name ?? undefined,
+          last_name: address.last_name ?? undefined,
+          company: address.company ?? undefined,
+          address_1: address.address_1 ?? undefined,
+          address_2: address.address_2 ?? undefined,
+          city: address.city ?? undefined,
+          province: address.province ?? undefined,
+          postal_code: address.postal_code ?? undefined,
+          country_code: address.country_code ?? undefined,
+          phone: address.phone ?? undefined,
+          is_default_billing: true,
+        },
+        {},
+        { authorization: `Bearer ${token}` }
+      )
+    } catch {
+      return {
+        state: "partial",
+        error:
+          "Votre compte est créé et vous êtes connecté, mais votre adresse n'a pas pu être enregistrée. Vous pourrez l'ajouter depuis votre profil.",
+      }
+    }
+
+    revalidateTag(await getCacheTag("customers"))
+  }
+
+  return { state: "success" }
+}
+
 export const addCustomerAddress = async (
   currentState: Record<string, unknown>,
   formData: FormData
