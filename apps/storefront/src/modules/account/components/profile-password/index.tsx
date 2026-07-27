@@ -1,10 +1,10 @@
 "use client"
 
-import React from "react"
+import React, { useEffect, useActionState, useRef } from "react"
 import Input from "@modules/common/components/input"
 import AccountInfo from "../account-info"
 import { HttpTypes } from "@medusajs/types"
-// TODO: Re-add toast notifications when Toaster component is implemented
+import { updateCustomerPassword } from "@lib/data/customer"
 
 type MyInformationProps = {
   customer: HttpTypes.StoreCustomer
@@ -12,31 +12,40 @@ type MyInformationProps = {
 
 const ProfilePassword: React.FC<MyInformationProps> = ({ customer: _customer }) => {
   const [successState, setSuccessState] = React.useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
 
-  // TODO: Add support for password updates
-  const updatePassword = async () => {
-    // TODO: Re-add toast notification when Toaster component is implemented
-    console.info("Password update is not implemented")
-  }
+  const [state, formAction] = useActionState(updateCustomerPassword, {
+    error: null as string | null,
+    success: false,
+  })
 
   const clearState = () => {
     setSuccessState(false)
   }
 
+  useEffect(() => {
+    setSuccessState(state.success)
+
+    if (state.success) {
+      formRef.current?.reset()
+    }
+  }, [state])
+
   return (
-    <form
-      action={updatePassword}
-      onReset={() => clearState()}
-      className="w-full"
-    >
+    <form ref={formRef} action={formAction} className="w-full">
+      {/* No onReset here: formRef.current.reset() below fires a native
+          `reset` event on success, and an onReset={clearState} handler
+          would immediately clobber the success state it just set. The
+          "Annuler" cancel button clears state itself, in AccountInfo's
+          handleToggle — it doesn't rely on this form's reset event. */}
       <AccountInfo
         label="Mot de passe"
         currentInfo={
           <span>Le mot de passe n&apos;est pas affiché pour des raisons de sécurité</span>
         }
         isSuccess={successState}
-        isError={false}
-        errorMessage={undefined}
+        isError={!!state.error}
+        errorMessage={state.error || undefined}
         clearState={clearState}
         data-testid="account-password-editor"
       >
@@ -46,12 +55,14 @@ const ProfilePassword: React.FC<MyInformationProps> = ({ customer: _customer }) 
             name="old_password"
             required
             type="password"
+            autoComplete="current-password"
             data-testid="old-password-input"
           />
           <Input
             label="Nouveau mot de passe"
             type="password"
             name="new_password"
+            autoComplete="new-password"
             required
             data-testid="new-password-input"
           />
@@ -59,6 +70,7 @@ const ProfilePassword: React.FC<MyInformationProps> = ({ customer: _customer }) 
             label="Confirmer le mot de passe"
             type="password"
             name="confirm_password"
+            autoComplete="new-password"
             required
             data-testid="confirm-password-input"
           />
