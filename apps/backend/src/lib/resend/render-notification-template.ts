@@ -16,6 +16,8 @@ import TableReservationCancellationNotificationEmail from "../../modules/resend-
 import type { TableReservationCancellationNotificationEmailProps } from "../../modules/resend-notification/templates/table-reservation-cancellation-notification"
 import PasswordResetNotificationEmail from "../../modules/resend-notification/templates/password-reset-notification"
 import type { PasswordResetNotificationEmailProps } from "../../modules/resend-notification/templates/password-reset-notification"
+import OrderTransferNotificationEmail from "../../modules/resend-notification/templates/order-transfer-notification"
+import type { OrderTransferNotificationEmailProps } from "../../modules/resend-notification/templates/order-transfer-notification"
 
 export type RenderedNotificationTemplate = { subject: string; html: string }
 
@@ -85,6 +87,14 @@ export async function renderNotificationTemplate(
       const html = await render(React.createElement(PasswordResetNotificationEmail, props))
       return {
         subject: "Réinitialisez votre mot de passe",
+        html,
+      }
+    }
+    case "order-transfer-notification": {
+      const props = data as unknown as OrderTransferNotificationEmailProps
+      const html = await render(React.createElement(OrderTransferNotificationEmail, props))
+      return {
+        subject: `Rattachez la commande #${props.order_id} à votre compte`,
         html,
       }
     }
