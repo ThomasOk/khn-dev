@@ -14,6 +14,8 @@ import TableReservationNotificationEmail from "../../modules/resend-notification
 import type { TableReservationNotificationEmailProps } from "../../modules/resend-notification/templates/table-reservation-notification"
 import TableReservationCancellationNotificationEmail from "../../modules/resend-notification/templates/table-reservation-cancellation-notification"
 import type { TableReservationCancellationNotificationEmailProps } from "../../modules/resend-notification/templates/table-reservation-cancellation-notification"
+import PasswordResetNotificationEmail from "../../modules/resend-notification/templates/password-reset-notification"
+import type { PasswordResetNotificationEmailProps } from "../../modules/resend-notification/templates/password-reset-notification"
 
 export type RenderedNotificationTemplate = { subject: string; html: string }
 
@@ -75,6 +77,14 @@ export async function renderNotificationTemplate(
       )
       return {
         subject: formatReservationSubject("cancellation", props),
+        html,
+      }
+    }
+    case "password-reset-notification": {
+      const props = data as unknown as PasswordResetNotificationEmailProps
+      const html = await render(React.createElement(PasswordResetNotificationEmail, props))
+      return {
+        subject: "Réinitialisez votre mot de passe",
         html,
       }
     }
