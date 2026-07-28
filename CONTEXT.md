@@ -7,7 +7,7 @@ The restaurant's public website: it presents the dishes on offer and lets custom
 ### The offer
 
 **Carte**:
-The set of dishes orderable online for pickup. This is the only catalogue the system knows about, and every dish in it is purchasable by definition — though not necessarily *right now* (see Commandes fermées).
+The set of dishes orderable online for pickup. This is the only catalogue the system knows about, and every dish in it is purchasable by definition — though not necessarily *right now*, for two unrelated reasons that must not be confused: ordering as a whole may be suspended (Commandes fermées, Mode vitrine), or one dish may be outside the hours it is served in (Hors carte). The first leaves the Carte whole and takes the ordering away; the second takes the dish off the Carte and leaves everything else orderable.
 _Avoid_: Menu (in English it means the whole carte, in French a Formule — too ambiguous to use for either), catalogue (and never "mode catalogue" for the state in which ordering is switched off — that is the Mode vitrine), boutique, store
 
 **Carte sur place**:
@@ -40,6 +40,19 @@ _Avoid_: Option, supplément (a supplément would change the price — see below
 
 **Curation (of a composant)**:
 Each Formule composant lists the Variantes allowed in it, explicitly ticked one by one. Adding a new dish to the Carte does **not** put it in any Formule until someone adds it there. This is deliberate: a dish missing from a formule is noticed and fixed in seconds, whereas a premium dish silently *appearing* in a fixed-price formule loses money invisibly.
+
+### La disponibilité
+
+**Horaire de disponibilité**:
+The weekly pattern of hours during which a Produit is on the Carte — "Menu Midi, Tuesday to Friday, 11h30–14h00". It belongs to **one Produit**, not to the restaurant, and it is edited where that Produit is edited. A Produit with no Horaire de disponibilité at all is on the Carte permanently, which is the case of almost every dish: this is configuration for the exception, not a field every dish must carry.
+It is deliberately **not** the *Horaires de retrait*: the restaurant may perfectly well take click & collect at 15h and no longer serve the Menu Midi. Always say which of the two you mean.
+_Avoid_: Horaire (unqualified — there are two), Créneau (that word means the retrait, always), Service (that is the dining room's seating window), plage horaire, disponibilité (unqualified — see Hors carte for the state)
+
+**Hors carte**:
+The state of a Produit consulted outside its Horaires de disponibilité: it does not appear on the Carte and cannot be added to a cart, while its own page stays reachable and reads the hours instead of offering a button. Like Commandes fermées, it is **derived, never decided** — nobody switches it on, it is what the absence of a current Horaire *is*. The lever a human pulls to take a dish off the Carte on the spot is Medusa's product `status`, not this.
+It is evaluated against **the present instant, never against the Créneau de retrait the customer will choose** (ADR 0013). A Menu Midi ordered at 13h55 for a 14h20 retrait is a legitimate order; the same Menu Midi added to a cart at 14h05 is refused, whatever Créneau is picked.
+Hors carte governs a Produit's presence **on the Carte and nothing else**: it does not remove that Produit's Variantes from any Formule's Curation, and a Formule that is on the Carte may be filled with a dish that is not (ADR 0013). The guard there is the Curation, which is human on purpose.
+_Avoid_: Indisponible (suggests a stock rupture, which this domain does not model), désactivé / suspendu (suggest a human decision — that is the Mode vitrine), épuisé, Commandes fermées (that suspends all ordering, not one dish)
 
 ### Le retrait
 
