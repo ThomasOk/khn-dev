@@ -25,6 +25,10 @@ The sections a Carte is organised into. "Plat" means main course and nothing els
 A specific, separately-priced form of a Produit that the customer picks between — Samoussas *Légumes* vs Samoussas *Bœuf*. Two variantes of the same produit may have different prices. Every Produit has at least one Variante, even when the customer is offered no choice at all, because price lives on the variante. The variante is the only thing the kitchen can actually cook: "Samoussas" is not an order, "Samoussas Bœuf" is. Maps to Medusa's `ProductVariant`.
 _Avoid_: Option (in Medusa an Option is the *axis* of choice — "Garniture" — and the Variante is the combination), déclinaison, SKU
 
+**Rang**:
+The place a section or a Produit occupies on the Carte, decided by the restaurateur — the Carte reads as its sections by Rang, and inside each, its Produits by Rang. It is **editorial, never derived**: nothing computes it, on the side of the Annonce and the Mode vitrine rather than Hors carte and Commandes fermées. A Rang means display order and **nothing else** — it carries no promotion, no mise en avant and no priority anywhere in the system, so the first dish of a section is not "featured" and nothing may start reading it as though it were. A Produit has **one** Rang, wherever it appears; a Produit with no Rang sits at the end of its section, which is where every dish starts until someone places it (ADR 0014).
+_Avoid_: Ordre (names the result rather than the property, and cannot be said of a single dish), Position (reads as a coordinate), Priorité / Mise en avant / Vedette (all suggest a first-placed Produit is promoted somewhere — it is not), Tri (that is what a client does to a listing, never what the restaurateur does to the Carte)
+
 ### Formules
 
 **Formule**:
