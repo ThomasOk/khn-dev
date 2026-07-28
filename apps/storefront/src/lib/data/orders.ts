@@ -1,8 +1,9 @@
 "use server"
 
+import { revalidateTag } from "next/cache"
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
-import { getAuthHeaders, getCacheOptions } from "./cookies"
+import { getAuthHeaders, getCacheOptions, getCacheTag } from "./cookies"
 import { HttpTypes } from "@medusajs/types"
 
 export const retrieveOrder = async (id: string) => {
@@ -100,10 +101,20 @@ export const createTransferRequest = async (
 export const acceptTransferRequest = async (id: string, token: string) => {
   const headers = await getAuthHeaders()
 
-  return await sdk.store.order
+  const { order, error } = await sdk.store.order
     .acceptTransfer(id, { token }, {}, headers)
-    .then(({ order }) => ({ success: true, error: null, order }))
-    .catch((err) => ({ success: false, error: err.message, order: null }))
+    .then(({ order }) => ({ order, error: null }))
+    .catch((err) => ({ order: null, error: err.message as string }))
+
+  if (order) {
+    // The order now belongs to the accepting customer, but the "orders"
+    // fetches are force-cached (see listOrders/retrieveOrder) — without
+    // this, their order history keeps showing the pre-transfer, empty
+    // state until something unrelated happens to revalidate the tag.
+    revalidateTag(await getCacheTag("orders"))
+  }
+
+  return { success: !!order, error, order }
 }
 
 export const declineTransferRequest = async (id: string, token: string) => {
