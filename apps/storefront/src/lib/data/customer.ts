@@ -13,7 +13,6 @@ import {
   getCartId,
   getPendingCustomer,
   removeAuthToken,
-  removeCartId,
   removePendingCustomer,
   setAuthToken,
   setPendingCustomer,
@@ -350,18 +349,38 @@ export const updateCustomerPassword = async (
   return { success: true, error: null }
 }
 
+// Signing out removes the identity, not the cart: the cart survives as a
+// guest cart and stays orderable through checkout (spec §"la déconnexion
+// garde le panier"). The cart id cookie is untouched — but the cart itself
+// must still be detached from the customer first: a prior login pinned
+// customer_id/email onto this exact cart (native transferCart), and nothing
+// clears that on logout by default. Left alone, a guest checkout completed
+// later on this same cart would still write onto the departed customer's
+// account (see detach-cart-customer.ts on the backend). Best-effort: a
+// failure here must never block the customer from logging out.
 export async function signout(countryCode: string) {
+  const cartId = await getCartId()
+
+  if (cartId) {
+    const headers = await getAuthHeaders()
+
+    try {
+      await sdk.client.fetch(`/store/customers/me/carts/${cartId}/customer`, {
+        method: "DELETE",
+        headers,
+      })
+    } catch {
+      // Ignore: worst case the cart keeps a stale customer_id until it's
+      // abandoned or replaced by a new one.
+    }
+  }
+
   await sdk.auth.logout()
 
   await removeAuthToken()
 
   const customerCacheTag = await getCacheTag("customers")
   revalidateTag(customerCacheTag)
-
-  await removeCartId()
-
-  const cartCacheTag = await getCacheTag("carts")
-  revalidateTag(cartCacheTag)
 
   redirect(`/${countryCode}/account`)
 }
