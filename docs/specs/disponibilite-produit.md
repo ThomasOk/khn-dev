@@ -1,6 +1,7 @@
 # Disponibilité d'un Produit par plage horaire
 
 Status: ready-for-agent
+Implémentation : **non commencée** — tickets dans [`.scratch/disponibilite-produit/issues/`](../../.scratch/disponibilite-produit/issues/). Rien de ce que ce spec et [CONTEXT.md](../../CONTEXT.md) décrivent au présent (module `availability`, Horaire de disponibilité, état Hors carte, route `/store/product-availability`) n'existe encore dans le code. À supprimer quand le dernier ticket est passé.
 
 Décisions amont, à lire avant d'implémenter — ce spec ne les rejoue pas :
 [ADR 0013](../adr/0013-product-availability-evaluated-at-now.md) (la disponibilité s'évalue sur l'instant présent et jamais sur le Créneau choisi ; la Carte ne peut pas l'apprendre depuis `/store/products` ; le Hors carte ne se propage pas dans la Curation d'une Formule),
