@@ -1,6 +1,7 @@
 # 09 — La déconnexion garde le panier
 
 **Spec :** [docs/specs/compte-client.md](../../../docs/specs/compte-client.md) — User Stories 20, 21 ; § « Storefront — la déconnexion, la francisation »
+**ADR :** [0012](../../../docs/adr/0012-logout-detaches-the-cart-from-the-customer.md) — « Logout detaches the cart from the customer through a new store route »
 
 **Status:** ready-for-agent
 

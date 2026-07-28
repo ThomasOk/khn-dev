@@ -117,13 +117,13 @@ Les deux s'appuient sur le natif : `resetPassword` pour la demande, `updateProvi
 
 ### Storefront — la déconnexion, la francisation
 
-**La déconnexion garde le panier** : l'appel qui efface l'identifiant de panier sort de `signout`. Se déconnecter retire l'identité, pas les plats choisis ; le panier redevient un panier invité et reste commandable, ce qui est le mode normal du domaine.
+**La déconnexion garde le panier** : l'appel qui efface l'identifiant de panier sort de `signout`. Se déconnecter retire l'identité, pas les plats choisis ; le panier redevient un panier invité et reste commandable, ce qui est le mode normal du domaine. Retirer l'identité ne se limite pas au jeton : le panier lui-même doit être détaché du client (`customer_id`, email, adresse) — voir [ADR 0012](../adr/0012-logout-detaches-the-cart-from-the-customer.md), qui explique aussi pourquoi ceci exige la seule route nouvelle de cette epic.
 
 **Francisation complète de l'espace compte** — connexion, inscription, accueil du compte, profil, commandes, navigation du compte, et les titres et métadonnées de page. Aucun « Medusa Store » ne doit subsister sur une page que voit un client.
 
 ### Ce qui n'est pas créé
 
-**Aucune route API nouvelle, ni admin ni store.** Tout repose sur des routes natives déjà installées : authentification, réinitialisation, client, adresses, transfert de commande. Le seul code backend ajouté est constitué de souscripteurs, de templates et d'un workflow.
+**Aucune route API nouvelle, ni admin ni store — sauf une.** Tout repose sur des routes natives déjà installées : authentification, réinitialisation, client, adresses, transfert de commande. Le seul code backend ajouté est constitué de souscripteurs, de templates et d'un workflow, à une exception près : `DELETE /store/customers/me/carts/:id/customer`, qui détache le panier du client à la déconnexion. Voir [ADR 0012](../adr/0012-logout-detaches-the-cart-from-the-customer.md) pour pourquoi cette route existe malgré cette règle.
 
 ## Testing Decisions
 
