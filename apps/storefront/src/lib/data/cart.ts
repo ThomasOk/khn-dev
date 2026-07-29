@@ -30,7 +30,7 @@ export async function retrieveCart(cartId?: string, fields?: string) {
   // checkout reads creneau_debut/creneau_fin off it (ADR 0004) — an edit here
   // that drops it would silently make the chosen créneau vanish from the UI.
   fields ??=
-    "*items, *region, *items.product, *items.variant, *items.variant.options, *items.variant.options.option, *items.thumbnail, *items.metadata, +items.total, *promotions, +shipping_methods.name, +metadata"
+    "*items, *region, *items.product, *items.variant, *items.variant.options, *items.variant.options.option, *items.thumbnail, *items.metadata, +items.total, +items.tax_total, +items.tax_lines, *promotions, +shipping_methods.name, +metadata"
 
   if (!id) {
     return null

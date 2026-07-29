@@ -1,4 +1,5 @@
 import { convertToLocale } from "@lib/util/money"
+import { getTaxBreakdown } from "@lib/util/tax"
 import { HttpTypes } from "@medusajs/types"
 
 type OrderSummaryProps = {
@@ -16,6 +17,8 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
       currency_code: order.currency_code,
     })
   }
+
+  const taxBreakdown = getTaxBreakdown(order.items)
 
   return (
     <div>
@@ -42,10 +45,22 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
             <span>Retrait en magasin</span>
             <span>{order.shipping_total === 0 ? "Gratuit" : getAmount(order.shipping_total)}</span>
           </div>
-          <div className="flex items-center justify-between text-ui-fg-subtle text-sm">
-            <span>dont TVA (10 %)</span>
-            <span>{getAmount(order.tax_total)}</span>
-          </div>
+          {taxBreakdown.length > 0 ? (
+            taxBreakdown.map(({ rate, amount }) => (
+              <div
+                key={rate}
+                className="flex items-center justify-between text-ui-fg-subtle text-sm"
+              >
+                <span>dont TVA ({rate} %)</span>
+                <span>{getAmount(amount)}</span>
+              </div>
+            ))
+          ) : (
+            <div className="flex items-center justify-between text-ui-fg-subtle text-sm">
+              <span>dont TVA</span>
+              <span>{getAmount(order.tax_total)}</span>
+            </div>
+          )}
         </div>
         <div className="h-px w-full border-b border-gray-200 border-dashed my-4" />
         <div className="flex items-center justify-between text-base-regular text-ui-fg-base mb-2">
