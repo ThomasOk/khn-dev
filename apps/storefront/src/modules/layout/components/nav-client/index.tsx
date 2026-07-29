@@ -27,7 +27,11 @@ export default function NavClient({
   // or directly over a product photo (illegible text-on-image). Force it
   // solid from the start instead of waiting for scroll.
   const forceSolidNav =
-    opaque || pathname?.includes("/cart") || pathname?.includes("/products")
+    opaque ||
+    pathname?.includes("/cart") ||
+    pathname?.includes("/products") ||
+    pathname?.includes("/order") ||
+    pathname?.includes("/account")
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10)

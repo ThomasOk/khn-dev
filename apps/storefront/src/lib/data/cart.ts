@@ -15,6 +15,7 @@ import {
 } from "./cookies"
 import { getRegion } from "./regions"
 import { getLocale } from "./locale-actions"
+import { transferCart } from "./customer"
 import { PickupSlot } from "./pickup"
 import { CRENEAU_DEBUT_KEY, CRENEAU_FIN_KEY } from "@lib/util/pickup-slot"
 
@@ -83,6 +84,17 @@ export async function getOrSetCart(countryCode: string) {
 
     const cartCacheTag = await getCacheTag("carts")
     revalidateTag(cartCacheTag)
+
+    // Medusa's cart-create route doesn't attach the requesting customer even
+    // when the request is authenticated — only an explicit transfer does
+    // that (native `transferCartCustomerWorkflow`, run here through the same
+    // `transferCart()` login uses). Without this, every cart created after
+    // the very first login (e.g. composing a new order right after
+    // completing one) stays an orphaned guest cart until the customer
+    // manually retries the CartMismatchBanner.
+    if (headers.authorization) {
+      await transferCart()
+    }
   }
 
   if (cart && cart?.region_id !== region.id) {
