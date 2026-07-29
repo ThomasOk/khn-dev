@@ -2,6 +2,7 @@ import { HttpTypes } from "@medusajs/types"
 
 import { listProducts } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { sortByCarteRank } from "@lib/util/carte-rank"
 import { collectCategoryIdsWithDescendants } from "@lib/util/category-tree"
 import { Heading } from "@modules/common/components/ui"
 import CarteProductCard from "@modules/store/components/carte-product-card"
@@ -46,6 +47,13 @@ export default async function CarteSection({
     return null
   }
 
+  // The section obeys the Rang, through the same comparator the category
+  // pages call (docs/specs/rang-des-produits.md, "Un seul comparateur pour
+  // les deux surfaces"). Sorted here rather than asked of the server: the
+  // whole section is already loaded, and Medusa cannot order on a metadata
+  // key (ADR 0014).
+  const sortedProducts = sortByCarteRank(products)
+
   return (
     // scrollMarginTop clears the fixed main nav, the sticky section nav, and
     // the announcement/cart-mismatch banner when present (docs/specs/
@@ -65,7 +73,7 @@ export default async function CarteSection({
         className="grid grid-cols-2 w-full small:grid-cols-3 gap-x-6 gap-y-10"
         data-testid="carte-section-products"
       >
-        {products.map((product) => (
+        {sortedProducts.map((product) => (
           <li key={product.id}>
             <CarteProductCard
               product={product}

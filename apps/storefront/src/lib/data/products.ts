@@ -51,6 +51,13 @@ export const listProducts = async ({
 
   const next = {
     ...(await getCacheOptions("products")),
+    // A bound on staleness, and it is a mitigation rather than a design
+    // (docs/specs/rang-des-produits.md, "Une valeur de fraîcheur bornée").
+    // Products are cached under a tag built from the per-visitor
+    // `_medusa_cache_id` cookie, so no server-side actor can enumerate the
+    // tags to invalidate — without this, a Rang change would never reach the
+    // storefront, and `next dev` would hide that until the first deploy.
+    revalidate: 60,
   }
 
   return sdk.client
@@ -92,7 +99,7 @@ export const listProducts = async ({
 export const listProductsWithSort = async ({
   page = 0,
   queryParams,
-  sortBy = "created_at",
+  sortBy = "carte_rank",
   countryCode,
 }: {
   page?: number
