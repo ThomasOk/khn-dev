@@ -55,7 +55,11 @@ const BillingAddressForm = ({
   }
 
   useEffect(() => {
-    if (cart?.shipping_address) {
+    // Medusa attaches a shipping_address stub carrying only country_code as
+    // soon as the cart's region is set — before the shopper has typed
+    // anything. Truthiness alone isn't enough to tell "has an address" from
+    // that stub, or the customer fallback below never runs.
+    if (cart?.shipping_address?.address_1) {
       setFormAddress(cart.shipping_address, cart.email)
       return
     }
