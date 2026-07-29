@@ -394,7 +394,31 @@ export async function transferCart() {
 
   const headers = await getAuthHeaders()
 
-  await sdk.store.cart.transferCart(cartId, {}, headers)
+  try {
+    await sdk.store.cart.transferCart(cartId, {}, headers)
+  } catch (error) {
+    // A 401 here means the stored JWT is no longer accepted by the backend
+    // (e.g. it expired) even though `retrieveCustomer()`'s cached result
+    // still shows this customer as logged in — that cache is only
+    // invalidated by an explicit login/logout, never by natural token
+    // expiry. Left alone, the customer stays stuck looking "logged in"
+    // while every authenticated action, including retrying this same
+    // transfer from CartMismatchBanner, keeps failing the same way with no
+    // path to recover. Clearing the dead token and revalidating the
+    // customer cache here drops them back to a real "logged out" state,
+    // where logging in again both fixes the token and re-runs this same
+    // transfer through completeLogin().
+    const fetchError = error as FetchError
+
+    if (fetchError.statusText === "Unauthorized") {
+      await removeAuthToken()
+
+      const customerCacheTag = await getCacheTag("customers")
+      revalidateTag(customerCacheTag)
+    }
+
+    throw error
+  }
 
   const cartCacheTag = await getCacheTag("carts")
   revalidateTag(cartCacheTag)

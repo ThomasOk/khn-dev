@@ -14,7 +14,7 @@ export default function Nav({ opaque }: { opaque?: boolean }) {
           fallback={
             <LocalizedClientLink
               className="inline-flex items-center text-white transition-colors duration-200 [@media(hover:hover)]:hover:text-khn-gold"
-              href="/cart"
+              href="/store"
               data-testid="nav-cart-link"
               aria-label="Panier (0)"
             >
