@@ -469,6 +469,12 @@ export async function placeOrder(cartId?: string) {
     const orderCacheTag = await getCacheTag("orders")
     revalidateTag(orderCacheTag)
 
+    // The backend syncs the customer's default billing address from this
+    // order asynchronously (order.placed subscriber) — revalidate here so
+    // the next checkout doesn't read the pre-sync customer from cache.
+    const customerCacheTag = await getCacheTag("customers")
+    revalidateTag(customerCacheTag)
+
     removeCartId()
     redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
   }
