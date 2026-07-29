@@ -18,7 +18,10 @@ export default function CollectionTemplate({
   countryCode: string
 }) {
   const pageNumber = page ? parseInt(page) : 1
-  const sort = sortBy || "created_at"
+  // Collections share the category pages' paginated grid, so they inherit the
+  // Rang as their default sort — two surfaces listing Produits have no reason
+  // to order them differently (docs/specs/rang-des-produits.md).
+  const sort = sortBy || "carte_rank"
 
   return (
     <div className="flex flex-col small:flex-row small:items-start py-6 content-container">

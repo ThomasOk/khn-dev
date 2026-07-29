@@ -49,6 +49,16 @@ export default async function PaginatedProducts({
     queryParams["order"] = "created_at"
   }
 
+  // `carte_rank` is now the default (docs/specs/rang-des-produits.md, "Les
+  // deux surfaces obéissent"). Before it existed, this page's default was
+  // "created_at" sorted newest-first. Requesting that same server order here
+  // keeps it as what unranked Produits tie-break on — sortByCarteRank only
+  // returns 0 for a tie and trusts the incoming order — so a page with no
+  // Rang set anywhere still renders exactly as it did before this ticket.
+  if (sortBy === "carte_rank") {
+    queryParams["order"] = "-created_at"
+  }
+
   const region = await getRegion(countryCode)
 
   if (!region) {

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { Suspense } from "react"
 
 import SkeletonProductGrid from "@modules/skeletons/templates/skeleton-product-grid"
+import RefinementList from "@modules/store/components/refinement-list"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import PaginatedProducts from "@modules/store/templates/paginated-products"
 import DineInMenuBanner from "@modules/store/components/dine-in-menu-banner"
@@ -22,7 +23,10 @@ export default function CategoryTemplate({
   allCategories?: HttpTypes.StoreProductCategory[]
 }) {
   const pageNumber = page ? parseInt(page) : 1
-  const sort = sortBy || "created_at"
+  // The Rang is the default, in place of the creation date, so a dish sits in
+  // the same place here as in its section of the Carte (User Story 17). The
+  // other sorts stay reachable through ?sortBy.
+  const sort = sortBy || "carte_rank"
 
   if (!category || !countryCode) notFound()
 
@@ -97,6 +101,13 @@ export default function CategoryTemplate({
           ))}
         </div>
       )}
+
+      {/* Category pages had no sort selector at all before this ticket — only
+      collection pages rendered one. "Ordre de la carte" needs a visible
+      entry (docs/specs/rang-des-produits.md, "le sélecteur de tri existant
+      garde ses entrées et en gagne une"), so the selector itself is new
+      here, not just its new option. */}
+      <RefinementList sortBy={sort} data-testid="sort-by-category" />
 
       <Suspense
         fallback={

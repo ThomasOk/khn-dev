@@ -1,20 +1,29 @@
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import { sortByCarteRank } from "./carte-rank"
 
 interface MinPricedProduct extends HttpTypes.StoreProduct {
   _minPrice?: number
 }
 
 /**
- * Helper function to sort products by price until the store API supports sorting by price
+ * Sorts products in memory by the requested criterion. Price because the
+ * store API can't order by a computed, region-priced value; the Rang
+ * because it can't order by a `metadata` key at all (ADR 0014).
  * @param products
  * @param sortBy
- * @returns products sorted by price
+ * @returns products sorted by sortBy
  */
 export function sortProducts(
   products: HttpTypes.StoreProduct[],
   sortBy: SortOptions
 ): HttpTypes.StoreProduct[] {
+  // The Rang delegates to the comparator the Carte calls too, so the two
+  // surfaces cannot diverge (docs/specs/rang-des-produits.md, User Story 21).
+  if (sortBy === "carte_rank") {
+    return sortByCarteRank(products)
+  }
+
   const sortedProducts = products as MinPricedProduct[]
 
   if (["price_asc", "price_desc"].includes(sortBy)) {
