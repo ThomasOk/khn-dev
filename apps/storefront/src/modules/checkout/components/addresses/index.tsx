@@ -37,7 +37,7 @@ const Addresses = ({
           level="h2"
           className="flex flex-row text-3xl-regular gap-x-2 items-baseline"
         >
-          Billing address
+          Adresse de facturation
           {!isOpen && <CheckCircleSolid />}
         </Heading>
         {!isOpen && cart?.shipping_address && (
@@ -47,7 +47,7 @@ const Addresses = ({
               className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="edit-address-button"
             >
-              Edit
+              Modifier
             </button>
           </Text>
         )}
@@ -57,7 +57,7 @@ const Addresses = ({
           <div className="pb-8">
             <BillingAddressForm customer={customer} cart={cart} />
             <SubmitButton className="mt-6" data-testid="submit-address-button">
-              Continue
+              Continuer
             </SubmitButton>
             <ErrorMessage error={message} data-testid="address-error-message" />
           </div>
@@ -73,7 +73,7 @@ const Addresses = ({
                     data-testid="shipping-address-summary"
                   >
                     <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                      Billing address
+                      Adresse de facturation
                     </Text>
                     <Text className="txt-medium text-ui-fg-subtle">
                       {cart.shipping_address.first_name}{" "}

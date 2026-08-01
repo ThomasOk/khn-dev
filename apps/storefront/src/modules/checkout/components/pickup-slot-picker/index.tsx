@@ -41,7 +41,7 @@ const PickupSlotPicker: React.FC<PickupSlotPickerProps> = ({
       })
       .catch(() => {
         if (!cancelled) {
-          setError("Could not load pickup slots.")
+          setError("Impossible de charger les créneaux.")
         }
       })
       .finally(() => {
@@ -76,7 +76,7 @@ const PickupSlotPicker: React.FC<PickupSlotPickerProps> = ({
   if (isLoading) {
     return (
       <Text className="text-ui-fg-muted txt-medium" data-testid="pickup-slots-loading">
-        Loading pickup slots…
+        Chargement des créneaux…
       </Text>
     )
   }
@@ -87,7 +87,7 @@ const PickupSlotPicker: React.FC<PickupSlotPickerProps> = ({
         className="text-ui-fg-muted txt-medium"
         data-testid="pickup-slots-closed"
       >
-        No pickup slot is available right now. Orders are closed.
+        Aucun créneau disponible pour le moment. Les commandes sont fermées.
       </Text>
     )
   }
