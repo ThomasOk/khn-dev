@@ -1,11 +1,9 @@
 import { HttpTypes } from "@medusajs/types"
 import { getCartFormuleSelections } from "@lib/data/formules"
-import { getCheckoutStep } from "@lib/util/get-checkout-step"
 import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
-import { Button, Text } from "@modules/common/components/ui"
+import { Text } from "@modules/common/components/ui"
 import DiscountCode from "@modules/checkout/components/discount-code"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import OrdersSuspendedLabel from "@modules/showcase/components/orders-suspended-label"
 import CarteCartItemsList from "@modules/store/components/carte-cart-item/items-list"
 
@@ -16,6 +14,8 @@ import CarteCartItemsList from "@modules/store/components/carte-cart-item/items-
 // not a second version kept in sync with the first. Also the only place that
 // needs to know about Mode vitrine for the Carte's cart surfaces (ticket 05):
 // covering it here covers the sticky column and the mobile bar in one edit.
+// The checkout button itself lives outside this component (CarteCartCheckoutButton)
+// so each caller can pin it in its own non-scrolling footer instead.
 export default async function CarteCartContent({
   cart,
   orderPossible,
@@ -61,22 +61,6 @@ export default async function CarteCartContent({
           <div className="[&_[data-testid='cart-total']]:font-sans [&_[data-testid='cart-total']]:text-base">
             <CartTotals totals={cart} />
           </div>
-          {orderPossible ? (
-            <LocalizedClientLink
-              href={"/checkout?step=" + getCheckoutStep(cart)}
-              data-testid="checkout-button"
-            >
-              <Button
-                variant="accent"
-                size="large"
-                className="w-full !rounded-base"
-              >
-                Commander
-              </Button>
-            </LocalizedClientLink>
-          ) : (
-            <OrdersSuspendedLabel />
-          )}
         </>
       )}
     </>

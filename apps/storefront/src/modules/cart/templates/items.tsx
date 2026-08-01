@@ -25,7 +25,7 @@ const ItemsTemplate = async ({ cart }: ItemsTemplateProps) => {
       <Table>
         <Table.Header className="border-t-0">
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">
-            <Table.HeaderCell className="!pl-0">Article</Table.HeaderCell>
+            <Table.HeaderCell className="!pl-0">Produit</Table.HeaderCell>
             <Table.HeaderCell></Table.HeaderCell>
             <Table.HeaderCell>Quantité</Table.HeaderCell>
             <Table.HeaderCell className="hidden small:table-cell">
