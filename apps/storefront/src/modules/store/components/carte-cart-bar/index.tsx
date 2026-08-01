@@ -1,5 +1,6 @@
 import { retrieveCart } from "@lib/data/cart"
 import { getRegion } from "@lib/data/regions"
+import CarteCartCheckoutButton from "@modules/store/components/carte-cart-checkout-button"
 import CarteCartContent from "@modules/store/components/carte-cart-content"
 import CarteCartBarClient from "./carte-cart-bar-client"
 
@@ -35,6 +36,11 @@ export default async function CarteCartBar({
       totalItems={totalItems}
       subtotal={subtotal}
       currencyCode={currencyCode}
+      footer={
+        cart?.items?.length && cart.region ? (
+          <CarteCartCheckoutButton cart={cart} orderPossible={orderPossible} />
+        ) : null
+      }
     >
       <CarteCartContent cart={cart} orderPossible={orderPossible} />
     </CarteCartBarClient>

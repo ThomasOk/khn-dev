@@ -3,6 +3,7 @@
 import { Dialog, Transition } from "@headlessui/react"
 import { convertToLocale } from "@lib/util/money"
 import { Heading } from "@modules/common/components/ui"
+import ChevronDown from "@modules/common/icons/chevron-down"
 import X from "@modules/common/icons/x"
 import useToggleState from "@lib/hooks/use-toggle-state"
 import { Fragment, ReactNode } from "react"
@@ -12,6 +13,7 @@ type CarteCartBarClientProps = {
   subtotal: number
   currencyCode?: string
   children: ReactNode
+  footer?: ReactNode
 }
 
 // The mobile counterpart to CarteCartColumn (docs/specs/commande-depuis-la-page-carte.md,
@@ -27,6 +29,7 @@ export default function CarteCartBarClient({
   subtotal,
   currencyCode,
   children,
+  footer,
 }: CarteCartBarClientProps) {
   const { state, open, close } = useToggleState()
 
@@ -39,16 +42,31 @@ export default function CarteCartBarClient({
         <button
           type="button"
           onClick={open}
-          className="w-full h-14 bg-neutral-900 text-white flex items-center justify-between px-6"
+          className="w-full bg-neutral-900 text-white flex flex-col items-center gap-y-2 rounded-t-2xl pt-2 pb-3 px-6"
         >
-          <span data-testid="carte-cart-bar-count">
-            {totalItems} article{totalItems > 1 ? "s" : ""}
-          </span>
-          {currencyCode && (
-            <span data-testid="carte-cart-bar-total">
-              {convertToLocale({ amount: subtotal, currency_code: currencyCode })}
+          <span
+            className="h-1 w-10 rounded-full bg-white/30"
+            aria-hidden="true"
+          />
+          <span className="w-full flex items-center justify-between">
+            <span
+              data-testid="carte-cart-bar-count"
+              className="flex items-center gap-x-2"
+            >
+              Panier
+              <span className="flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full bg-khn-gold text-[10px] font-bold leading-none text-khn-teal-panel tabular-nums">
+                {totalItems}
+              </span>
             </span>
-          )}
+            <span className="flex items-center gap-x-2">
+              {currencyCode && (
+                <span data-testid="carte-cart-bar-total">
+                  {convertToLocale({ amount: subtotal, currency_code: currencyCode })}
+                </span>
+              )}
+              <ChevronDown size="16" className="rotate-180" aria-hidden="true" />
+            </span>
+          </span>
         </button>
       </div>
 
@@ -95,6 +113,11 @@ export default function CarteCartBarClient({
               <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-y-6">
                 {children}
               </div>
+              {footer && (
+                <div className="border-t border-neutral-200 px-6 py-4">
+                  {footer}
+                </div>
+              )}
             </Dialog.Panel>
           </Transition.Child>
         </Dialog>

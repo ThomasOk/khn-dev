@@ -13,7 +13,7 @@ import { CARTE_NAV_OFFSET } from "@modules/store/components/carte-section-nav/co
 import DineInMenuBanner from "@modules/store/components/dine-in-menu-banner"
 
 const CarteCartColumnFallback = () => (
-  <div className="flex flex-col gap-y-6 bg-white">
+  <div className="flex flex-col gap-y-6 px-6 pt-6 pb-6 bg-white">
     <Heading
       level="h2"
       className="font-display text-2xl uppercase tracking-[0.06em] text-neutral-900"
@@ -75,7 +75,7 @@ const StoreTemplate = ({
                 scrollMarginTop so the cart starts right below it instead of
                 sliding underneath. */}
             <div
-              className="sticky overflow-y-auto mt-8 py-6 px-6 bg-white border border-neutral-200 shadow-sm"
+              className="sticky flex flex-col mt-8 bg-white border border-neutral-200 shadow-sm overflow-hidden"
               style={{
                 top: CARTE_NAV_OFFSET,
                 maxHeight: `calc(100vh - ${CARTE_NAV_OFFSET})`,
