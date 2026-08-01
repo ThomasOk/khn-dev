@@ -80,7 +80,9 @@ const steps: Step[] = [
 ]
 
 const StepImage = ({ step }: { step: Step }) => (
-  <div className={`relative w-full ${step.imageAspect} overflow-hidden`}>
+  <div
+    className={`relative w-full ${step.imageAspect} overflow-hidden rounded-large`}
+  >
     <Image
       src={step.image}
       alt={step.imageAlt}
@@ -91,26 +93,37 @@ const StepImage = ({ step }: { step: Step }) => (
   </div>
 )
 
-const StepText = ({ step }: { step: Step }) => (
-  <div className="bg-khn-teal-panel p-8 small:p-10 flex flex-col gap-4">
-    <span className="font-display text-2xl text-khn-gold">
-      {step.number}
-    </span>
-    <h3 className="font-display text-2xl small:text-3xl leading-snug text-white">
-      {step.title}
-    </h3>
-    <div className="flex flex-col gap-3">
-      {step.paragraphs.map((paragraph) => (
-        <p
-          key={paragraph.slice(0, 24)}
-          className="text-white/75 text-sm small:text-base leading-relaxed"
-        >
-          {paragraph}
-        </p>
-      ))}
+const StepText = ({ step }: { step: Step }) => {
+  const Icon = step.icon
+
+  return (
+    <div className="bg-khn-teal-panel rounded-large p-8 small:p-10 flex flex-col gap-4">
+      <div className="flex items-center gap-4">
+        <div className="flex small:hidden h-16 w-16 shrink-0 items-center justify-center rounded-full border border-white/30">
+          <Icon className="h-7 w-7 text-white" />
+        </div>
+        <div className="flex flex-1 min-w-0 flex-col gap-1 small:gap-2">
+          <span className="font-display text-2xl text-khn-gold">
+            {step.number}
+          </span>
+          <h3 className="font-display text-2xl small:text-3xl leading-snug text-white">
+            {step.title}
+          </h3>
+        </div>
+      </div>
+      <div className="flex flex-col gap-3">
+        {step.paragraphs.map((paragraph) => (
+          <p
+            key={paragraph.slice(0, 24)}
+            className="text-white/75 text-sm small:text-base leading-relaxed"
+          >
+            {paragraph}
+          </p>
+        ))}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 const JourneySection = () => {
   return (
@@ -130,25 +143,19 @@ const JourneySection = () => {
                 </div>
 
                 <div className="grid grid-cols-1 small:grid-cols-2 gap-y-8 gap-x-8 small:gap-x-28 items-center">
-                  {imageFirst ? (
-                    <>
-                      <RevealWrapper direction="left">
-                        <StepImage step={step} />
-                      </RevealWrapper>
-                      <RevealWrapper direction="right" delay={150}>
-                        <StepText step={step} />
-                      </RevealWrapper>
-                    </>
-                  ) : (
-                    <>
-                      <RevealWrapper direction="left">
-                        <StepText step={step} />
-                      </RevealWrapper>
-                      <RevealWrapper direction="right" delay={150}>
-                        <StepImage step={step} />
-                      </RevealWrapper>
-                    </>
-                  )}
+                  <RevealWrapper
+                    direction={imageFirst ? "left" : "right"}
+                    className={imageFirst ? "" : "small:order-2"}
+                  >
+                    <StepImage step={step} />
+                  </RevealWrapper>
+                  <RevealWrapper
+                    direction={imageFirst ? "right" : "left"}
+                    delay={150}
+                    className={imageFirst ? "" : "small:order-1"}
+                  >
+                    <StepText step={step} />
+                  </RevealWrapper>
                 </div>
               </div>
             )

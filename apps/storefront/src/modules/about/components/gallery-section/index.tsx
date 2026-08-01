@@ -52,28 +52,34 @@ const GallerySection = () => {
         </RevealWrapper>
 
         <RevealWrapper direction="up" delay={150}>
-          <div className="grid grid-cols-3 gap-5 small:gap-6">
-            <div className="relative row-span-2 overflow-hidden">
+          <div className="grid grid-cols-2 small:grid-cols-3 gap-4 small:gap-6">
+            <div className="relative aspect-[3/2] small:aspect-auto small:row-span-2 overflow-hidden">
               <Image
                 src={images[0].src}
                 alt={images[0].alt}
                 fill
                 className={`object-cover ${images[0].objectPosition}`}
-                sizes="(max-width: 1024px) 33vw, 25vw"
+                sizes="(max-width: 1024px) 50vw, 25vw"
               />
             </div>
 
-            {images.slice(1).map((image) => (
+            {images.slice(1).map((image, index) => (
               <div
                 key={image.src}
-                className="relative aspect-[3/2] overflow-hidden"
+                className={`relative aspect-[3/2] overflow-hidden ${
+                  index === images.length - 2 ? "col-span-2 small:col-span-1" : ""
+                }`}
               >
                 <Image
                   src={image.src}
                   alt={image.alt}
                   fill
                   className={`object-cover ${image.objectPosition}`}
-                  sizes="(max-width: 1024px) 33vw, 25vw"
+                  sizes={
+                    index === images.length - 2
+                      ? "(max-width: 1024px) 100vw, 25vw"
+                      : "(max-width: 1024px) 50vw, 25vw"
+                  }
                 />
               </div>
             ))}
