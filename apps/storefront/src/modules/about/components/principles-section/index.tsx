@@ -38,7 +38,7 @@ const PrinciplesSection = () => {
               Nos principes
             </p>
 
-            <h2 className="font-display uppercase text-4xl small:text-5xl leading-tight text-stone-900">
+            <h2 className="font-display uppercase text-2xl xsmall:text-4xl small:text-5xl leading-tight text-stone-900">
               Ce que vous retrouvez chez nous
             </h2>
           </div>
