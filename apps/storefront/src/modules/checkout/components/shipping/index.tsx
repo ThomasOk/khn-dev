@@ -176,7 +176,7 @@ const Shipping: React.FC<ShippingProps> = ({
             }
           )}
         >
-          Pickup
+          Retrait
           {!isOpen && (cart.shipping_methods?.length ?? 0) > 0 && (
             <CheckCircleSolid />
           )}
@@ -191,7 +191,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
                 data-testid="edit-delivery-button"
               >
-                Edit
+                Modifier
               </button>
             </Text>
           )}
@@ -207,7 +207,7 @@ const Shipping: React.FC<ShippingProps> = ({
           {hasPickupOptions && pickupMethod && (
             <div className="flex flex-col mb-6" data-testid="pickup-location">
               <span className="font-medium txt-medium text-ui-fg-base">
-                Pickup location
+                Lieu de retrait
               </span>
               <span className="txt-medium text-ui-fg-subtle">
                 {pickupMethod.name}
@@ -225,10 +225,10 @@ const Shipping: React.FC<ShippingProps> = ({
             <div className="grid">
               <div className="flex flex-col">
                 <span className="font-medium txt-medium text-ui-fg-base">
-                  Time
+                  Créneau
                 </span>
                 <span className="mb-4 text-ui-fg-muted txt-medium">
-                  Choose when you&apos;ll pick up your order
+                  Choisissez l&apos;heure à laquelle vous viendrez récupérer votre commande
                 </span>
               </div>
               <PickupSlotPicker
@@ -273,7 +273,7 @@ const Shipping: React.FC<ShippingProps> = ({
               }
               data-testid="submit-delivery-option-button"
             >
-              Continue to payment
+              Continuer vers le paiement
             </Button>
           </div>
         </>
@@ -283,7 +283,7 @@ const Shipping: React.FC<ShippingProps> = ({
             {cart && (cart.shipping_methods?.length ?? 0) > 0 && (
               <div className="flex flex-col w-1/3">
                 <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                  Pickup location
+                  Lieu de retrait
                 </Text>
                 <Text className="txt-medium text-ui-fg-subtle">
                   {cart.shipping_methods!.at(-1)!.name}

@@ -94,7 +94,7 @@ const BillingAddressForm = ({
     <>
       <div className="grid grid-cols-2 gap-4">
         <Input
-          label="First name"
+          label="Prénom"
           name="shipping_address.first_name"
           autoComplete="given-name"
           value={formData["shipping_address.first_name"]}
@@ -103,7 +103,7 @@ const BillingAddressForm = ({
           data-testid="shipping-first-name-input"
         />
         <Input
-          label="Last name"
+          label="Nom"
           name="shipping_address.last_name"
           autoComplete="family-name"
           value={formData["shipping_address.last_name"]}
@@ -112,7 +112,7 @@ const BillingAddressForm = ({
           data-testid="shipping-last-name-input"
         />
         <Input
-          label="Address"
+          label="Adresse"
           name="shipping_address.address_1"
           autoComplete="address-line1"
           value={formData["shipping_address.address_1"]}
@@ -121,7 +121,7 @@ const BillingAddressForm = ({
           data-testid="shipping-address-input"
         />
         <Input
-          label="Company"
+          label="Société"
           name="shipping_address.company"
           value={formData["shipping_address.company"]}
           onChange={handleChange}
@@ -129,7 +129,7 @@ const BillingAddressForm = ({
           data-testid="shipping-company-input"
         />
         <Input
-          label="Postal code"
+          label="Code postal"
           name="shipping_address.postal_code"
           autoComplete="postal-code"
           value={formData["shipping_address.postal_code"]}
@@ -138,7 +138,7 @@ const BillingAddressForm = ({
           data-testid="shipping-postal-code-input"
         />
         <Input
-          label="City"
+          label="Ville"
           name="shipping_address.city"
           autoComplete="address-level2"
           value={formData["shipping_address.city"]}
@@ -156,7 +156,7 @@ const BillingAddressForm = ({
           data-testid="shipping-country-select"
         />
         <Input
-          label="State / Province"
+          label="Région"
           name="shipping_address.province"
           autoComplete="address-level1"
           value={formData["shipping_address.province"]}
@@ -169,7 +169,7 @@ const BillingAddressForm = ({
           label="Email"
           name="email"
           type="email"
-          title="Enter a valid email address."
+          title="Saisissez une adresse email valide."
           autoComplete="email"
           value={formData.email}
           onChange={handleChange}
@@ -177,7 +177,7 @@ const BillingAddressForm = ({
           data-testid="shipping-email-input"
         />
         <Input
-          label="Phone"
+          label="Téléphone"
           name="shipping_address.phone"
           autoComplete="tel"
           value={formData["shipping_address.phone"]}
