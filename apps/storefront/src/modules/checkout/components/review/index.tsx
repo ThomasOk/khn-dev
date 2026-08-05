@@ -5,6 +5,7 @@ import { Heading, Text, clx } from "@modules/common/components/ui"
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
   const searchParams = useSearchParams()
@@ -41,8 +42,23 @@ const Review = ({ cart }: { cart: HttpTypes.StoreCart }) => {
             <div className="w-full">
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
                 En cliquant sur le bouton Passer la commande, vous confirmez
-                avoir lu, compris et accepté nos Conditions générales de vente
-                ainsi que notre Politique de confidentialité.
+                avoir lu, compris et accepté nos{" "}
+                <LocalizedClientLink
+                  href="/terms-of-sale"
+                  target="_blank"
+                  className="underline"
+                >
+                  Conditions générales de vente
+                </LocalizedClientLink>{" "}
+                ainsi que notre{" "}
+                <LocalizedClientLink
+                  href="/privacy-policy"
+                  target="_blank"
+                  className="underline"
+                >
+                  Politique de confidentialité
+                </LocalizedClientLink>
+                .
               </Text>
             </div>
           </div>
