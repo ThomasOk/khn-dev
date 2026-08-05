@@ -17,6 +17,7 @@
     "start": "medusa start",
     "dev": "medusa develop",
     "lint": "medusa lint",
+    "db:migrate": "medusa db:migrate",
     "seed": "medusa exec ./src/scripts/seed.ts",
     "test": "pnpm test:unit && pnpm test:integration:http",
     "test:integration:http": "TEST_TYPE=integration:http NODE_OPTIONS=--experimental-vm-modules jest --silent=false --runInBand --forceExit",
