@@ -32,9 +32,12 @@ const ReservationCtaSection = () => {
             </p>
 
             <h2 className="font-display text-4xl small:text-5xl leading-tight text-stone-900 max-w-2xl">
-              Réservez votre table
-              <br />
-              en quelques clics
+              <span className="small:hidden">Réserver votre table chez nous</span>
+              <span className="hidden small:inline">
+                Réservez votre table
+                <br />
+                en quelques clics
+              </span>
             </h2>
 
             <span className="h-0.5 w-14 bg-khn-gold" />
@@ -59,8 +62,8 @@ const ReservationCtaSection = () => {
               </LocalizedClientLink>
             </div>
 
-            <div className="w-full max-w-md border-t border-stone-300/60 mt-10 pt-8 flex items-center justify-center">
-              <div className="flex flex-col items-center gap-1 px-8 border-r border-stone-300/60">
+            <div className="w-full max-w-md border-t border-stone-300/60 mt-10 pt-8 flex flex-col small:flex-row items-center justify-center gap-6 small:gap-0">
+              <div className="flex flex-col items-center gap-1 px-8 small:border-r border-stone-300/60">
                 <p className="text-stone-400 text-xs uppercase tracking-widest">
                   Par téléphone
                 </p>
