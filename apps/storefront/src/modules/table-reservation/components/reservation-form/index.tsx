@@ -301,7 +301,7 @@ const ReservationForm = () => {
                       {group.label}
                     </span>
                     <div
-                      className="grid grid-cols-3 xsmall:grid-cols-4 small:grid-cols-6 gap-2"
+                      className="grid grid-cols-2 xsmall:grid-cols-4 small:grid-cols-6 gap-2"
                       data-testid="reservation-time-picker"
                     >
                       {group.times.map((time) => {
