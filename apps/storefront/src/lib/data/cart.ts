@@ -1,7 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
-import medusaError from "@lib/util/medusa-error"
+import medusaError, { toClientError } from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
@@ -437,30 +437,44 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   )
 }
 
+export type PlaceOrderError = { message: string; code?: string }
+
 /**
  * Places an order for a cart. If no cart ID is provided, it will use the cart ID from the cookies.
+ *
+ * Returns `{ error }` instead of `throw`-ing on a failed completion — a
+ * completion failure (expired pickup slot, invalid Formule Sélection, …) is
+ * an expected business outcome the client component needs to read and act
+ * on, and Next.js redacts the message of anything `throw`-n from a Server
+ * Action in production builds (RSC anti-leak behavior, invisible in `next
+ * dev`). A returned value crosses that boundary untouched.
  * @param cartId - optional - The ID of the cart to place an order for.
- * @returns The cart object if the order was successful, or null if not.
+ * @returns `{ cart }` if not yet complete, `{ error }` on a rejected
+ * completion, or redirects to the confirmation page on success.
  */
-export async function placeOrder(cartId?: string) {
+export async function placeOrder(
+  cartId?: string
+): Promise<{ cart?: HttpTypes.StoreCart; error?: PlaceOrderError }> {
   const id = cartId || (await getCartId())
 
   if (!id) {
-    throw new Error("No existing cart found when placing an order")
+    return { error: { message: "No existing cart found when placing an order" } }
   }
 
   const headers = {
     ...(await getAuthHeaders()),
   }
 
-  const cartRes = await sdk.store.cart
-    .complete(id, {}, headers)
-    .then(async (cartRes) => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
-      return cartRes
-    })
-    .catch(medusaError)
+  let cartRes: HttpTypes.StoreCompleteCartResponse
+  try {
+    cartRes = await sdk.store.cart.complete(id, {}, headers)
+  } catch (err) {
+    const clientError = toClientError(err)
+    return { error: { message: clientError.message, code: clientError.code } }
+  }
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
 
   if (cartRes?.type === "order") {
     const countryCode =
@@ -479,7 +493,7 @@ export async function placeOrder(cartId?: string) {
     redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
   }
 
-  return cartRes.cart
+  return { cart: cartRes.cart }
 }
 
 /**

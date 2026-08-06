@@ -16,7 +16,13 @@ type MedusaError = {
 // free-form UI text.
 export type ClientError = Error & { code?: string }
 
-export default function medusaError(error: unknown): never {
+// Builds the ClientError without throwing it. Split out from `medusaError`
+// so Server Actions that need to hand an expected business error back to a
+// client component as a normal return value (never as a `throw`) can reuse
+// the same parsing — see `placeOrder` in `lib/data/cart.ts` for why a thrown
+// error can't be used there: Next.js redacts the message of anything
+// `throw`-n across the Server Action boundary in production builds.
+export function toClientError(error: unknown): ClientError {
   const err = error as MedusaError
   if (err.response) {
     const u = new URL(err.config?.url ?? "", err.config?.baseURL ?? "")
@@ -36,10 +42,14 @@ export default function medusaError(error: unknown): never {
       message.charAt(0).toUpperCase() + message.slice(1) + "."
     )
     clientError.code = code
-    throw clientError
+    return clientError
   } else if (err.request) {
-    throw new Error("No response received: " + String(err.request))
+    return new Error("No response received: " + String(err.request))
   } else {
-    throw new Error("Error setting up the request: " + err.message)
+    return new Error("Error setting up the request: " + err.message)
   }
+}
+
+export default function medusaError(error: unknown): never {
+  throw toClientError(error)
 }
