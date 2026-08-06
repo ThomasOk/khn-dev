@@ -1,7 +1,7 @@
 "use client"
 
 import { isManual, isStripeLike } from "@lib/constants"
-import { placeOrder } from "@lib/data/cart"
+import { placeOrder, PlaceOrderError } from "@lib/data/cart"
 import {
   buildPickupSlotExpiredMessage,
   isPickupSlotValidationError,
@@ -11,7 +11,6 @@ import {
   FORMULE_SELECTION_ERROR_PARAM,
   isFormuleSelectionValidationError,
 } from "@lib/util/formule-selection"
-import { ClientError } from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
@@ -36,7 +35,7 @@ import ErrorMessage from "../error-message"
 // the cart itself lives server-side, so nothing is lost by not doing a soft
 // navigation here.
 function recoverFromPickupSlotError(
-  err: Error,
+  err: PlaceOrderError,
   cart: HttpTypes.StoreCart,
   pathname: string
 ): boolean {
@@ -63,7 +62,7 @@ function recoverFromPickupSlotError(
 // customer can delete that one line and re-add a corrected Formule without
 // touching the rest of the cart.
 function recoverFromFormuleSelectionError(
-  err: ClientError,
+  err: PlaceOrderError,
   countryCode: string
 ): boolean {
   if (!isFormuleSelectionValidationError(err.code)) {
@@ -81,7 +80,7 @@ function recoverFromFormuleSelectionError(
 // recover from the créneau rejection, then the Sélection rejection, or fall
 // back to the normal inline error message.
 function handlePlaceOrderError(
-  err: ClientError,
+  err: PlaceOrderError,
   cart: HttpTypes.StoreCart,
   pathname: string,
   countryCode: string,
@@ -151,13 +150,17 @@ const StripePaymentButton = ({
   const countryCode = useParams().countryCode as string
 
   const onPaymentCompleted = async () => {
-    await placeOrder()
-      .catch((err) =>
-        handlePlaceOrderError(err, cart, pathname, countryCode, setErrorMessage)
-      )
-      .finally(() => {
-        setSubmitting(false)
-      })
+    // No .catch/.finally here: placeOrder no longer throws for an expected
+    // completion failure, it returns { error } (see lib/data/cart.ts for
+    // why). The one case that still throws across this await is Next's own
+    // redirect() on success, which must propagate — reaching setSubmitting
+    // below only happens when there's no redirect, i.e. exactly when it's
+    // still needed.
+    const result = await placeOrder()
+    if (result?.error) {
+      handlePlaceOrderError(result.error, cart, pathname, countryCode, setErrorMessage)
+    }
+    setSubmitting(false)
   }
 
   const stripe = useStripe()
@@ -258,13 +261,17 @@ const ManualTestPaymentButton = ({
   const countryCode = useParams().countryCode as string
 
   const onPaymentCompleted = async () => {
-    await placeOrder()
-      .catch((err) =>
-        handlePlaceOrderError(err, cart, pathname, countryCode, setErrorMessage)
-      )
-      .finally(() => {
-        setSubmitting(false)
-      })
+    // No .catch/.finally here: placeOrder no longer throws for an expected
+    // completion failure, it returns { error } (see lib/data/cart.ts for
+    // why). The one case that still throws across this await is Next's own
+    // redirect() on success, which must propagate — reaching setSubmitting
+    // below only happens when there's no redirect, i.e. exactly when it's
+    // still needed.
+    const result = await placeOrder()
+    if (result?.error) {
+      handlePlaceOrderError(result.error, cart, pathname, countryCode, setErrorMessage)
+    }
+    setSubmitting(false)
   }
 
   const handlePayment = () => {

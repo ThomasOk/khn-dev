@@ -12,7 +12,11 @@ import { useEffect, useState } from "react"
 type PickupSlotPickerProps = {
   cartId: string
   initialSlot: PickupSlot | null
-  onSelect: (slot: PickupSlot) => void
+  // Called with a real slot on an explicit pick, or `null` when the
+  // `initialSlot` the parent seeded us with (the créneau already on the
+  // cart) turns out not to be selectable anymore — see the validation
+  // effect below for why that can't be decided until the slots have loaded.
+  onSelect: (slot: PickupSlot | null) => void
 }
 
 const slotKey = (slot: PickupSlot) => `${slot.start}|${slot.end}`
@@ -54,6 +58,29 @@ const PickupSlotPicker: React.FC<PickupSlotPickerProps> = ({
       cancelled = true
     }
   }, [])
+
+  // `selected` starts out as `initialSlot` — the créneau already on the
+  // cart, seeded by the parent before this picker has fetched anything. It
+  // was valid when it was chosen, but by the time this step is reopened
+  // (the "Modifier" flow) it may no longer be: orders could have closed, or
+  // that exact slot could have dropped out of the fetched list. Only once
+  // loading settles can that be checked, so this runs once on that
+  // transition — deliberately not on every `selected` change, since a fresh
+  // pick via handleSelect below is always valid by construction.
+  useEffect(() => {
+    if (isLoading || !selected) {
+      return
+    }
+
+    const stillValid =
+      ordersOpen && !!slots?.some((s) => slotKey(s) === slotKey(selected))
+
+    if (!stillValid) {
+      setSelected(null)
+      onSelect(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, slots, ordersOpen])
 
   const handleSelect = async (slot: PickupSlot) => {
     setError(null)

@@ -235,8 +235,18 @@ const Shipping: React.FC<ShippingProps> = ({
                 cartId={cart.id}
                 initialSlot={pickupSlot}
                 onSelect={(slot) => {
-                  setPickupSlotError(null)
                   setPickupSlot(slot)
+
+                  // `null` means the picker just invalidated the créneau it
+                  // was seeded with (no longer selectable) rather than the
+                  // customer picking a new one — that alone doesn't resolve
+                  // whatever pickupSlotError is already on screen, and there's
+                  // no fresh pick to clean the URL param for yet.
+                  if (!slot) {
+                    return
+                  }
+
+                  setPickupSlotError(null)
 
                   // Safe to clean the URL here: the picker has already
                   // rendered a real slot to click, so its initial fetch is
