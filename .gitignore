@@ -64,3 +64,4 @@ khn_img/
 
 # Claude Code — machine-local permissions (settings.json is shared)
 .claude/settings.local.json
+.env*
