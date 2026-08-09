@@ -18,10 +18,7 @@ const Login = ({ setCurrentView }: Props) => {
       className="max-w-sm w-full flex flex-col items-center"
       data-testid="login-page"
     >
-      <h1 className="text-large-semi uppercase mb-6">Content de vous revoir</h1>
-      <p className="text-center text-base-regular text-ui-fg-base mb-8">
-        Connectez-vous pour retrouver votre adresse et l&apos;historique de vos commandes.
-      </p>
+      <h1 className="text-large-semi uppercase mb-6">Connectez-vous à votre compte</h1>
       {message?.state === "verification_required" && (
         <div
           className="w-full mb-6 text-center text-base-regular text-ui-fg-base bg-ui-bg-subtle border border-ui-border-base rounded-rounded p-4"
