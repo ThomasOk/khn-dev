@@ -131,7 +131,16 @@ export default function TermsOfSalePage() {
         </p>
       </LegalSection>
 
-      {/* <LegalSection title="Article 12 — Médiation et litiges">
+      <LegalSection title="Article 12 — Droit applicable et juridiction">
+        <p>
+          Les présentes CGV sont soumises au droit français. À défaut de
+          résolution amiable, le litige est porté devant la juridiction
+          compétente selon les règles de droit commun applicables aux
+          consommateurs.
+        </p>
+      </LegalSection>
+
+      {/* <LegalSection title="Article 13 — Médiation de la consommation">
         <p>
           Conformément aux articles L. 616-1 et suivants du Code de la
           consommation, le Client consommateur peut recourir gratuitement à
@@ -140,12 +149,6 @@ export default function TermsOfSalePage() {
           <Pending>
             Nom et coordonnées du médiateur à compléter.
           </Pending>
-        </p>
-        <p>
-          Les présentes CGV sont soumises au droit français. À défaut de
-          résolution amiable, le litige est porté devant la juridiction
-          compétente selon les règles de droit commun applicables aux
-          consommateurs.
         </p>
       </LegalSection> */}
     </LegalPageLayout>
