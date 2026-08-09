@@ -80,7 +80,7 @@ export default function CarteSectionNav({
       style={{ top: NAV_HEIGHT_PX + bannerOffsetPx }}
       className="sticky z-40 bg-khn-teal py-4"
     >
-      <ul className="flex items-center justify-start small:justify-center gap-8 overflow-x-auto snap-x snap-mandatory px-6 small:px-0">
+      <ul className="flex items-center justify-start small:justify-center gap-8 overflow-x-auto snap-x snap-mandatory px-6 small:px-0 scroll-pl-6 scroll-pr-6 small:scroll-pl-0 small:scroll-pr-0">
         {categories.map((category) => {
           const isActive = category.handle === activeId
 
