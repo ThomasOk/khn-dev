@@ -1,4 +1,4 @@
-import { getBaseURL } from "@lib/util/env"
+import { getBaseURL, isIndexingAllowed } from "@lib/util/env"
 import { Metadata } from "next"
 import { Inter, Lato, Playfair_Display, Edu_NSW_ACT_Cursive } from "next/font/google"
 import "styles/globals.css"
@@ -30,6 +30,14 @@ const eduNswActHand = Edu_NSW_ACT_Cursive({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  // robots.txt alone doesn't guarantee de-indexing (a crawler that ignores
+  // it, or already knows the URL, can still index it) — the noindex meta
+  // tag is the mechanism search engines actually honor for that. Same
+  // NEXT_PUBLIC_ALLOW_INDEXING switch as robots.ts/sitemap.ts, fails safe
+  // to noindex when unset.
+  robots: isIndexingAllowed()
+    ? { index: true, follow: true }
+    : { index: false, follow: false },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
