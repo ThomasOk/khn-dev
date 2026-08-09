@@ -33,6 +33,12 @@ const dataTable = [
     purpose: "Fonctionnement du site (panier, connexion, cache)",
     basis: "Intérêt légitime — cookies strictement nécessaires, exemptés de consentement",
   },
+  {
+    data: "Identifiants anti-fraude (__stripe_mid, __stripe_sid)",
+    source: "Cookies déposés par Stripe sur la page de paiement",
+    purpose: "Prévention de la fraude au paiement",
+    basis: "Intérêt légitime — cookies strictement nécessaires, exemptés de consentement",
+  },
 ]
 
 export default function PrivacyPolicyPage() {
@@ -151,12 +157,13 @@ export default function PrivacyPolicyPage() {
       <LegalSection title="Cookies">
         <p>
           Le site utilise uniquement des cookies strictement nécessaires à
-          son fonctionnement (panier, authentification, cache serveur).
-          Aucun cookie de mesure d&apos;audience ou publicitaire
-          n&apos;est déposé à ce jour. Si un outil d&apos;analytics ou de
-          suivi publicitaire est ajouté par la suite, cette politique sera
-          mise à jour et un recueil de consentement conforme sera mis en
-          place avant leur dépôt.
+          son fonctionnement (panier, authentification, cache serveur) et à
+          la prévention de la fraude au paiement (déposés par Stripe sur la
+          page de paiement). Aucun cookie de mesure d&apos;audience ou
+          publicitaire n&apos;est déposé à ce jour. Si un outil
+          d&apos;analytics ou de suivi publicitaire est ajouté par la suite,
+          cette politique sera mise à jour et un recueil de consentement
+          conforme sera mis en place avant leur dépôt.
         </p>
       </LegalSection>
 
