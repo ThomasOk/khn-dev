@@ -76,23 +76,18 @@ export default function LegalNoticePage() {
         </p>
         <ul className="list-disc list-outside pl-5 flex flex-col gap-2">
           <li>
-            <span className="font-medium text-stone-800">
-              Vercel Inc.
-            </span>{" "}
-            (site web) — 440 N Barranca Ave #4133, Covina, CA 91723,
-            États-Unis
+            <span className="font-medium text-stone-800">Vercel Inc.</span>{" "}
+            (site web) — 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis
           </li>
           <li>
             <span className="font-medium text-stone-800">
               Railway Corporation
             </span>{" "}
-            (serveur d&apos;application et bases de données) — 548 Market St
-            PMB 68956, San Francisco, CA 94104, États-Unis
+            (serveur d&apos;application et bases de données) — 548 Market St PMB
+            68956, San Francisco, CA 94104, États-Unis
           </li>
           <li>
-            <span className="font-medium text-stone-800">
-              Cloudflare, Inc.
-            </span>{" "}
+            <span className="font-medium text-stone-800">Cloudflare, Inc.</span>{" "}
             (stockage des images et documents) — 101 Townsend Street, San
             Francisco, CA 94107, États-Unis
           </li>
@@ -104,8 +99,8 @@ export default function LegalNoticePage() {
           L&apos;ensemble des contenus du site (textes, photographies, logo,
           charte graphique) est la propriété de CHOUR ou de ses partenaires,
           sauf mention contraire. Toute reproduction, représentation,
-          modification ou exploitation, totale ou partielle, sans
-          autorisation préalable, est interdite.
+          modification ou exploitation, totale ou partielle, sans autorisation
+          préalable, est interdite.
         </p>
       </LegalSection>
 
@@ -123,7 +118,7 @@ export default function LegalNoticePage() {
         </p>
       </LegalSection>
 
-      <LegalSection title="Médiation de la consommation">
+      {/* <LegalSection title="Médiation de la consommation">
         <p>
           Conformément aux articles L. 616-1 et R. 616-1 du Code de la
           consommation, tout client consommateur dispose du droit de
@@ -135,7 +130,7 @@ export default function LegalNoticePage() {
             À compléter — nom et coordonnées du médiateur de la consommation.
           </Pending>
         </p>
-      </LegalSection>
+      </LegalSection> */}
     </LegalPageLayout>
   )
 }
