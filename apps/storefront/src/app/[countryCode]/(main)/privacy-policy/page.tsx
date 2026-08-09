@@ -2,7 +2,6 @@ import { Metadata } from "next"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import LegalPageLayout from "@modules/legal/components/legal-page-layout"
 import LegalSection from "@modules/legal/components/legal-section"
-import Pending from "@modules/legal/components/pending"
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité — Kim-Hi Noodle",
@@ -40,7 +39,7 @@ export default function PrivacyPolicyPage() {
   return (
     <LegalPageLayout
       title="Politique de confidentialité"
-      lastUpdated="24 juillet 2026"
+      lastUpdated="9 août 2026"
     >
       <LegalSection title="Responsable du traitement">
         <p>
@@ -99,36 +98,53 @@ export default function PrivacyPolicyPage() {
         <ul className="list-disc list-outside pl-5 flex flex-col gap-2">
           <li>Le personnel habilité de CHOUR (gestion des commandes et réservations).</li>
           <li>Stripe (prestataire de paiement), pour le traitement des transactions.</li>
+          <li>Vercel Inc., pour l&apos;hébergement du site.</li>
           <li>
-            <Pending>Hébergeur du site — à compléter dès que choisi.</Pending>
+            Railway Corporation, pour l&apos;hébergement du serveur
+            d&apos;application et des bases de données.
+          </li>
+          <li>
+            Cloudflare, Inc., pour le stockage des images et documents (dont
+            les factures).
+          </li>
+          <li>
+            Plus Five Five, Inc. (Resend), pour l&apos;envoi des emails
+            transactionnels (confirmation de commande, réinitialisation de
+            mot de passe, etc.).
           </li>
         </ul>
       </LegalSection>
 
       <LegalSection title="Durée de conservation">
-        <p>
-          <Pending>
-            À compléter selon la politique retenue. Repères usuels : données
-            de compte conservées le temps de la relation commerciale, avec
-            suppression sur demande ou après une période d&apos;inactivité ;
-            données de commande et de facturation conservées 10 ans au titre
-            des obligations comptables ; données de paiement non conservées
-            par CHOUR (gérées par Stripe).
-          </Pending>
-        </p>
+        <ul className="list-disc list-outside pl-5 flex flex-col gap-2">
+          <li>
+            Compte client : 3 ans à compter de la dernière commande ou
+            connexion, puis suppression.
+          </li>
+          <li>
+            Réservation de table : 1 an après la date de la réservation, puis
+            suppression.
+          </li>
+          <li>
+            Commandes et factures : 10 ans, au titre des obligations
+            comptables (article L123-22 du Code de commerce).
+          </li>
+          <li>Données de paiement : non conservées par CHOUR (gérées par Stripe).</li>
+        </ul>
       </LegalSection>
 
       <LegalSection title="Transferts hors Union européenne">
         <p>
-          <Pending>
-            À compléter selon l&apos;hébergeur retenu pour le nouveau site.
-          </Pending>
-        </p>
-        <p>
-          Indépendamment de l&apos;hébergement du site, Stripe (société
-          américaine) peut être amené à traiter certaines données dans le
+          Vercel Inc., Railway Corporation, Cloudflare, Inc. et Plus Five
+          Five, Inc. (Resend) sont des sociétés américaines. Les données
+          qu&apos;elles sont amenées à traiter dans le cadre de
+          l&apos;hébergement et du fonctionnement du site le sont dans le
           cadre de garanties contractuelles (clauses contractuelles types de
           la Commission européenne).
+        </p>
+        <p>
+          Il en va de même pour Stripe (société américaine), pour le
+          traitement des transactions de paiement.
         </p>
       </LegalSection>
 
