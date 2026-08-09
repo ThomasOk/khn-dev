@@ -8,9 +8,9 @@ import ReservationSection from "@modules/home/components/reservation-section"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Medusa Next.js Starter Template",
+  title: "Kim-Hi Noodle — Restaurant asiatique à Castelnau-le-Lez",
   description:
-    "A performant frontend ecommerce starter template with Next.js 15 and Medusa.",
+    "Restaurant de cuisine asiatique à Castelnau-le-Lez. Sur place ou à emporter en click & collect : nems, bo bun, pad thaï et plus.",
 }
 
 export default async function Home(props: {
