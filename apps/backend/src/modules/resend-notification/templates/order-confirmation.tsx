@@ -25,6 +25,11 @@ export type OrderItem = {
   thumbnail?: string;
 };
 
+export type TaxBreakdownRow = {
+  rate: number;
+  amount: number;
+};
+
 export type OrderAddress = {
   first_name?: string;
   last_name?: string;
@@ -43,7 +48,7 @@ export type OrderConfirmationEmailProps = {
   total: number;
   subtotal: number;
   shipping_total: number;
-  tax_total: number;
+  tax_breakdown: TaxBreakdownRow[];
   discount_total?: number;
   items: OrderItem[];
   shipping_address?: OrderAddress;
@@ -86,7 +91,7 @@ export default function OrderConfirmationEmail({
   total,
   subtotal,
   shipping_total,
-  tax_total,
+  tax_breakdown = [],
   discount_total = 0,
   items = [],
   shipping_address,
@@ -225,18 +230,20 @@ export default function OrderConfirmationEmail({
                 </Text>
               </Column>
             </Row>
-            {tax_total > 0 && (
-              <Row style={totalRow}>
-                <Column>
-                  <Text style={taxInfoLabel}>dont TVA (10 %)</Text>
-                </Column>
-                <Column style={totalValueCell}>
-                  <Text style={taxInfoValue}>
-                    {formatPrice(tax_total, currency)}
-                  </Text>
-                </Column>
-              </Row>
-            )}
+            {tax_breakdown
+              .filter((row) => row.amount > 0)
+              .map((row) => (
+                <Row key={row.rate} style={totalRow}>
+                  <Column>
+                    <Text style={taxInfoLabel}>dont TVA ({row.rate} %)</Text>
+                  </Column>
+                  <Column style={totalValueCell}>
+                    <Text style={taxInfoValue}>
+                      {formatPrice(row.amount, currency)}
+                    </Text>
+                  </Column>
+                </Row>
+              ))}
             <Hr style={totalDivider} />
             <Row style={totalRow}>
               <Column>
