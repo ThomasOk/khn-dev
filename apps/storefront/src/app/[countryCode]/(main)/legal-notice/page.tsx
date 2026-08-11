@@ -2,7 +2,10 @@ import { Metadata } from "next"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import LegalPageLayout from "@modules/legal/components/legal-page-layout"
 import LegalSection from "@modules/legal/components/legal-section"
-import Pending from "@modules/legal/components/pending"
+// Only used by the "Médiation de la consommation" section below, currently
+// commented out until a médiateur is actually subscribed — re-import
+// alongside it when that section comes back.
+// import Pending from "@modules/legal/components/pending"
 
 export const metadata: Metadata = {
   title: "Mentions légales — Kim-Hi Noodle",

@@ -141,7 +141,9 @@ export default function FormuleComposerModal({
                   </button>
                   <Dialog.Title as="div">
                     <span className="block text-xs uppercase tracking-[0.2em] text-white/70">
-                      {composants.map((composant) => composant.label).join(" + ")}
+                      {composants
+                        .map((composant) => composant.label)
+                        .join(" + ")}
                     </span>
                     <span className="block font-display font-semibold text-xl uppercase tracking-wide mt-1 pr-8">
                       {product.title}
@@ -246,8 +248,8 @@ function ComposantSection({
       {showError && (
         <p className="-mt-2 text-xs text-red-600" role="alert">
           Sélectionnez une option pour continuer — si un produit propose
-          plusieurs choix, assurez-vous d'avoir renseigné toutes les options
-          nécessaires.
+          plusieurs choix, assurez-vous d&apos;avoir renseigné toutes les
+          options nécessaires.
         </p>
       )}
       <div
@@ -380,7 +382,13 @@ function ComposantThumbnail({ thumbnail }: { thumbnail: string | null }) {
   return (
     <div className="relative w-14 h-14 shrink-0 overflow-hidden rounded-full bg-stone-100 flex items-center justify-center">
       {thumbnail ? (
-        <Image src={thumbnail} alt="" fill className="object-cover" sizes="56px" />
+        <Image
+          src={thumbnail}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="56px"
+        />
       ) : (
         <PlaceholderImage size={20} />
       )}
