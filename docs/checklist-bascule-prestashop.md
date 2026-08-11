@@ -70,3 +70,4 @@
 - `docs/handoffs/2026-08-09-prelaunch-audit-to-branding-and-legal-pages.md`
 - `docs/handoffs/2026-08-10-prelaunch-legal-followups-to-robots-sitemap-noindex.md`
 - `docs/research/2026-08-11-prestashop-redirects.md`
+- `docs/handoffs/2026-08-11-staging-order-test-to-tva-fixes.md`
