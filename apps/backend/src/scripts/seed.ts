@@ -39,7 +39,19 @@ export default async function seed({
     ModuleRegistrationName.FULFILLMENT
   );
 
-  const countries = ["gb", "de", "dk", "se", "fr", "es", "it"];
+  // Single country, not the starter's 7 — this restaurant is click & collect
+  // only, one physical location in France, no shipping anywhere else
+  // (AGENTS.md). Keeping it single-country also activates a Medusa default:
+  // createCartWorkflow attaches a shipping_address automatically at cart
+  // creation when the region has exactly one country, which is what makes
+  // tax compute on the very first item added instead of only after the
+  // customer fills in the checkout address form. With more than one
+  // country, Medusa can't guess which one to default to, and no address
+  // (hence no tax_lines) exist until checkout — verified live: staging's
+  // "Europe" region (7 countries, unmodified from the starter) never got
+  // this default, unlike local's region, quietly narrowed to just "fr" by
+  // hand through the admin at some point and never reported back here.
+  const countries = ["fr"];
 
   logger.info("Seeding store data...");
   // Booting the app already creates a default store, sales channel and publishable
@@ -124,7 +136,7 @@ export default async function seed({
     input: {
       regions: [
         {
-          name: "Europe",
+          name: "France",
           currency_code: "eur",
           countries,
           payment_providers: ["pp_system_default"],
