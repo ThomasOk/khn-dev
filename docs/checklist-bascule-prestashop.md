@@ -49,7 +49,7 @@
 
 ## 7. Tests
 
-- [ ] **Commande complète de bout en bout sur staging** — créneau valide, Stripe test accepté jusqu'à la confirmation. Jamais vérifié à ce jour (les tentatives précédentes ont buté sur un créneau expiré).
+- [x] **Commande complète de bout en bout sur staging** — testé le 2026-08-11 via Claude in Chrome : Nems (poulet) → créneau 20:00–20:15 (choisi avec de la marge pour éviter le piège des tentatives précédentes, créneau expiré) → carte Stripe test `4242 4242 4242 4242` → paiement accepté → confirmation affichée ("Votre commande a bien été enregistrée", numéro de commande 2, email de confirmation envoyé). Adresse de test utilisée (Test Staging / `toshouw+staging-test@gmail.com`) — à nettoyer/ignorer dans l'admin, ce n'est pas une vraie commande client.
 - [ ] Revérifier `/page-introuvable` (et plus largement une 404 quelconque) contre l'environnement de prod une fois en place — déjà confirmé correct contre staging (`307` middleware → vraie `404`).
 
 ## 8. Observabilité
