@@ -154,6 +154,12 @@ export default async function seed({
           name: "TVA standard",
           rate: 10,
           code: "TVA_FR_10",
+          // Catch-all rate for the FR tax region: without is_default, this rate
+          // has no rules to match against and the tax module never selects it,
+          // silently taxing every non-Alcool line item at 0%. Only the Alcool
+          // 20% rate (product_type rule) needs no is_default, since it matches
+          // explicitly. See docs/handoffs/2026-08-11 for how this was found.
+          is_default: true,
         },
       ],
     });
