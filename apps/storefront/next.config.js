@@ -135,12 +135,10 @@ const nextConfig = {
       fullUrl: true,
     },
   },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Left over from the Medusa starter, both defaulted to true (build errors
+  // silently ignored). Re-enabled 2026-08-11 after clearing the pre-existing
+  // lint/type errors that were accumulating under the radar — see
+  // docs/checklist-bascule-prestashop.md.
   images: {
     unoptimized: true,
     remotePatterns: [

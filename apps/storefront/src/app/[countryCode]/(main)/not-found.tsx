@@ -12,9 +12,9 @@ export default function NotFound() {
     <div className="flex flex-col gap-4 items-center justify-center min-h-[calc(100vh-64px)]">
       <h1 className="text-2xl-semi text-ui-fg-base">Page introuvable</h1>
       <p className="text-small-regular text-ui-fg-base">
-        La page que vous cherchez n'existe pas.
+        La page que vous cherchez n&apos;existe pas.
       </p>
-      <InteractiveLink href="/">Retour à l'accueil</InteractiveLink>
+      <InteractiveLink href="/">Retour à l&apos;accueil</InteractiveLink>
     </div>
   )
 }
