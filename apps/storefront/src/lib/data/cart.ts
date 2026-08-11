@@ -131,6 +131,32 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
     .catch(medusaError)
 }
 
+// Medusa only computes an item's tax_lines at the moment it's added to the
+// cart, and only if the cart already has a shipping address with a
+// country_code at that point (@medusajs/core-flows getItemTaxLinesStep).
+// Here, items are always added while browsing /store, before any address is
+// known — so they're never taxed by that automatic path, no matter how the
+// FR tax rate is configured. Setting the address afterwards doesn't
+// retrigger it either: updateCartWorkflow only forces a tax refresh on a
+// region/locale change, not a plain address update. This forces a real
+// recompute for every item already in the cart, via the same route Medusa's
+// own "Calculate Taxes" Store API exposes for exactly this gap.
+async function recalculateCartTaxes(cartId: string) {
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  await sdk.client
+    .fetch(`/store/carts/${cartId}/taxes`, {
+      method: "POST",
+      headers,
+    })
+    .catch(medusaError)
+
+  const cartCacheTag = await getCacheTag("carts")
+  revalidateTag(cartCacheTag)
+}
+
 export async function addToCart({
   variantId,
   quantity,
@@ -398,7 +424,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     if (!formData) {
       throw new Error("No form data found when setting addresses")
     }
-    const cartId = getCartId()
+    const cartId = await getCartId()
     if (!cartId) {
       throw new Error("No existing cart found when setting addresses")
     }
@@ -428,6 +454,10 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     } as HttpTypes.StoreUpdateCart
 
     await updateCart(data)
+    // Now that the cart has a country_code, force a tax recompute for every
+    // item already in it — see recalculateCartTaxes for why this doesn't
+    // happen on its own.
+    await recalculateCartTaxes(cartId)
   } catch (e) {
     return e instanceof Error ? e.message : String(e)
   }
