@@ -44,4 +44,23 @@ describe("computeTaxBreakdown", () => {
   it("returns an empty ventilation for no lines", () => {
     expect(computeTaxBreakdown([])).toEqual([])
   })
+
+  it("groups lines even when tax_rate arrives as a Medusa BigNumber instance, not a primitive", () => {
+    // Medusa's tax_lines[].rate is a BigNumber instance at runtime, not the
+    // plain number literal the tests above use — verified live against a
+    // real order: two lines both taxed at 10% produced two separate rows
+    // instead of one, because grouping by the raw value (an object
+    // reference) never matched two distinct BigNumber instances even at
+    // the same rate. toNum() normalizes it before it's used as the map key.
+    const bigNumberRate = (value: number) => ({ numeric: value }) as unknown as number
+
+    const rows = computeTaxBreakdown([
+      { tax_rate: bigNumberRate(10), subtotal_excl_tax: 24, tax_amount: 2.4 },
+      { tax_rate: bigNumberRate(10), subtotal_excl_tax: 6, tax_amount: 0.6 },
+    ])
+
+    expect(rows).toEqual([
+      { rate: 10, subtotal_excl_tax: 30, tax_amount: 3, subtotal_incl_tax: 33 },
+    ])
+  })
 })

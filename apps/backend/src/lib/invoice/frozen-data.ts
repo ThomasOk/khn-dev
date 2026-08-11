@@ -110,7 +110,10 @@ function lineTaxAmount(taxLines: OrderLineItemTaxLineForInvoice[] | null | undef
 }
 
 function lineTaxRate(taxLines: OrderLineItemTaxLineForInvoice[] | null | undefined): number {
-  return taxLines?.[0]?.rate ?? 0
+  // Medusa returns this as a BigNumber instance, not a primitive — normalize
+  // so callers (computeTaxBreakdown's Map grouping, formatRate's display)
+  // get the real number the `number` type already promises.
+  return toNum(taxLines?.[0]?.rate)
 }
 
 // Pure: Commande (+ config émetteur) -> frozen_data (spec §"frozen_data").

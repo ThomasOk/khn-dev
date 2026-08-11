@@ -1,3 +1,5 @@
+import { toNum } from "../order/to-num"
+
 // Money is rounded to 2 decimals only here, at aggregation — the boundary
 // where floating-point sums (0.1 + 0.2, …) would otherwise leak into a
 // printed amount.
@@ -27,11 +29,19 @@ export function computeTaxBreakdown(
   const totalsByRate = new Map<number, { subtotal_excl_tax: number; tax_amount: number }>()
 
   for (const line of lines) {
-    const existing = totalsByRate.get(line.tax_rate) ?? {
+    // Medusa's own tax_lines[].rate arrives as a BigNumber instance, not a
+    // primitive, despite this type saying `number` — used as a Map key
+    // as-is, each line's BigNumber is a distinct object even at the same
+    // rate, so two 10% lines never merge into one row (only discovered by
+    // testing with two real items at the same rate; the previous unit test
+    // fixtures used plain-number literals, which happened to merge fine and
+    // hid this). toNum() normalizes to a real primitive first.
+    const rate = toNum(line.tax_rate)
+    const existing = totalsByRate.get(rate) ?? {
       subtotal_excl_tax: 0,
       tax_amount: 0,
     }
-    totalsByRate.set(line.tax_rate, {
+    totalsByRate.set(rate, {
       subtotal_excl_tax: existing.subtotal_excl_tax + line.subtotal_excl_tax,
       tax_amount: existing.tax_amount + line.tax_amount,
     })

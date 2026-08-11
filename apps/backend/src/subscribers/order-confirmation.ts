@@ -2,6 +2,7 @@ import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { toNum } from "../lib/order/to-num"
 import { lineItemQuantity } from "../lib/order/line-item-quantity"
+import { computeTaxBreakdown } from "../lib/invoice/tax-breakdown"
 
 export default async function sendOrderConfirmationEmail({
   event: { data },
@@ -20,17 +21,21 @@ export default async function sendOrderConfirmationEmail({
         "email",
         "created_at",
         "shipping_total",
+        // "tax_total" isn't read directly below — its presence in this list
+        // is what makes the Order module compute and attach totals at all
+        // (OrderModuleService.shouldIncludeTotals matches literal top-level
+        // total field names). Without it, items end up unmerged with their
+        // LineItem side and items.subtotal / items.tax_lines.total silently
+        // come back as 0 or wrong — same gotcha as issueInvoiceWorkflow.
+        // "items.*" (not cherry-picked fields) is required for the same
+        // reason: cherry-picking left items.subtotal unpopulated, which
+        // made the TVA ventilation below fall back to a flat, wrong number
+        // (verified live: 2,88 € shown instead of the correct 2,55 €,
+        // treating tax-inclusive prices as tax-exclusive).
         "tax_total",
-        "discount_total",
-        "currency_code",
-        "items.id",
-        "items.title",
-        "items.subtitle",
-        "items.variant_title",
-        "items.quantity",
+        "items.*",
         "items.detail.quantity",
-        "items.unit_price",
-        "items.thumbnail",
+        "items.tax_lines.*",
         "shipping_address.first_name",
         "shipping_address.last_name",
         "shipping_address.address_1",
@@ -65,10 +70,24 @@ export default async function sendOrderConfirmationEmail({
     })
 
     // Prices are tax-inclusive (TTC): unit_price already contains VAT.
-    // tax_total is the extracted VAT amount (informational only, do not add again).
+    // taxBreakdown is the extracted VAT, ventilated by rate (informational
+    // only, do not add again) — an order can mix rates (10 % food, 20 %
+    // Alcool), so a single flat "dont TVA (X %)" line would either hide a
+    // rate or mislabel the sum. Read off each item's own tax_lines, exactly
+    // like the invoice's frozen_data (deriveInvoiceFrozenData) — never
+    // recomputed, only aggregated.
     const subtotal = items.reduce((sum, i) => sum + i.unit_price * i.quantity, 0)
     const shippingTotal = toNum(order.shipping_total)
-    const taxTotal = toNum(order.tax_total)
+    const taxBreakdown = computeTaxBreakdown(
+      (order.items ?? []).map((item: any) => ({
+        tax_rate: item.tax_lines?.[0]?.rate ?? 0,
+        subtotal_excl_tax: toNum(item.subtotal),
+        tax_amount: (item.tax_lines ?? []).reduce(
+          (sum: number, taxLine: any) => sum + toNum(taxLine.total),
+          0
+        ),
+      }))
+    ).map((row) => ({ rate: row.rate, amount: row.tax_amount }))
     const discountTotal = toNum(order.discount_total)
     const grandTotal = subtotal + shippingTotal - discountTotal
 
@@ -85,7 +104,7 @@ export default async function sendOrderConfirmationEmail({
         total: grandTotal,
         subtotal,
         shipping_total: shippingTotal,
-        tax_total: taxTotal,
+        tax_breakdown: taxBreakdown,
         discount_total: discountTotal,
         currency: order.currency_code,
         items,

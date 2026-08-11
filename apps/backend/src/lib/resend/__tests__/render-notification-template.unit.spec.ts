@@ -15,7 +15,7 @@ const KNOWN_TEMPLATES: Array<{
       total: 1000,
       subtotal: 900,
       shipping_total: 0,
-      tax_total: 100,
+      tax_breakdown: [{ rate: 10, amount: 100 }],
       items: [],
     },
     expectedSubject: "Confirmation de commande #1001",
