@@ -109,13 +109,33 @@ export const createTransferRequest = async (
     .catch((err) => ({ success: false, error: err.message, order: null }))
 }
 
+// The native accept/decline transfer workflows throw raw, untranslated
+// MedusaError messages (see acceptOrderTransferValidationStep /
+// requestOrderTransferValidationStep in @medusajs/core-flows) — this page
+// is customer-facing (reached from an email link, no login required), so
+// the handful of cases a customer can actually hit get a French message;
+// anything unrecognized falls back to a generic one rather than leaking
+// English.
+function translateTransferError(message: string): string {
+  if (message.includes("Invalid token")) {
+    return "Ce lien n'est plus valide."
+  }
+  if (message.includes("does not have an order transfer request")) {
+    return "Cette demande de rattachement n'existe plus ou a déjà été traitée."
+  }
+  if (message.includes("has been canceled")) {
+    return "Cette commande a été annulée."
+  }
+  return "Une erreur est survenue. Réessayez ou contactez-nous."
+}
+
 export const acceptTransferRequest = async (id: string, token: string) => {
   const headers = await getAuthHeaders()
 
   const { order, error } = await sdk.store.order
     .acceptTransfer(id, { token }, {}, headers)
     .then(({ order }) => ({ order, error: null }))
-    .catch((err) => ({ order: null, error: err.message as string }))
+    .catch((err) => ({ order: null, error: translateTransferError(err.message) }))
 
   if (order) {
     // The order now belongs to the accepting customer, but the "orders"
@@ -134,5 +154,9 @@ export const declineTransferRequest = async (id: string, token: string) => {
   return await sdk.store.order
     .declineTransfer(id, { token }, {}, headers)
     .then(({ order }) => ({ success: true, error: null, order }))
-    .catch((err) => ({ success: false, error: err.message, order: null }))
+    .catch((err) => ({
+      success: false,
+      error: translateTransferError(err.message),
+      order: null,
+    }))
 }
