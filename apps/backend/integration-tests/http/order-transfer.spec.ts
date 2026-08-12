@@ -452,5 +452,132 @@ medusaIntegrationTestRunner({
         )
       })
     })
+
+    // The custom /store/orders/display/:display_id/transfer/request route
+    // (not native Medusa): the storefront's "rattacher une commande" form
+    // only ever shows the customer their display_id ("#4" — order details
+    // page, confirmation email), never the internal id the native
+    // /store/orders/:id/transfer/request route needs. This resolves
+    // display_id → internal id first, then delegates to the same
+    // requestOrderTransferWorkflow as the tests above.
+    describe("POST /store/orders/display/:display_id/transfer/request", () => {
+      it("resolves the customer-facing display_id and requests a transfer exactly like the native route", async () => {
+        const commerce = await setUpCommerce()
+        await setUpPickupSlot()
+
+        const order = await completeGuestCart(commerce, "invite4@example.com")
+
+        const { token: requesterToken, customerId } = await registerCustomer(
+          commerce.publishableKey,
+          { email: "elise@example.com", password: "un-mot-de-passe-solide" }
+        )
+
+        const requestResponse = await api.post(
+          `/store/orders/display/${order.display_id}/transfer/request`,
+          {},
+          {
+            headers: {
+              "x-publishable-api-key": commerce.publishableKey,
+              Authorization: `Bearer ${requesterToken}`,
+            },
+          }
+        )
+        expect(requestResponse.status).toEqual(200)
+        expect(requestResponse.data.order.id).toEqual(order.id)
+        expect(requestResponse.data.order.display_id).toEqual(order.display_id)
+
+        const notifications = await waitForOrderTransferNotifications(getContainer())
+        expect(notifications).toHaveLength(1)
+        expect(notifications[0].to).toEqual("invite4@example.com")
+
+        const data = notifications[0].data as any
+        const token = extractToken(data.transfer_url as string)
+
+        // Same proof as the native-route test above: the token the email
+        // carries is what actually attaches the order — not just a 200 on
+        // the request call.
+        const acceptResponse = await api.post(
+          `/store/orders/${order.id}/transfer/accept?fields=+customer_id`,
+          { token },
+          { headers: { "x-publishable-api-key": commerce.publishableKey } }
+        )
+        expect(acceptResponse.status).toEqual(200)
+        expect(acceptResponse.data.order.customer_id).toEqual(customerId)
+      })
+
+      it("responds with a French message for a display_id no order carries", async () => {
+        const commerce = await setUpCommerce()
+
+        const { token: requesterToken } = await registerCustomer(
+          commerce.publishableKey,
+          { email: "fanny@example.com", password: "un-mot-de-passe-solide" }
+        )
+
+        await expect(
+          api.post(
+            `/store/orders/display/999999/transfer/request`,
+            {},
+            {
+              headers: {
+                "x-publishable-api-key": commerce.publishableKey,
+                Authorization: `Bearer ${requesterToken}`,
+              },
+            }
+          )
+        ).rejects.toMatchObject({
+          response: {
+            status: 404,
+            data: {
+              message: "Commande introuvable : vérifiez le numéro saisi.",
+            },
+          },
+        })
+      })
+
+      it("responds with the same French message for a non-numeric display_id", async () => {
+        const commerce = await setUpCommerce()
+
+        const { token: requesterToken } = await registerCustomer(
+          commerce.publishableKey,
+          { email: "gaston@example.com", password: "un-mot-de-passe-solide" }
+        )
+
+        await expect(
+          api.post(
+            `/store/orders/display/abc/transfer/request`,
+            {},
+            {
+              headers: {
+                "x-publishable-api-key": commerce.publishableKey,
+                Authorization: `Bearer ${requesterToken}`,
+              },
+            }
+          )
+        ).rejects.toMatchObject({
+          response: {
+            status: 404,
+            data: {
+              message: "Commande introuvable : vérifiez le numéro saisi.",
+            },
+          },
+        })
+      })
+
+      it("requires the requester to be authenticated, same as the native route", async () => {
+        const commerce = await setUpCommerce()
+        await setUpPickupSlot()
+        const order = await completeGuestCart(commerce, "helene@example.com")
+
+        await expect(
+          api.post(
+            `/store/orders/display/${order.display_id}/transfer/request`,
+            {},
+            { headers: { "x-publishable-api-key": commerce.publishableKey } }
+          )
+        ).rejects.toMatchObject({
+          response: { status: 401 },
+        })
+      })
+    })
   },
 })
