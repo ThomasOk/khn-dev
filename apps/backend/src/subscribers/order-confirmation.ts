@@ -20,6 +20,8 @@ export default async function sendOrderConfirmationEmail({
         "display_id",
         "email",
         "created_at",
+        "currency_code",
+        "discount_total",
         "shipping_total",
         // "tax_total" isn't read directly below — its presence in this list
         // is what makes the Order module compute and attach totals at all
