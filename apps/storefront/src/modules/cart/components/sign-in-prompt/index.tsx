@@ -1,4 +1,4 @@
-import { Button, Heading, Text } from "@modules/common/components/ui"
+import { Button, Heading } from "@modules/common/components/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 const SignInPrompt = () => {
@@ -8,9 +8,6 @@ const SignInPrompt = () => {
         <Heading level="h2" className="txt-xlarge">
           Vous avez déjà un compte ?
         </Heading>
-        <Text className="txt-medium text-ui-fg-subtle mt-2">
-          Connectez-vous pour une meilleure expérience.
-        </Text>
       </div>
       <div>
         <LocalizedClientLink href="/account">
