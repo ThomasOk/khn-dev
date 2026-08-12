@@ -77,22 +77,33 @@ export const createTransferRequest = async (
   error: string | null
   order: HttpTypes.StoreOrder | null
 }> => {
-  const id = formData.get("order_id") as string
+  const raw = (formData.get("display_id") as string) ?? ""
+  // The customer only ever sees the order's customer-facing number ("#4" —
+  // order details page, confirmation email), never its internal id
+  // ("order_01…") that Medusa's native transfer/request route needs.
+  // Strip a leading "#" and surrounding whitespace so typing it exactly as
+  // displayed still works, then resolve it server-side (see the custom
+  // /store/orders/display/:display_id/transfer/request route).
+  const displayId = raw.trim().replace(/^#/, "")
 
-  if (!id) {
-    return { success: false, error: "Order ID is required", order: null }
+  if (!displayId) {
+    return {
+      success: false,
+      error: "Le numéro de commande est requis.",
+      order: null,
+    }
   }
 
   const headers = await getAuthHeaders()
 
-  return await sdk.store.order
-    .requestTransfer(
-      id,
-      {},
+  return await sdk.client
+    .fetch<{ order: HttpTypes.StoreOrder }>(
+      `/store/orders/display/${encodeURIComponent(displayId)}/transfer/request`,
       {
-        fields: "id, email",
-      },
-      headers
+        method: "POST",
+        body: {},
+        headers,
+      }
     )
     .then(({ order }) => ({ success: true, error: null, order }))
     .catch((err) => ({ success: false, error: err.message, order: null }))

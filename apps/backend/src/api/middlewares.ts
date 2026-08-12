@@ -6,6 +6,7 @@ import { tableReservationStoreMiddlewares } from "./store/table-reservations/mid
 import { announcementAdminMiddlewares } from "./admin/announcements/middlewares"
 import { showcaseAdminMiddlewares } from "./admin/showcase/middlewares"
 import { customerPasswordStoreMiddlewares } from "./store/customers/me/password/middlewares"
+import { orderTransferStoreMiddlewares } from "./store/orders/middlewares"
 
 export default defineMiddlewares({
   routes: [
@@ -16,5 +17,6 @@ export default defineMiddlewares({
     ...announcementAdminMiddlewares,
     ...showcaseAdminMiddlewares,
     ...customerPasswordStoreMiddlewares,
+    ...orderTransferStoreMiddlewares,
   ],
 })

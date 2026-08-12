@@ -39,7 +39,7 @@ export default function TransferRequestForm() {
           className="flex flex-col gap-y-1 sm:items-end"
         >
           <div className="flex flex-col gap-y-2 w-full">
-            <Input className="w-full" name="order_id" placeholder="Numéro de commande" />
+            <Input className="w-full" name="display_id" placeholder="Numéro de commande (ex. #4)" />
             <SubmitButton
               variant="secondary"
               size="small"
@@ -61,7 +61,7 @@ export default function TransferRequestForm() {
             <CheckCircleMiniSolid className="w-4 h-4 text-emerald-500" />
             <div className="flex flex-col gap-y-1">
               <Text className="text-medim-pl text-neutral-950">
-                Rattachement de la commande {state.order?.id} demandé
+                Rattachement de la commande #{state.order?.display_id} demandé
               </Text>
               <Text className="text-base-regular text-neutral-600">
                 Email de demande envoyé à {state.order?.email}
