@@ -74,12 +74,49 @@ const timeFormatter = new Intl.DateTimeFormat("fr-FR", {
   minute: "2-digit",
 })
 
-const dayFormatter = new Intl.DateTimeFormat("en-GB", {
+// fr-FR still gives the DD/MM order the confirmation label wants, but reads
+// the weekday in French ("mer." instead of "Wed") — the whole storefront is
+// French-facing, so no locale here should default to English.
+const dayFormatter = new Intl.DateTimeFormat("fr-FR", {
   timeZone: RESTAURANT_TIMEZONE,
   weekday: "short",
   day: "2-digit",
   month: "2-digit",
 })
+
+const orderDateFormatter = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: RESTAURANT_TIMEZONE,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+})
+
+const orderDateTimeFormatter = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: RESTAURANT_TIMEZONE,
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+})
+
+// e.g. "12 août 2026" — used anywhere an order/payment timestamp is shown to
+// the customer, so it never falls back to the browser's own locale (which
+// would render an English "Wed Aug 12 2026" for an English-set browser).
+// `created_at` is typed `string | Date` (and optional on some Medusa payment
+// resources), so an empty/invalid input formats as "" instead of throwing.
+export function formatOrderDate(input: string | Date): string {
+  const date = new Date(input)
+  return Number.isNaN(date.getTime()) ? "" : orderDateFormatter.format(date)
+}
+
+// e.g. "12 août 2026 à 11:05"
+export function formatOrderDateTime(input: string | Date): string {
+  const date = new Date(input)
+  return Number.isNaN(date.getTime())
+    ? ""
+    : orderDateTimeFormatter.format(date)
+}
 
 export function formatSlotTime(iso: string): string {
   return timeFormatter.format(new Date(iso))
