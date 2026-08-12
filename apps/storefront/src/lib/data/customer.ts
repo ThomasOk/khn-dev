@@ -427,7 +427,7 @@ export async function transferCart() {
 export type CreateAccountFromOrderState =
   | { state: "success" }
   | { state: "partial"; error: string; transferRequested: boolean }
-  | { state: "error"; error: string }
+  | { state: "error"; error: string; code?: "account_exists" }
   | null
 
 const GENERIC_CREATE_ACCOUNT_ERROR: CreateAccountFromOrderState = {
@@ -483,6 +483,7 @@ export async function createAccountFromOrder(
         state: "error",
         error:
           "Un compte existe déjà pour cet email. Connectez-vous pour retrouver vos informations.",
+        code: "account_exists",
       }
     }
     return GENERIC_CREATE_ACCOUNT_ERROR
