@@ -107,13 +107,22 @@ const AccountInfo = ({
       </Disclosure>
 
       <Disclosure>
+        {/*
+          Collapsed, this panel MUST clip and go inert. `max-h-0` only zeroes
+          the box — with `overflow-visible` the form (inputs + the "Enregistrer"
+          submit) spills out over the rows below, and `opacity-0` doesn't stop
+          hit-testing. Clicking the next row's "Modifier" then lands on the
+          previous row's invisible submit button and posts that form instead.
+          `invisible` also pulls the collapsed fields out of the tab order.
+          Open, overflow stays visible so a form taller than max-h isn't cut off.
+        */}
         <Disclosure.Panel
           static
           className={clx(
-            "transition-[max-height,opacity] duration-300 ease-in-out overflow-visible",
+            "transition-[max-height,opacity] duration-300 ease-in-out",
             {
-              "max-h-[1000px] opacity-100": state,
-              "max-h-0 opacity-0": !state,
+              "max-h-[1000px] opacity-100 visible overflow-visible": state,
+              "max-h-0 opacity-0 invisible overflow-hidden": !state,
             }
           )}
         >
