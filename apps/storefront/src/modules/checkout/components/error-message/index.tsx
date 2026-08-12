@@ -1,4 +1,6 @@
-const ErrorMessage = ({ error, 'data-testid': dataTestid }: { error?: string | null, 'data-testid'?: string }) => {
+import type { ReactNode } from "react"
+
+const ErrorMessage = ({ error, 'data-testid': dataTestid }: { error?: ReactNode, 'data-testid'?: string }) => {
   if (!error) {
     return null
   }

@@ -5,6 +5,7 @@ import { createAccountFromOrder } from "@lib/data/customer"
 import Input from "@modules/common/components/input"
 import { Container, Heading, Text } from "@modules/common/components/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import { HttpTypes } from "@medusajs/types"
 
@@ -90,7 +91,18 @@ const CreateAccountFromOrder = ({ order, alreadyLoggedIn }: Props) => {
             data-testid="create-account-password-input"
           />
           <ErrorMessage
-            error={state?.state === "error" ? state.error : null}
+            error={
+              state?.state === "error" && state.code === "account_exists" ? (
+                <>
+                  {state.error}{" "}
+                  <LocalizedClientLink href="/account" className="underline">
+                    Se connecter
+                  </LocalizedClientLink>
+                </>
+              ) : state?.state === "error" ? (
+                state.error
+              ) : null
+            }
             data-testid="create-account-error"
           />
           <SubmitButton
