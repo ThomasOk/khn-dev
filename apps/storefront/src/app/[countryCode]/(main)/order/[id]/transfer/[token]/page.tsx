@@ -1,6 +1,6 @@
 import { Heading, Text } from "@modules/common/components/ui"
 import TransferActions from "@modules/order/components/transfer-actions"
-import TransferImage from "@modules/order/components/transfer-image"
+import { retrieveOrder } from "@lib/data/orders"
 
 export default async function TransferPage({
   params,
@@ -9,30 +9,35 @@ export default async function TransferPage({
 }) {
   const { id, token } = params
 
+  // The email links here with the order's internal id (needed for the
+  // accept/decline calls below), but the customer only ever knows their
+  // order by its display_id ("#4") — same reasoning as the "rattacher une
+  // commande" form. Public GET, no auth required (native Medusa route).
+  const order = await retrieveOrder(id).catch(() => null)
+  const orderLabel = order ? `#${order.display_id}` : id
+
   return (
-    <div className="flex flex-col gap-y-4 items-start w-2/5 mx-auto mt-10 mb-20">
-      <TransferImage />
-      <div className="flex flex-col gap-y-6">
-        <Heading level="h1" className="text-xl text-zinc-900">
-          Transfer request for order {id}
-        </Heading>
-        <Text className="text-zinc-600">
-          You&#39;ve received a request to transfer ownership of your order ({id}).
-          If you agree to this request, you can approve the transfer by clicking
-          the button below.
-        </Text>
-        <div className="w-full h-px bg-zinc-200" />
-        <Text className="text-zinc-600">
-          If you accept, the new owner will take over all responsibilities and
-          permissions associated with this order.
-        </Text>
-        <Text className="text-zinc-600">
-          If you do not recognize this request or wish to retain ownership, no
-          further action is required.
-        </Text>
-        <div className="w-full h-px bg-zinc-200" />
-        <TransferActions id={id} token={token} />
-      </div>
+    <div className="flex flex-col gap-y-6 items-start w-2/5 mx-auto mt-24 mb-20">
+      <Heading level="h1" className="text-xl text-zinc-900">
+        Demande de rattachement pour la commande {orderLabel}
+      </Heading>
+      <Text className="text-zinc-600">
+        Une demande de rattachement à cette commande ({orderLabel}) a été
+        faite depuis un compte client. Si vous êtes à l&#39;origine de cette
+        demande, vous pouvez l&#39;approuver en cliquant sur le bouton
+        ci-dessous.
+      </Text>
+      <div className="w-full h-px bg-zinc-200" />
+      <Text className="text-zinc-600">
+        Si vous acceptez, cette commande sera rattachée à ce compte client et
+        visible dans son historique de commandes.
+      </Text>
+      <Text className="text-zinc-600">
+        Si vous ne reconnaissez pas cette demande, aucune action n&#39;est
+        nécessaire.
+      </Text>
+      <div className="w-full h-px bg-zinc-200" />
+      <TransferActions id={id} token={token} />
     </div>
   )
 }
