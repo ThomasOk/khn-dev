@@ -3,6 +3,7 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { toNum } from "../lib/order/to-num"
 import { lineItemQuantity } from "../lib/order/line-item-quantity"
 import { computeTaxBreakdown } from "../lib/invoice/tax-breakdown"
+import { hasFormuleSelection } from "../lib/formule/validate-selection"
 
 export default async function sendOrderConfirmationEmail({
   event: { data },
@@ -69,6 +70,10 @@ export default async function sendOrderConfirmationEmail({
         unit_price: unitPrice,
         total: unitPrice * qty,
         thumbnail: item.thumbnail,
+        // A Formule has no image of its own (ADR 0001) — the template swaps
+        // in a monogram tile instead, same treatment as the storefront cart
+        // (hasFormuleSelection in lib/util/formule-selection.ts there).
+        is_formule: hasFormuleSelection(item.metadata),
       }
     })
 

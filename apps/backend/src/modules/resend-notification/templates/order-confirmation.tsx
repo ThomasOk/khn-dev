@@ -24,6 +24,10 @@ export type OrderItem = {
   unit_price: number;
   total: number;
   thumbnail?: string;
+  // A Formule has no image of its own (ADR 0001) — when true, the template
+  // swaps the thumbnail for a monogram tile instead, same treatment as the
+  // storefront cart (FormuleThumbnail, modules/products/components/).
+  is_formule?: boolean;
 };
 
 export type TaxBreakdownRow = {
@@ -100,6 +104,20 @@ function formatPickupSlot(start: string, end: string): string {
     new Date(end),
   )}`;
   return `${day} · ${range}`;
+}
+
+// Mirrors the storefront's own formuleInitials
+// (modules/products/components/formule-thumbnail/index.tsx) — same rule,
+// kept in lockstep so a Formule's monogram reads identically in the cart and
+// in this email.
+function formuleInitials(title: string): string {
+  return title
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 }
 
 function countryName(code: string): string {
@@ -217,10 +235,16 @@ export default function OrderConfirmationEmail({
             {items.map((item) => (
               <Row key={item.id} style={itemRow}>
                 <Column style={itemImageCell}>
-                  {item.thumbnail &&
-                  item.thumbnail.startsWith("http") &&
-                  !item.thumbnail.includes("localhost") &&
-                  !item.thumbnail.includes("127.0.0.1") ? (
+                  {item.is_formule ? (
+                    <Section style={itemFormuleThumbnail}>
+                      <Text style={itemFormuleThumbnailText}>
+                        {formuleInitials(item.title)}
+                      </Text>
+                    </Section>
+                  ) : item.thumbnail &&
+                    item.thumbnail.startsWith("http") &&
+                    !item.thumbnail.includes("localhost") &&
+                    !item.thumbnail.includes("127.0.0.1") ? (
                     <Img
                       src={item.thumbnail}
                       width={64}
@@ -550,6 +574,29 @@ const itemImagePlaceholder: React.CSSProperties = {
 
 const itemImagePlaceholderText: React.CSSProperties = {
   fontSize: "24px",
+  margin: 0,
+  textAlign: "center",
+  lineHeight: "64px",
+};
+
+// Same treatment as the storefront's FormuleThumbnail — khn-teal
+// (storefront/tailwind.config.js) instead of the generic grey placeholder.
+// Centering via lineHeight (not flexbox) matches itemImagePlaceholder's own
+// approach above, for the same reason: Outlook's Word rendering engine
+// doesn't support flexbox.
+const itemFormuleThumbnail: React.CSSProperties = {
+  width: "64px",
+  height: "64px",
+  backgroundColor: "#0C3A3D",
+  borderRadius: "6px",
+  textAlign: "center",
+};
+
+const itemFormuleThumbnailText: React.CSSProperties = {
+  fontSize: "16px",
+  fontWeight: "700",
+  color: "#ffffff",
+  letterSpacing: "0.5px",
   margin: 0,
   textAlign: "center",
   lineHeight: "64px",
