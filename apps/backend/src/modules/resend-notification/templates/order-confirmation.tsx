@@ -84,6 +84,20 @@ function countryName(code: string): string {
   }
 }
 
+// react-email renders Section as a width="100%" table and Hr at width:100%,
+// so a horizontal `margin` on either one does not inset it — it shifts a
+// full-width element sideways and pushes it past the container's right edge
+// by that same amount (measured: 40px of overflow, which cut off the Total
+// column of the order badge). Horizontal inset has to come from `padding` on
+// a wrapper instead.
+function InsetDivider() {
+  return (
+    <Section style={inset}>
+      <Hr style={divider} />
+    </Section>
+  );
+}
+
 export default function OrderConfirmationEmail({
   order_id,
   created_at,
@@ -124,26 +138,28 @@ export default function OrderConfirmationEmail({
           </Section>
 
           {/* Order info badge */}
-          <Section style={orderBadge}>
-            <Row>
-              <Column style={orderBadgeCell}>
-                <Text style={orderBadgeLabel}>Commande</Text>
-                <Text style={orderBadgeValue}>#{order_id}</Text>
-              </Column>
-              <Column style={orderBadgeCell}>
-                <Text style={orderBadgeLabel}>Date</Text>
-                <Text style={orderBadgeValue}>{formatDate(created_at)}</Text>
-              </Column>
-              <Column style={orderBadgeCell}>
-                <Text style={orderBadgeLabel}>Total</Text>
-                <Text style={orderBadgeValue}>
-                  {formatPrice(total, currency)}
-                </Text>
-              </Column>
-            </Row>
+          <Section style={inset}>
+            <Section style={orderBadge}>
+              <Row>
+                <Column style={orderBadgeCell}>
+                  <Text style={orderBadgeLabel}>Commande</Text>
+                  <Text style={orderBadgeValue}>#{order_id}</Text>
+                </Column>
+                <Column style={orderBadgeCell}>
+                  <Text style={orderBadgeLabel}>Date</Text>
+                  <Text style={orderBadgeValue}>{formatDate(created_at)}</Text>
+                </Column>
+                <Column style={{ ...orderBadgeCell, borderRight: "none" }}>
+                  <Text style={orderBadgeLabel}>Total</Text>
+                  <Text style={orderBadgeValue}>
+                    {formatPrice(total, currency)}
+                  </Text>
+                </Column>
+              </Row>
+            </Section>
           </Section>
 
-          <Hr style={divider} />
+          <InsetDivider />
 
           {/* Items */}
           <Section style={section}>
@@ -191,7 +207,7 @@ export default function OrderConfirmationEmail({
             ))}
           </Section>
 
-          <Hr style={divider} />
+          <InsetDivider />
 
           {/* Totals */}
           <Section style={section}>
@@ -258,7 +274,7 @@ export default function OrderConfirmationEmail({
           </Section>
 
           {/* Pickup location */}
-          <Hr style={divider} />
+          <InsetDivider />
           <Section style={section}>
             <Heading style={h2}>Lieu de retrait</Heading>
             <Text style={addressText}>Kim-Hi Noodle</Text>
@@ -269,7 +285,7 @@ export default function OrderConfirmationEmail({
           {/* Billing address */}
           {shipping_address && (
             <>
-              <Hr style={divider} />
+              <InsetDivider />
               <Section style={section}>
                 <Heading style={h2}>Adresse de facturation</Heading>
                 <Text style={addressText}>
@@ -302,16 +318,6 @@ export default function OrderConfirmationEmail({
             </>
           )}
 
-          {/* Support */}
-          <Hr style={divider} />
-          <Section style={supportSection}>
-            <Text style={supportText}>
-              Des questions ? Notre équipe est là pour vous aider.
-            </Text>
-            <Text style={supportText}>
-              Répondez simplement à cet email ou contactez notre support.
-            </Text>
-          </Section>
         </Container>
 
         {/* Footer */}
@@ -386,10 +392,16 @@ const heroText: React.CSSProperties = {
   margin: "0 0 8px",
 };
 
+// Horizontal inset for full-width blocks — see InsetDivider above for why
+// this is padding on a wrapper and not a margin on the block itself.
+const inset: React.CSSProperties = {
+  padding: "0 40px",
+};
+
 const orderBadge: React.CSSProperties = {
   backgroundColor: "#f9fafb",
   borderRadius: "8px",
-  margin: "0 40px 24px",
+  marginBottom: "24px",
   padding: "0",
   border: "1px solid #e5e7eb",
 };
@@ -432,7 +444,7 @@ const h2: React.CSSProperties = {
 
 const divider: React.CSSProperties = {
   borderColor: "#e5e7eb",
-  margin: "0 40px",
+  margin: 0,
 };
 
 const itemRow: React.CSSProperties = {
@@ -560,17 +572,6 @@ const addressText: React.CSSProperties = {
   color: "#374151",
   margin: "0 0 2px",
   lineHeight: "1.6",
-};
-
-const supportSection: React.CSSProperties = {
-  padding: "24px 40px 32px",
-  textAlign: "center",
-};
-
-const supportText: React.CSSProperties = {
-  fontSize: "14px",
-  color: "#6b7280",
-  margin: "0 0 4px",
 };
 
 const footer: React.CSSProperties = {
