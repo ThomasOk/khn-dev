@@ -13,6 +13,7 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
+import { RESTAURANT_TIMEZONE } from "../../../lib/time/timezone";
 
 export type OrderItem = {
   id: string;
@@ -53,6 +54,12 @@ export type OrderConfirmationEmailProps = {
   items: OrderItem[];
   shipping_address?: OrderAddress;
   customer_name?: string;
+  // ISO 8601 with offset — order.metadata.creneau_debut / creneau_fin (ADR
+  // 0004). Optional: the client's own confirmation must still go out even if
+  // this is ever missing (same discipline as the subscriber that reads it),
+  // so the template falls back to generic wording rather than throwing.
+  pickup_slot_start?: string;
+  pickup_slot_end?: string;
 };
 
 function formatPrice(amount: number | null | undefined, currency: string): string {
@@ -70,6 +77,29 @@ function formatDate(dateStr: string): string {
     month: "long",
     year: "numeric",
   }).format(new Date(dateStr));
+}
+
+const slotDayFormatter = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: RESTAURANT_TIMEZONE,
+  weekday: "long",
+  day: "2-digit",
+  month: "long",
+});
+const slotTimeFormatter = new Intl.DateTimeFormat("fr-FR", {
+  timeZone: RESTAURANT_TIMEZONE,
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+// Always read in restaurant (Paris) wall-clock time, like the kitchen ticket
+// email (templates/kitchen-ticket-notification.tsx) — the reader is the
+// customer's own pickup appointment, not their browser's timezone.
+function formatPickupSlot(start: string, end: string): string {
+  const day = slotDayFormatter.format(new Date(start));
+  const range = `${slotTimeFormatter.format(new Date(start))} – ${slotTimeFormatter.format(
+    new Date(end),
+  )}`;
+  return `${day} · ${range}`;
 }
 
 function countryName(code: string): string {
@@ -110,8 +140,11 @@ export default function OrderConfirmationEmail({
   items = [],
   shipping_address,
   customer_name,
+  pickup_slot_start,
+  pickup_slot_end,
 }: OrderConfirmationEmailProps) {
   const greeting = customer_name ? `Bonjour ${customer_name},` : "Bonjour,";
+  const hasPickupSlot = Boolean(pickup_slot_start && pickup_slot_end);
 
   return (
     <Html lang="fr" dir="ltr">
@@ -132,10 +165,27 @@ export default function OrderConfirmationEmail({
             <Text style={heroText}>{greeting}</Text>
             <Text style={heroText}>
               Nous avons bien reçu votre commande et nous la préparons avec
-              soin. Votre commande sera prête pour le retrait en magasin très
-              prochainement.
+              soin.{" "}
+              {hasPickupSlot
+                ? "Récupérez-la au créneau indiqué ci-dessous."
+                : "Votre commande sera prête pour le retrait en magasin très prochainement."}
             </Text>
           </Section>
+
+          {/* Pickup slot — the single most actionable piece of information
+              in this email (click & collect only, no delivery), so it gets
+              its own emphasized block rather than sitting inside the
+              Commande/Date/Total badge below. */}
+          {hasPickupSlot && (
+            <Section style={inset}>
+              <Section style={pickupSlotBox}>
+                <Text style={pickupSlotLabel}>Créneau de retrait</Text>
+                <Text style={pickupSlotValue}>
+                  {formatPickupSlot(pickup_slot_start!, pickup_slot_end!)}
+                </Text>
+              </Section>
+            </Section>
+          )}
 
           {/* Order info badge */}
           <Section style={inset}>
@@ -396,6 +446,31 @@ const heroText: React.CSSProperties = {
 // this is padding on a wrapper and not a margin on the block itself.
 const inset: React.CSSProperties = {
   padding: "0 40px",
+};
+
+const pickupSlotBox: React.CSSProperties = {
+  backgroundColor: "#f9fafb",
+  borderRadius: "8px",
+  border: "1px solid #e5e7eb",
+  padding: "20px",
+  textAlign: "center",
+  marginBottom: "24px",
+};
+
+const pickupSlotLabel: React.CSSProperties = {
+  fontSize: "11px",
+  color: "#9ca3af",
+  textTransform: "uppercase",
+  letterSpacing: "0.5px",
+  margin: "0 0 4px",
+  fontWeight: "600",
+};
+
+const pickupSlotValue: React.CSSProperties = {
+  fontSize: "20px",
+  color: "#111827",
+  fontWeight: "700",
+  margin: 0,
 };
 
 const orderBadge: React.CSSProperties = {

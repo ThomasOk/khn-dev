@@ -23,6 +23,7 @@ export default async function sendOrderConfirmationEmail({
         "currency_code",
         "discount_total",
         "shipping_total",
+        "metadata",
         // "tax_total" isn't read directly below — its presence in this list
         // is what makes the Order module compute and attach totals at all
         // (OrderModuleService.shouldIncludeTotals matches literal top-level
@@ -93,6 +94,14 @@ export default async function sendOrderConfirmationEmail({
     const discountTotal = toNum(order.discount_total)
     const grandTotal = subtotal + shippingTotal - discountTotal
 
+    // order.metadata.creneau_debut / creneau_fin (ADR 0004), same source the
+    // kitchen ticket reads. Left undefined rather than failing the send if
+    // absent — this is the client's own confirmation, it must go out
+    // regardless (same discipline as the rest of this subscriber).
+    const metadata = (order.metadata ?? {}) as Record<string, unknown>
+    const pickupSlotStart = metadata.creneau_debut as string | undefined
+    const pickupSlotEnd = metadata.creneau_fin as string | undefined
+
     await notificationService.createNotifications({
       to: order.email,
       template: "order-confirmation",
@@ -110,6 +119,8 @@ export default async function sendOrderConfirmationEmail({
         discount_total: discountTotal,
         currency: order.currency_code,
         items,
+        pickup_slot_start: pickupSlotStart,
+        pickup_slot_end: pickupSlotEnd,
         shipping_address: order.shipping_address ? {
           first_name: (order.shipping_address as any).first_name,
           last_name: (order.shipping_address as any).last_name,
