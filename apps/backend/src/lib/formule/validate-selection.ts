@@ -54,6 +54,20 @@ export function formuleSelectionMetadataKey(composantKey: string): string {
   return `formule_${composantKey}_variant_id`
 }
 
+// True as soon as a line item carries at least one Sélection key — mirrors
+// the storefront's own hasFormuleSelection (lib/util/formule-selection.ts),
+// kept in lockstep so a line item is recognised as a Formule identically on
+// both sides of the API boundary (a Formule has no image of its own, ADR
+// 0001 — this is the cheap check both sides use to swap the thumbnail).
+export function hasFormuleSelection(
+  metadata: Record<string, unknown> | null | undefined
+): boolean {
+  if (!metadata) {
+    return false
+  }
+  return Object.keys(metadata).some((key) => SELECTION_KEY_PATTERN.test(key))
+}
+
 function selectionKeysIn(
   metadata: Record<string, unknown> | null | undefined
 ): string[] {

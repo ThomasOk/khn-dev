@@ -4,7 +4,9 @@ import { Table, Text } from "@modules/common/components/ui"
 import LineItemOptions from "@modules/common/components/line-item-options"
 import LineItemPrice from "@modules/common/components/line-item-price"
 import LineItemUnitPrice from "@modules/common/components/line-item-unit-price"
+import FormuleThumbnail from "@modules/products/components/formule-thumbnail"
 import Thumbnail from "@modules/products/components/thumbnail"
+import { hasFormuleSelection } from "@lib/util/formule-selection"
 
 type ItemProps = {
   item: HttpTypes.StoreCartLineItem | HttpTypes.StoreOrderLineItem
@@ -12,11 +14,24 @@ type ItemProps = {
 }
 
 const Item = ({ item, currencyCode }: ItemProps) => {
+  // A Formule has no image of its own (ADR 0001) — same swap as the cart's
+  // own Item (modules/cart/components/item), so it keeps the monogram tile
+  // instead of a generic/broken placeholder photo here too (order
+  // confirmation, order history).
+  const isFormule = hasFormuleSelection(item.metadata)
+
   return (
     <Table.Row className="w-full" data-testid="product-row">
       <Table.Cell className="!pl-0 p-4 w-24">
         <div className="flex w-16">
-          <Thumbnail thumbnail={item.thumbnail} size="square" />
+          {isFormule ? (
+            <FormuleThumbnail
+              title={item.product_title ?? item.title}
+              data-testid="formule-thumbnail"
+            />
+          ) : (
+            <Thumbnail thumbnail={item.thumbnail} size="square" />
+          )}
         </div>
       </Table.Cell>
 

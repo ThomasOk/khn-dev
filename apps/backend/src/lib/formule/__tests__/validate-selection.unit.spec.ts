@@ -2,6 +2,7 @@ import {
   FormuleComposantCuration,
   FormuleCuration,
   formuleSelectionMetadataKey,
+  hasFormuleSelection,
   validateFormuleSelection,
 } from "../validate-selection"
 
@@ -111,5 +112,21 @@ describe("validateFormuleSelection", () => {
       valid: false,
       rejection: { code: "missing_composant", composant: plat },
     })
+  })
+})
+
+describe("hasFormuleSelection", () => {
+  it("is true as soon as one Sélection key is present", () => {
+    expect(hasFormuleSelection(validSelection)).toBe(true)
+    expect(
+      hasFormuleSelection({ [formuleSelectionMetadataKey("entree")]: "variant_x" })
+    ).toBe(true)
+  })
+
+  it("is false for an ordinary, non-Formule line item", () => {
+    expect(hasFormuleSelection({ some_other_key: "x" })).toBe(false)
+    expect(hasFormuleSelection({})).toBe(false)
+    expect(hasFormuleSelection(null)).toBe(false)
+    expect(hasFormuleSelection(undefined)).toBe(false)
   })
 })
