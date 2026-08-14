@@ -134,6 +134,13 @@ module.exports = defineConfig({
             id: "stripe",
             options: {
               apiKey: process.env.STRIPE_API_KEY,
+              // Without this, Stripe webhook signature verification fails
+              // (see stripe-base.js), so webhook-dependent flows — 3D
+              // Secure, Klarna/Affirm redirects, async capture — can't
+              // update the order after a successful charge. Register the
+              // webhook endpoint in the Stripe dashboard first, then set
+              // this to the signing secret it gives you.
+              webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
             },
           },
         ],
