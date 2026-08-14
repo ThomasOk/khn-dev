@@ -139,7 +139,14 @@ export default async function seed({
           name: "France",
           currency_code: "eur",
           countries,
-          payment_providers: ["pp_system_default"],
+          // Stripe only — no manual/system payment option in a real store.
+          // Originally seeded as pp_system_default; staging had this
+          // patched by hand in the admin (06/08) but it was never ported
+          // back here, so every freshly seeded environment reproduced the
+          // same gap: checkout showed "Paiement manuel" instead of the
+          // Stripe card element. See fix-region-payment-provider.ts for
+          // the one-off script that fixes an already-seeded environment.
+          payment_providers: ["pp_stripe_stripe"],
         },
       ],
     },
