@@ -5,6 +5,12 @@ loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 module.exports = defineConfig({
   projectConfig: {
     databaseUrl: process.env.DATABASE_URL,
+    // Selects the HTTP session store (admin login sessions). Without it,
+    // Express falls back to its in-memory MemoryStore — every redeploy logs
+    // out all admins, and it's explicitly unsupported for production.
+    // Undefined locally (no Redis running there), which is fine: the same
+    // falsy check that picks Redis here falls back to MemoryStore.
+    redisUrl: process.env.REDIS_URL,
     http: {
       storeCors: process.env.STORE_CORS!,
       adminCors: process.env.ADMIN_CORS!,
@@ -14,6 +20,35 @@ module.exports = defineConfig({
     }
   },
   modules: [
+    // Redis-backed cache/event-bus/workflow-engine, only when REDIS_URL is
+    // set (staging/prod). Without these, Medusa falls back to its built-in
+    // in-memory implementations for all three — fine for local dev, but on
+    // a real deploy an in-memory event bus can silently drop the
+    // order.placed event (order-confirmation email, kitchen-ticket
+    // notification) if the process restarts between publish and delivery,
+    // and an in-memory workflow engine can't resume a workflow across
+    // restarts either. Redis is already provisioned in both environments,
+    // this was just never wired up.
+    ...(process.env.REDIS_URL
+      ? [
+          {
+            resolve: "@medusajs/medusa/cache-redis",
+            options: { redisUrl: process.env.REDIS_URL },
+          },
+          {
+            resolve: "@medusajs/medusa/event-bus-redis",
+            options: { redisUrl: process.env.REDIS_URL },
+          },
+          {
+            // Unlike cache-redis/event-bus-redis above, this module expects
+            // its Redis config nested under a `redis` key, not `redisUrl`
+            // directly — found by reading the loader source after a flat
+            // `redisUrl` crashed with "Cannot destructure property 'url'".
+            resolve: "@medusajs/medusa/workflow-engine-redis",
+            options: { redis: { redisUrl: process.env.REDIS_URL } },
+          },
+        ]
+      : []),
     // ADR 0006: capacity acceptance for table-reservation races two
     // customers against the last Couverts, so it locks on the requested
     // date. Without this registration `execute()` silently falls back to
