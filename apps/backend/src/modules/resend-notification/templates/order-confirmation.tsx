@@ -106,6 +106,14 @@ function formatPickupSlot(start: string, end: string): string {
   return `${day} · ${range}`;
 }
 
+// Medusa auto-names the sole Variante of a Produit with no real Options
+// "Default variant" (every Formule, and every single-Variante dish, per ADR
+// 0001) — a label with no meaning to the customer, so it's suppressed rather
+// than printed as if it distinguished anything. Same suppression as
+// lib/pdf/kitchen-ticket.ts's DEFAULT_VARIANT_TITLE and the storefront's own
+// LineItemOptions (DEFAULT_OPTION_TITLE).
+const DEFAULT_VARIANT_TITLE = "Default variant";
+
 // Mirrors the storefront's own formuleInitials
 // (modules/products/components/formule-thumbnail/index.tsx) — same rule,
 // kept in lockstep so a Formule's monogram reads identically in the cart and
@@ -232,53 +240,60 @@ export default function OrderConfirmationEmail({
           {/* Items */}
           <Section style={section}>
             <Heading style={h2}>Votre commande</Heading>
-            {items.map((item) => (
-              <Row key={item.id} style={itemRow}>
-                <Column style={itemImageCell}>
-                  {item.is_formule ? (
-                    <Section style={itemFormuleThumbnail}>
-                      <Text style={itemFormuleThumbnailText}>
-                        {formuleInitials(item.title)}
+            {items.map((item) => {
+              const variantLabel =
+                item.variant_title !== DEFAULT_VARIANT_TITLE
+                  ? item.variant_title
+                  : undefined;
+              const itemLabel = variantLabel ?? item.subtitle;
+
+              return (
+                <Row key={item.id} style={itemRow}>
+                  <Column style={itemImageCell}>
+                    {item.is_formule ? (
+                      <Section style={itemFormuleThumbnail}>
+                        <Text style={itemFormuleThumbnailText}>
+                          {formuleInitials(item.title)}
+                        </Text>
+                      </Section>
+                    ) : item.thumbnail &&
+                      item.thumbnail.startsWith("http") &&
+                      !item.thumbnail.includes("localhost") &&
+                      !item.thumbnail.includes("127.0.0.1") ? (
+                      <Img
+                        src={item.thumbnail}
+                        width={64}
+                        height={64}
+                        alt={item.title}
+                        style={itemImage}
+                      />
+                    ) : (
+                      <Section style={itemImagePlaceholder}>
+                        <Text style={itemImagePlaceholderText}>📦</Text>
+                      </Section>
+                    )}
+                  </Column>
+                  <Column style={itemDetails}>
+                    <Text style={itemTitle}>{item.title}</Text>
+                    {itemLabel && <Text style={itemVariant}>{itemLabel}</Text>}
+                    <Text style={itemQty}>Qté : {item.quantity ?? "—"}</Text>
+                  </Column>
+                  <Column style={itemPriceCell}>
+                    <Text style={itemPrice}>
+                      {formatPrice(
+                        item.unit_price * (item.quantity ?? 1),
+                        currency,
+                      )}
+                    </Text>
+                    {(item.quantity ?? 0) > 1 && (
+                      <Text style={itemUnitPrice}>
+                        {formatPrice(item.unit_price, currency)} / unité
                       </Text>
-                    </Section>
-                  ) : item.thumbnail &&
-                    item.thumbnail.startsWith("http") &&
-                    !item.thumbnail.includes("localhost") &&
-                    !item.thumbnail.includes("127.0.0.1") ? (
-                    <Img
-                      src={item.thumbnail}
-                      width={64}
-                      height={64}
-                      alt={item.title}
-                      style={itemImage}
-                    />
-                  ) : (
-                    <Section style={itemImagePlaceholder}>
-                      <Text style={itemImagePlaceholderText}>📦</Text>
-                    </Section>
-                  )}
-                </Column>
-                <Column style={itemDetails}>
-                  <Text style={itemTitle}>{item.title}</Text>
-                  {(item.variant_title || item.subtitle) && (
-                    <Text style={itemVariant}>
-                      {item.variant_title ?? item.subtitle}
-                    </Text>
-                  )}
-                  <Text style={itemQty}>Qté : {item.quantity ?? "—"}</Text>
-                </Column>
-                <Column style={itemPriceCell}>
-                  <Text style={itemPrice}>
-                    {formatPrice(item.unit_price * (item.quantity ?? 1), currency)}
-                  </Text>
-                  {(item.quantity ?? 0) > 1 && (
-                    <Text style={itemUnitPrice}>
-                      {formatPrice(item.unit_price, currency)} / unité
-                    </Text>
-                  )}
-                </Column>
-              </Row>
-            ))}
+                    )}
+                  </Column>
+                </Row>
+              );
+            })}
           </Section>
 
           <InsetDivider />
