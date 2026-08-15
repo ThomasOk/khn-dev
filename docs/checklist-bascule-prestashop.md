@@ -15,9 +15,10 @@
 
 ## 3. Infrastructure & DNS
 
-- [ ] Créer l'environnement de prod sur **Railway** (backend) et **Vercel** (storefront) — préalable à tout le reste de cette section.
-- [ ] Dupliquer les variables d'environnement de staging vers prod (Resend, S3/R2, Stripe — *en mode live, voir section 4*, `STOREFRONT_URL`, etc.). Piège déjà rencontré une fois en staging : `STOREFRONT_URL` absente fait planter `buildResetPasswordLink` avec `Invalid URL`, silencieusement avant même l'appel à Resend — à ne pas oublier une seconde fois.
-- [ ] **`NEXT_PUBLIC_ALLOW_INDEXING=true`** sur l'environnement Vercel de prod uniquement (le défaut fail-safe couvre déjà staging). Rappel : les variables `NEXT_PUBLIC_*` sont figées au build — un changement de valeur seul ne suffit pas, il faut un redeploy.
+- [x] Créer l'environnement de prod sur **Railway** (backend) et **Vercel** (storefront) — préalable à tout le reste de cette section. **Fait le 2026-08-15** : projet Railway `khn-prod` (Postgres + Redis + backend), projet Vercel `khn-prod`, domaine provisoire `khn-prod.vercel.app`. Détail dans `docs/handoffs/2026-08-15-prod-environment-setup-to-vercel-branch-deploy-bug.md`.
+- [x] Dupliquer les variables d'environnement de staging vers prod (Resend, S3/R2, Stripe — *en mode live, voir section 4*, `STOREFRONT_URL`, etc.). **Fait le 2026-08-15**, valeurs régénérées/dédiées à prod (JWT/COOKIE, tokens R2, clé Resend, clés Stripe live) plutôt que copiées telles quelles — piège `STOREFRONT_URL` vérifié, pas reproduit.
+- [x] **`NEXT_PUBLIC_ALLOW_INDEXING=true`** sur l'environnement Vercel de prod uniquement (le défaut fail-safe couvre déjà staging). Rappel : les variables `NEXT_PUBLIC_*` sont figées au build — un changement de valeur seul ne suffit pas, il faut un redeploy. **Posé le 2026-08-15**, avant le premier déploiement.
+- [ ] **Déploiement automatique Vercel cassé pour la branche `production`** — un `git push origin production` redéploie Railway automatiquement mais ne déclenche aucun déploiement Vercel (reproduit 3 fois, y compris après déconnexion/reconnexion du repo Git). Contournement manuel qui marche à tous les coups en attendant : POST sur le Deploy Hook Vercel (Settings → Git → Deploy Hooks → `manual-production`). Solution proposée mais pas encore actée : GitHub Action qui appelle ce Deploy Hook à chaque push sur `production`. **À trancher avant la bascule réelle**, sinon un déploiement post-bascule (ex. correctif urgent) sera manuel. Détail dans `docs/handoffs/2026-08-15-prod-environment-setup-to-vercel-branch-deploy-bug.md`.
 - [ ] **Checklist DNS précise, pas une bascule "en bloc"** — dans la zone LWS, seul l'enregistrement du **frontend web** (A/CNAME racine + `www`) doit changer pour pointer vers Vercel. Ne pas toucher :
   - Au MX/SPF de la racine (boîtes mail LWS actuelles, `contact@kim-hi-noodle.fr` etc.)
   - Aux enregistrements Resend sur `mail.kim-hi-noodle.fr` (DKIM/MX/SPF du sous-domaine dédié, déjà vérifiés côté Resend)
@@ -28,10 +29,10 @@
 
 ## 4. Paiement (Stripe)
 
-- [ ] **Basculer `STRIPE_API_KEY` sur la clé secrète live** en prod — ne pas copier-coller la config staging (qui est en mode test). Rien dans le code ne distingue test/live, ça dépend entièrement de la valeur de la variable d'env.
-- [ ] **Enregistrer l'endpoint webhook Stripe en mode live**, pointant vers l'URL Railway de prod — le webhook configuré côté staging ne se propage pas automatiquement.
-- [ ] Vérifier qu'un secret de vérification de signature webhook est bien configuré (rien de visible dans `medusa-config.ts` au-delà de `STRIPE_API_KEY` — à confirmer avant l'ouverture, sinon un événement de paiement peut être forgé par n'importe qui).
-- [ ] **Tester un vrai paiement en mode live** (petit montant) juste après la bascule, avant toute communication publique d'ouverture.
+- [x] **Basculer `STRIPE_API_KEY` sur la clé secrète live** en prod — ne pas copier-coller la config staging (qui est en mode test). Rien dans le code ne distingue test/live, ça dépend entièrement de la valeur de la variable d'env. **Fait le 2026-08-15**, clé secrète live dédiée créée.
+- [x] **Enregistrer l'endpoint webhook Stripe en mode live**, pointant vers l'URL Railway de prod — le webhook configuré côté staging ne se propage pas automatiquement. **Fait le 2026-08-15** (`/hooks/payment/stripe_stripe`, nouvelle interface Stripe "Destinations d'événements").
+- [x] Vérifier qu'un secret de vérification de signature webhook est bien configuré (rien de visible dans `medusa-config.ts` au-delà de `STRIPE_API_KEY` — à confirmer avant l'ouverture, sinon un événement de paiement peut être forgé par n'importe qui). **Bug réel trouvé et corrigé le 2026-08-15** (PR #135) : `webhookSecret` n'était effectivement jamais câblé, ni en staging ni en prod. Egalement trouvé et corrigé le même jour : `seed.ts` ne liait `pp_stripe_stripe` à aucune région, donc seul le paiement manuel apparaissait au checkout (PR #136).
+- [x] **Tester un vrai paiement en mode live** (petit montant) juste après la bascule, avant toute communication publique d'ouverture. **Fait le 2026-08-15** : commande #1 (2,50 €), paiement capturé, webhook `payment_intent.succeeded` livré et accepté (`200`, vérifié dans Stripe → Développeurs → Événements → détail de l'événement → onglet destination), puis remboursé proprement depuis l'admin Medusa (remboursement visible côté Stripe et en base — `refund` créé, montant complet).
 
 ## 5. SEO — déjà fait, à vérifier une dernière fois
 
@@ -44,8 +45,8 @@
 
 ## 6. Données / catalogue
 
-- [ ] **Menu et prix figés** — s'assurer que le catalogue sur staging correspond exactement à ce qui est affiché aujourd'hui sur PrestaShop au moment de basculer (pas de placeholder, pas de prix de test).
-- [ ] **Ne pas lancer `pnpm seed` sur la vraie base de prod** (`apps/backend/src/scripts/seed.ts` contient encore les données de démo du starter Medusa — t-shirts, sweatshirts... jamais nettoyées). Vérifier explicitement que ça n'a pas été fait par réflexe lors de la config initiale de la prod.
+- [ ] **Menu et prix figés** — s'assurer que le catalogue sur staging correspond exactement à ce qui est affiché aujourd'hui sur PrestaShop au moment de basculer (pas de placeholder, pas de prix de test). Catalogue réel (42 produits + 6 Formules) importé en prod le 2026-08-15 — photo à revérifier si beaucoup de temps s'écoule avant la bascule réelle.
+- [x] **Ne pas lancer `pnpm seed` sur la vraie base de prod** (`apps/backend/src/scripts/seed.ts` contient encore les données de démo du starter Medusa — t-shirts, sweatshirts... jamais nettoyées). Vérifier explicitement que ça n'a pas été fait par réflexe lors de la config initiale de la prod. **`pnpm seed` a en fait dû être lancé contre prod le 2026-08-15** (crée l'infra nécessaire : sales channel, région, TVA — pas de moyen de l'éviter dans cette version) — mais suivi à chaque fois d'un nettoyage explicite : `cleanup-demo-data.ts` (4 produits démo, PR #133) puis `cleanup-demo-categories.ts` (4 catégories démo restées orphelines après coup — `Shirts`/`Sweatshirts`/`Pants`/`Merch`, visibles dans la nav du storefront tant qu'elles existent même vides, corrigé le 2026-08-15). **Staging n'a jamais reçu ce nettoyage** — produits et catégories démo du starter y traînent toujours.
 
 ## 7. Tests
 
