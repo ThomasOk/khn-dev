@@ -114,6 +114,14 @@ function formatPickupSlot(start: string, end: string): string {
 // LineItemOptions (DEFAULT_OPTION_TITLE).
 const DEFAULT_VARIANT_TITLE = "Default variant";
 
+// Medusa copies the variant title into BOTH `variant_title` and `subtitle`
+// on a line item (verified against real order data), so `subtitle` is not a
+// safe fallback for a suppressed `variant_title` — it carries the very same
+// "Default variant" string. Both fields go through this filter.
+function meaningfulLabel(value?: string): string | undefined {
+  return value && value !== DEFAULT_VARIANT_TITLE ? value : undefined;
+}
+
 // Mirrors the storefront's own formuleInitials
 // (modules/products/components/formule-thumbnail/index.tsx) — same rule,
 // kept in lockstep so a Formule's monogram reads identically in the cart and
@@ -241,17 +249,26 @@ export default function OrderConfirmationEmail({
           <Section style={section}>
             <Heading style={h2}>Votre commande</Heading>
             {items.map((item) => {
-              const variantLabel =
-                item.variant_title !== DEFAULT_VARIANT_TITLE
-                  ? item.variant_title
-                  : undefined;
-              const itemLabel = variantLabel ?? item.subtitle;
+              const itemLabel =
+                meaningfulLabel(item.variant_title) ??
+                meaningfulLabel(item.subtitle);
 
               return (
                 <Row key={item.id} style={itemRow}>
                   <Column style={itemImageCell}>
                     {item.is_formule ? (
-                      <Section style={itemFormuleThumbnail}>
+                      // react-email's Section defaults to align="center"
+                      // width="100%", which centres this 64px tile inside the
+                      // 80px image column (8px right of every product image)
+                      // and, in Outlook's Word engine — which honours the HTML
+                      // width attribute over the inline style — stretches it
+                      // full width. Both defaults are overridden here so the
+                      // tile lines up with the images above and below it.
+                      <Section
+                        align="left"
+                        width={64}
+                        style={itemFormuleThumbnail}
+                      >
                         <Text style={itemFormuleThumbnailText}>
                           {formuleInitials(item.title)}
                         </Text>
@@ -268,7 +285,11 @@ export default function OrderConfirmationEmail({
                         style={itemImage}
                       />
                     ) : (
-                      <Section style={itemImagePlaceholder}>
+                      <Section
+                        align="left"
+                        width={64}
+                        style={itemImagePlaceholder}
+                      >
                         <Text style={itemImagePlaceholderText}>📦</Text>
                       </Section>
                     )}
@@ -582,6 +603,8 @@ const itemImagePlaceholder: React.CSSProperties = {
   height: "64px",
   backgroundColor: "#f3f4f6",
   borderRadius: "6px",
+  // Same reason as itemFormuleThumbnail's border: match itemImage's outer box.
+  border: "1px solid #e5e7eb",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
@@ -605,6 +628,11 @@ const itemFormuleThumbnail: React.CSSProperties = {
   backgroundColor: "#0C3A3D",
   borderRadius: "6px",
   textAlign: "center",
+  // itemImage carries a 1px border, so a borderless tile would sit 2px
+  // narrower and shorter than every product image in the same column. Same
+  // colour as the background keeps the storefront's borderless look
+  // (FormuleThumbnail) while matching the images' outer box exactly.
+  border: "1px solid #0C3A3D",
 };
 
 const itemFormuleThumbnailText: React.CSSProperties = {
